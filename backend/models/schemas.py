@@ -92,26 +92,54 @@ class PracticeStartRequest(BaseModel):
     node_id: str
 
 
-class PracticeStartResponse(BaseModel):
-    problem_id: str
+class PracticeStep(BaseModel):
+    step_index: int
+    step_type: str  # "variable_identification" or "algebra"
+    instruction: str
+    blank_expression: str
+    correct_value: str
+    mapped_node_id: str
+    operation_description: str
+
+
+class PracticeProblemResponse(BaseModel):
+    id: str
+    node_id: str
     problem_expr: str
-    total_steps: int
+    word_problem_text: Optional[str] = None
+    steps: list[PracticeStep]
+
+
+class PracticeStartResponse(BaseModel):
+    problems: list[PracticeProblemResponse]
+
+
+class StudentStepSubmission(BaseModel):
+    step_index: int
+    submitted_value: str
 
 
 class PracticeSubmitStepRequest(BaseModel):
     session_id: str
+    node_id: str
     problem_id: str
+    student_steps: list[StudentStepSubmission]
+
+
+class StepEvaluationResult(BaseModel):
     step_index: int
-    student_step: str
+    correct: bool
+    submitted_value: str
+    correct_value: str
 
 
 class PracticeSubmitStepResponse(BaseModel):
-    correct: bool
-    expected_step: str
-    hint: Optional[str] = None
-    attempt_complete: bool
-    score: Optional[int] = None
-    passed: Optional[bool] = None
+    step_results: list[StepEvaluationResult]
+    misconception_found: bool
+    misconception_step_index: Optional[int] = None
+    misconception_node_id: Optional[str] = None
+    misconception_node_label: Optional[str] = None
+    feedback_text: Optional[str] = None
 
 
 # ─── Progression ──────────────────────────────────────

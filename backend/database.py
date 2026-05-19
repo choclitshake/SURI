@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS practice_problems (
     node_id TEXT NOT NULL,
     problem_expr TEXT NOT NULL,
     steps_json TEXT NOT NULL,
+    word_problem_text TEXT,
     created_at TEXT NOT NULL
 );
 
@@ -113,5 +114,12 @@ async def init_db():
     try:
         await db.executescript(_TABLES_SQL)
         await db.commit()
+        
+        # Migration: Ensure word_problem_text exists in practice_problems
+        cursor = await db.execute("PRAGMA table_info(practice_problems)")
+        columns = [row[1] for row in await cursor.fetchall()]
+        if "word_problem_text" not in columns:
+            await db.execute("ALTER TABLE practice_problems ADD COLUMN word_problem_text TEXT")
+            await db.commit()
     finally:
         await db.close()
