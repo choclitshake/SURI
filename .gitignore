@@ -20,6 +20,7 @@ yarn-error.log*
 # Database
 *.db
 *.sqlite3
+knowledge_base/chroma_db/
 
 # OS
 .DS_Store
