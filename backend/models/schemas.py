@@ -74,6 +74,7 @@ class DiagnosticAnswerResponse(BaseModel):
 # ─── Content ──────────────────────────────────────────
 
 class GenerateContentRequest(BaseModel):
+    session_id: str
     node_id: str
 
 
