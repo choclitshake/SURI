@@ -54,19 +54,21 @@ class UpdateProgressRequest(BaseModel):
 
 class DiagnosticProbeResponse(BaseModel):
     node_id: str
-    question: str
-    choices: list[str]
+    question_text: str
+    options: list[str]
 
 
 class DiagnosticAnswerRequest(BaseModel):
     node_id: str
-    answer: str
+    selected_option_index: int
 
 
 class DiagnosticAnswerResponse(BaseModel):
     correct: bool
-    node_id: str
+    next_action: str  # 'next_probe' | 'complete'
     next_node_id: Optional[str] = None
+    identified_node_id: Optional[str] = None
+    prerequisite_path: Optional[list[str]] = None
 
 
 # ─── Content ──────────────────────────────────────────

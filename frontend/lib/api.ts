@@ -78,14 +78,16 @@ export interface SessionResponse {
 
 export interface DiagnosticProbe {
   node_id: string;
-  question: string;
-  choices: string[];
+  question_text: string;
+  options: string[];
 }
 
 export interface DiagnosticAnswer {
   correct: boolean;
-  node_id: string;
+  next_action: "next_probe" | "complete";
   next_node_id: string | null;
+  identified_node_id: string | null;
+  prerequisite_path: string[] | null;
 }
 
 export interface ContentResponse {
@@ -200,7 +202,7 @@ export function getDiagnosticProbe(
 
 export function submitDiagnosticAnswer(
   sessionId: string,
-  body: { node_id: string; answer: string }
+  body: { node_id: string; selected_option_index: number }
 ): Promise<DiagnosticAnswer> {
   return request<DiagnosticAnswer>(`/api/diagnostic/${sessionId}/answer`, {
     method: "POST",
