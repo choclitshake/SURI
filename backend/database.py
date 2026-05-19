@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     student_id TEXT NOT NULL REFERENCES students(id),
     topic_entry_node TEXT NOT NULL,
     current_node TEXT NOT NULL,
+    current_probe_index INTEGER,
     started_at TEXT NOT NULL,
     last_active_at TEXT NOT NULL,
     completed INTEGER NOT NULL DEFAULT 0,
