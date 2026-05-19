@@ -92,9 +92,13 @@ export interface DiagnosticAnswer {
 
 export interface ContentResponse {
   node_id: string;
-  lesson_text: string;
+  node_label: string;
+  lesson: string;
   worked_example: string;
   guided_explanation: string;
+  source_doc: string;
+  source_chunk_id: string;
+  error?: string;
 }
 
 export interface PracticeStartResponse {
@@ -213,6 +217,7 @@ export function submitDiagnosticAnswer(
 // ─── Content ─────────────────────────────────────────
 
 export function generateContent(body: {
+  session_id: string;
   node_id: string;
 }): Promise<ContentResponse> {
   return request<ContentResponse>("/api/content/generate", {

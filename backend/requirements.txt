@@ -9,3 +9,5 @@ llama-index>=0.10.0
 llama-index-readers-file>=0.1.0
 sentence-transformers>=2.2.0
 pypdf>=3.0.0
+google-generativeai
+python-dotenv
