@@ -1,12 +1,7 @@
 {
   "name": "mathsteps-runner",
   "version": "1.0.0",
-  "description": "Node.js subprocess runner for mathsteps equation solving",
-  "main": "runner.js",
-  "scripts": {
-    "solve": "node runner.js"
-  },
   "dependencies": {
-    "mathsteps": "^0.2.0"
+    "mathsteps": "^0.1.0"
   }
 }

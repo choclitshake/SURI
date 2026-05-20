@@ -1,27 +1,20 @@
-// mathsteps runner — Node.js subprocess script
-// This will be called by the Python backend to solve step-by-step math expressions.
-
 const mathsteps = require('mathsteps');
 
-// Read expression from command-line argument
-const expression = process.argv[2];
-
-if (!expression) {
-    console.error(JSON.stringify({ error: 'No expression provided' }));
-    process.exit(1);
+const expr = process.argv[2];
+if (!expr) {
+  console.log(JSON.stringify({ error: 'no expression provided' }));
+  process.exit(1);
 }
 
 try {
-    const steps = mathsteps.simplifyExpression(expression);
-    const result = steps.map((step, index) => ({
-        step: index + 1,
-        changeType: step.changeType,
-        oldNode: step.oldNode ? step.oldNode.toString() : null,
-        newNode: step.newNode ? step.newNode.toString() : null,
-    }));
-
-    console.log(JSON.stringify({ expression, steps: result }));
-} catch (err) {
-    console.error(JSON.stringify({ error: err.message }));
-    process.exit(1);
+  const steps = mathsteps.simplifyExpression(expr);
+  const output = steps.map((step, i) => ({
+    step_index: i,
+    from: step.oldNode.toString(),
+    to: step.newNode.toString(),
+    rule: step.changeType
+  }));
+  console.log(JSON.stringify(output));
+} catch (e) {
+  console.log(JSON.stringify({ error: e.message }));
 }

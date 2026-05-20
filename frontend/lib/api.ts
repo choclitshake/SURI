@@ -101,19 +101,42 @@ export interface ContentResponse {
   error?: string;
 }
 
-export interface PracticeStartResponse {
-  problem_id: string;
-  problem_expr: string;
-  total_steps: number;
+export interface PracticeStep {
+  step_index: number;
+  step_type: "variable_identification" | "algebra";
+  instruction: string;
+  blank_expression: string;
+  correct_value: string;
+  mapped_node_id: string;
+  operation_description: string;
 }
 
-export interface PracticeStepResponse {
+export interface PracticeProblem {
+  id: string;
+  node_id: string;
+  problem_expr: string;
+  word_problem_text: string | null;
+  steps: PracticeStep[];
+}
+
+export interface PracticeStartResponse {
+  problems: PracticeProblem[];
+}
+
+export interface StepEvaluationResult {
+  step_index: number;
   correct: boolean;
-  expected_step: string;
-  hint: string | null;
-  attempt_complete: boolean;
-  score: number | null;
-  passed: boolean | null;
+  submitted_value: string;
+  correct_value: string;
+}
+
+export interface PracticeSubmitStepResponse {
+  step_results: StepEvaluationResult[];
+  misconception_found: boolean;
+  misconception_step_index: number | null;
+  misconception_node_id: string | null;
+  misconception_node_label: string | null;
+  feedback_text: string | null;
 }
 
 export interface ProgressionDecision {
@@ -240,11 +263,11 @@ export function startPractice(body: {
 
 export function submitPracticeStep(body: {
   session_id: string;
+  node_id: string;
   problem_id: string;
-  step_index: number;
-  student_step: string;
-}): Promise<PracticeStepResponse> {
-  return request<PracticeStepResponse>("/api/practice/submit-step", {
+  student_steps: { step_index: number; submitted_value: string }[];
+}): Promise<PracticeSubmitStepResponse> {
+  return request<PracticeSubmitStepResponse>("/api/practice/submit-step", {
     method: "POST",
     body: JSON.stringify(body),
   });
