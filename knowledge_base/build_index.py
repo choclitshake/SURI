@@ -2,7 +2,7 @@
 Knowledge base index builder for SURI.
 
 Scans knowledge_base/slm_pdfs/ for DepEd SLM PDFs, chunks them,
-assigns each chunk to a competency node via keyword matching,
+assigns each chunk to competency node(s) via an explicit filename-to-node map,
 embeds with sentence-transformers, and stores in ChromaDB.
 
 Usage:
@@ -22,65 +22,85 @@ PDF_DIR = os.path.join(SCRIPT_DIR, "slm_pdfs")
 CHROMA_DIR = os.path.join(SCRIPT_DIR, "chroma_db")
 
 COLLECTION_MAIN = "suri_slm"
-COLLECTION_GENERAL = "general"
 
 # ---------------------------------------------------------------------------
-# Node keyword map (case-insensitive matching)
+# Explicit filename → node map
 # ---------------------------------------------------------------------------
-NODE_KEYWORDS: dict[str, list[str]] = {
-    "FD":  ["fraction", "decimal", "numerator", "denominator",
-            "simplify fraction", "equivalent fraction"],
-    "OI":  ["integer", "negative number", "absolute value",
-            "number line", "additive inverse"],
-    "LE":  ["exponent", "power", "base", "product rule",
-            "quotient rule", "zero exponent", "negative exponent"],
-    "SP":  ["special product", "square of binomial",
-            "product of sum and difference", "polynomial multiplication"],
-    "FP":  ["factor", "factoring", "greatest common factor", "GCF",
-            "difference of squares", "trinomial"],
-    "RPP": ["ratio", "proportion", "percent", "rate",
-            "equivalent ratio"],
-    "AE":  ["algebraic expression", "evaluate", "substitute",
-            "variable", "term", "coefficient"],
-    "L1V": ["linear equation", "one variable", "solve for x",
-            "equation solving"],
-    "L2V": ["two variables", "linear equation in two variables",
-            "slope", "intercept", "ordered pair"],
-    "SLE": ["system of equations", "elimination",
-            "substitution method", "simultaneous"],
-    "RER": ["radical", "square root", "cube root",
-            "rational exponent", "nth root"],
-    "PO":  ["polynomial", "polynomial addition",
-            "polynomial subtraction", "degree of polynomial"],
-    "PD":  ["polynomial division", "long division",
-            "synthetic division", "remainder theorem"],
-    "QE":  ["quadratic", "quadratic equation", "quadratic formula",
-            "discriminant", "completing the square"],
-    "PE":  ["polynomial equation", "roots of polynomial",
-            "rational root theorem", "factor theorem"],
-}
-
-# ---------------------------------------------------------------------------
-# Graph topology — used to resolve multi-node matches to the deepest node.
-# Depth = number of prerequisite hops from a root (higher = more specific).
-# Mirrors backend/graph.py without importing it so this script stays standalone.
-# ---------------------------------------------------------------------------
-GRAPH_PREREQS: dict[str, str | None] = {
-    "FD":  None,
-    "OI":  "FD",
-    "LE":  "OI",
-    "SP":  "LE",
-    "FP":  "SP",
-    "QE":  "FP",
-    "RPP": "FD",
-    "AE":  "RPP",
-    "L1V": "AE",
-    "L2V": "L1V",
-    "SLE": "L2V",
-    "RER": "LE",
-    "PO":  None,
-    "PD":  "PO",
-    "PE":  "FP",
+NODE_PDF_MAP = {
+    "FD": [
+        "grade6_fractions_addition_subtraction.pdf",
+        "grade6_fractions_multiplication.pdf",
+        "grade6_fractions_division.pdf",
+        "grade6_decimals_operations.pdf",
+    ],
+    "RPP": [
+        "grade6_ratio_proportion.pdf",
+        "grade6_percent.pdf",
+        "grade6_rate_speed_distance.pdf",
+    ],
+    "OI": [
+        "grade7_operations_integers.pdf",
+        "grade7_absolute_value_integers.pdf",
+    ],
+    "AE": [
+        "grade7_algebraic_expressions.pdf",
+        "grade7_evaluating_expressions.pdf",
+    ],
+    "L1V": [
+        "grade7_linear_equations_one_var.pdf",
+        "grade7_solving_equations.pdf",
+    ],
+    "LE": [
+        "grade7_laws_of_exponents.pdf",
+    ],
+    "SP": [
+        "grade7_special_products.pdf",
+        "grade7_polynomial_multiplication.pdf",
+    ],
+    "PO": [
+        "grade7_algebraic_expressions.pdf",
+        "grade7_polynomial_multiplication.pdf",
+        "grade8_polynomial_operations_a.pdf",
+        "grade8_polynomial_operations_b.pdf",
+    ],
+    "FP": [
+        "grade8_factoring_gcf.pdf",
+        "grade8_factoring_difference_squares.pdf",
+        "grade8_factoring_trinomials.pdf",
+        "grade8_factoring_general.pdf",
+    ],
+    "L2V": [
+        "grade8_linear_equations_two_var.pdf",
+        "grade8_slope_intercept.pdf",
+    ],
+    "SLE": [
+        "grade8_systems_equations_graphing.pdf",
+        "grade8_systems_equations_algebraic.pdf",
+    ],
+    "QE": [
+        "grade9_quadratic_equations_intro.pdf",
+        "grade9_quadratic_formula.pdf",
+        "grade9_discriminant_roots.pdf",
+    ],
+    "RER": [
+        "grade9_radicals_intro.pdf",
+        "grade9_simplifying_radicals.pdf",
+        "grade9_operations_radicals.pdf",
+        "grade9_radical_equations.pdf",
+        "grade9_rational_exponents.pdf",
+        "grade9_rational_exponents_advanced.pdf",
+    ],
+    "PD": [
+        "grade10_polynomial_division.pdf",
+        "grade10_synthetic_division.pdf",
+        "grade10_remainder_factor_theorem.pdf",
+        "grade10_rational_root_theorem.pdf",
+    ],
+    "PE": [
+        "grade10_polynomial_equations.pdf",
+        "grade10_factoring_polynomials_higher.pdf",
+        "grade10_polynomial_roots.pdf",
+    ],
 }
 
 NODE_GRADE: dict[str, int] = {
@@ -89,26 +109,19 @@ NODE_GRADE: dict[str, int] = {
     "RER": 9, "PO": 8, "PD": 10, "PE": 10,
 }
 
-
-def _compute_depth(node_id: str) -> int:
-    """Walk up the prerequisite chain and count hops."""
-    depth = 0
-    current = node_id
-    while GRAPH_PREREQS.get(current) is not None:
-        current = GRAPH_PREREQS[current]
-        depth += 1
-    return depth
+# ---------------------------------------------------------------------------
+# Build reverse map: filename → list of node_ids
+# ---------------------------------------------------------------------------
+_FILENAME_TO_NODES: dict[str, list[str]] = {}
+for _nid, _files in NODE_PDF_MAP.items():
+    for _fname in _files:
+        _FILENAME_TO_NODES.setdefault(_fname, []).append(_nid)
 
 
-NODE_DEPTH: dict[str, int] = {nid: _compute_depth(nid) for nid in GRAPH_PREREQS}
+def _get_node_ids_for_file(filename: str) -> list[str]:
+    """Return all node_ids that claim this filename, or ['GENERAL'] if none."""
+    return _FILENAME_TO_NODES.get(filename, ["GENERAL"])
 
-# Pre-compile keyword patterns (longer phrases first so they match greedily)
-_COMPILED_KEYWORDS: dict[str, list[re.Pattern]] = {}
-for _nid, _kws in NODE_KEYWORDS.items():
-    sorted_kws = sorted(_kws, key=len, reverse=True)
-    _COMPILED_KEYWORDS[_nid] = [
-        re.compile(re.escape(kw), re.IGNORECASE) for kw in sorted_kws
-    ]
 
 # ---------------------------------------------------------------------------
 # Readable PDF renaming map
@@ -179,34 +192,6 @@ def _rename_pdfs() -> dict[str, str]:
             renamed[old_name] = new_name
             print(f"  Renamed: {old_name} -> {new_name}")
     return renamed
-
-
-# ---------------------------------------------------------------------------
-# Node assignment logic
-# ---------------------------------------------------------------------------
-
-def _match_node(text: str) -> str:
-    """
-    Determine which competency node a chunk belongs to.
-
-    Returns the node_id of the deepest matching node, or "GENERAL"
-    if no keyword matches.
-    """
-    matched_nodes: list[str] = []
-    for node_id, patterns in _COMPILED_KEYWORDS.items():
-        for pat in patterns:
-            if pat.search(text):
-                matched_nodes.append(node_id)
-                break  # one keyword match is enough per node
-
-    if not matched_nodes:
-        return "GENERAL"
-
-    if len(matched_nodes) == 1:
-        return matched_nodes[0]
-
-    # Multiple matches -> pick the deepest (most specific) node
-    return max(matched_nodes, key=lambda nid: NODE_DEPTH.get(nid, 0))
 
 
 def _grade_from_filename(filename: str) -> int:
@@ -288,9 +273,9 @@ def build_index() -> None:
     print(f"  Created {len(nodes)} chunks")
 
     # ------------------------------------------------------------------
-    # 4. Classify chunks → competency nodes
+    # 4. Classify chunks → competency nodes using filename map
     # ------------------------------------------------------------------
-    print("\n-- Classifying chunks --")
+    print("\n-- Classifying chunks by filename --")
     main_chunks: list[dict] = []   # node_id != GENERAL
     general_chunks: list[dict] = []
 
@@ -299,21 +284,25 @@ def build_index() -> None:
         source_doc = os.path.basename(
             node.metadata.get("file_name", node.metadata.get("file_path", "unknown"))
         )
-        node_id = _match_node(text)
-        grade = NODE_GRADE.get(node_id, _grade_from_filename(source_doc))
 
-        chunk_record = {
-            "text": text,
-            "node_id": node_id,
-            "grade_level": grade,
-            "source_doc": source_doc,
-            "chunk_index": idx,
-        }
+        # Look up which node_ids this file belongs to
+        assigned_node_ids = _get_node_ids_for_file(source_doc)
 
-        if node_id == "GENERAL":
-            general_chunks.append(chunk_record)
-        else:
-            main_chunks.append(chunk_record)
+        for node_id in assigned_node_ids:
+            grade = NODE_GRADE.get(node_id, _grade_from_filename(source_doc))
+
+            chunk_record = {
+                "text": text,
+                "node_id": node_id,
+                "grade_level": grade,
+                "source_doc": source_doc,
+                "chunk_index": idx,
+            }
+
+            if node_id == "GENERAL":
+                general_chunks.append(chunk_record)
+            else:
+                main_chunks.append(chunk_record)
 
     print(f"  Main chunks:    {len(main_chunks)}")
     print(f"  General chunks: {len(general_chunks)}")
@@ -327,29 +316,34 @@ def build_index() -> None:
     print(f"  Model loaded in {time.time()-t0:.1f}s")
 
     # ------------------------------------------------------------------
-    # 6. Set up ChromaDB
+    # 6. Set up ChromaDB — drop and recreate collection cleanly
     # ------------------------------------------------------------------
     print("\n-- Setting up ChromaDB --")
     client = chromadb.PersistentClient(path=CHROMA_DIR)
-    main_collection = client.get_or_create_collection(COLLECTION_MAIN)
-    general_collection = client.get_or_create_collection(COLLECTION_GENERAL)
-    print(f"  Collections: '{COLLECTION_MAIN}', '{COLLECTION_GENERAL}'")
+
+    # Delete existing collection if it exists, then recreate
+    try:
+        client.delete_collection(COLLECTION_MAIN)
+        print(f"  Dropped existing '{COLLECTION_MAIN}' collection")
+    except Exception:
+        pass  # Collection did not exist yet
+
+    main_collection = client.create_collection(COLLECTION_MAIN)
+    print(f"  Created fresh '{COLLECTION_MAIN}' collection")
     print(f"  Persist path: {CHROMA_DIR}")
 
     # ------------------------------------------------------------------
-    # 7. Embed & store — main collection
+    # 7. Embed & store — main collection only
     # ------------------------------------------------------------------
     print("\n-- Embedding & storing main chunks --")
     _store_chunks(main_chunks, main_collection, embed_model, "main")
 
-    # ------------------------------------------------------------------
-    # 8. Embed & store — general collection (no embedding in main index)
-    # ------------------------------------------------------------------
-    print("\n-- Storing general (unmatched) chunks --")
-    _store_chunks(general_chunks, general_collection, embed_model, "general")
+    # General chunks are NOT embedded — they are only logged
+    if general_chunks:
+        print(f"\n  Skipped {len(general_chunks)} GENERAL chunk(s) (not embedded)")
 
     # ------------------------------------------------------------------
-    # 9. Summary report
+    # 8. Summary report
     # ------------------------------------------------------------------
     _print_summary(main_chunks, general_chunks)
 
@@ -360,31 +354,25 @@ def _store_chunks(
     embed_model,
     label: str,
 ) -> None:
-    """Embed and upsert chunks into a ChromaDB collection (idempotent)."""
+    """Embed and add chunks into a ChromaDB collection."""
     if not chunks:
         print(f"  No {label} chunks to store.")
         return
 
-    skipped = 0
     stored = 0
     batch_size = 64
 
     for batch_start in range(0, len(chunks), batch_size):
         batch = chunks[batch_start : batch_start + batch_size]
 
-        # Build IDs and check for existing
         ids: list[str] = []
         texts: list[str] = []
         metadatas: list[dict] = []
 
         for ch in batch:
-            doc_id = f"{ch['source_doc']}::{ch['chunk_index']}"
-
-            # Idempotency: check if already stored
-            existing = collection.get(ids=[doc_id])
-            if existing and existing["ids"]:
-                skipped += 1
-                continue
+            # Include node_id in the document ID so that the same chunk
+            # duplicated under multiple nodes gets a unique ID per node.
+            doc_id = f"{ch['node_id']}::{ch['source_doc']}::{ch['chunk_index']}"
 
             ids.append(doc_id)
             texts.append(ch["text"])
@@ -409,7 +397,7 @@ def _store_chunks(
         )
         stored += len(ids)
 
-    print(f"  Stored {stored} new chunk(s), skipped {skipped} existing.")
+    print(f"  Stored {stored} chunk(s).")
 
 
 def _print_summary(
@@ -434,7 +422,7 @@ def _print_summary(
     print(f"\n  {'Node':<6} {'Label':<45} {'Chunks':>6}")
     print(f"  {'-'*6} {'-'*45} {'-'*6}")
 
-    all_nodes = list(NODE_KEYWORDS.keys())
+    all_nodes = list(NODE_PDF_MAP.keys())
     zero_nodes: list[str] = []
 
     for nid in all_nodes:
@@ -448,8 +436,12 @@ def _print_summary(
     if zero_nodes:
         print(f"\n  [!] WARNING: {len(zero_nodes)} node(s) have ZERO chunks:")
         for nid in zero_nodes:
+            pdfs = NODE_PDF_MAP.get(nid, [])
             print(f"     - {nid} ({_node_label(nid)})")
+            for pdf in pdfs:
+                print(f"       Expected PDF: {pdf}")
         print("     These nodes will have no content for RAG retrieval!")
+        print("     Add the missing PDF(s) to slm_pdfs/ and re-run.")
     else:
         print("\n  [OK] All nodes have at least one chunk.")
 
