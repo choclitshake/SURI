@@ -113,7 +113,7 @@ No other text, no markdown, no code fences. Return raw JSON string only.
         raise ValueError("GEMINI_API_KEY environment variable is missing")
     
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash-lite')
     
     try:
         response = await asyncio.wait_for(
@@ -408,7 +408,7 @@ No math formatting."""
             if api_key:
                 try:
                     genai.configure(api_key=api_key)
-                    model = genai.GenerativeModel('gemini-2.5-flash')
+                    model = genai.GenerativeModel('gemini-2.5-flash-lite')
                     response = await asyncio.wait_for(
                         model.generate_content_async(prompt),
                         timeout=15.0

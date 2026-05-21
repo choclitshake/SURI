@@ -159,7 +159,7 @@ Return only the JSON object. No markdown, no code fences, no extra text."""
             )
         
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
         try:
             response = await asyncio.wait_for(
