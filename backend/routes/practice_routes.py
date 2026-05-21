@@ -15,6 +15,7 @@ import asyncio
 import random
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 
 from backend.auth import get_current_student
 from backend.database import get_db
@@ -113,7 +114,7 @@ No other text, no markdown, no code fences. Return raw JSON string only.
         raise ValueError("GEMINI_API_KEY environment variable is missing")
     
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.5-flash-lite')
+    model = genai.GenerativeModel('gemini-3.1-flash-lite')
     
     try:
         response = await asyncio.wait_for(
@@ -229,43 +230,14 @@ async def start_practice(body: PracticeStartRequest, student=Depends(get_current
                 "steps": json.loads(r["steps_json"])
             })
 
-        # 2. If < 5, generate new problems using generate_scaffold_for_expression until 5 exist
-        if len(problems_list) < 5:
-            expressions = NODE_EXPRESSIONS.get(node_id, [])
-            existing_exprs = {p["problem_expr"] for p in problems_list}
-            
-            for expr in expressions:
-                if len(problems_list) >= 5:
-                    break
-                if expr in existing_exprs:
-                    continue
-                
-                scaffold = await generate_scaffold_for_expression(node_id, expr)
-                await db.execute(
-                    """
-                    INSERT INTO practice_problems (id, node_id, problem_expr, steps_json, word_problem_text, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        scaffold["id"],
-                        scaffold["node_id"],
-                        scaffold["problem_expr"],
-                        scaffold["steps_json"],
-                        scaffold["word_problem_text"],
-                        scaffold["created_at"],
-                    ),
-                )
-                problems_list.append({
-                    "id": scaffold["id"],
-                    "node_id": scaffold["node_id"],
-                    "problem_expr": scaffold["problem_expr"],
-                    "word_problem_text": scaffold["word_problem_text"],
-                    "steps": json.loads(scaffold["steps_json"])
-                })
-            await db.commit()
+        # 2. Require at least 10 pre-seeded problems; sample 5 when available
+        if len(problems_list) < 10:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"error": "no_practice_content", "node_id": node_id},
+            )
 
-        # 3. Randomly sample 5
-        sampled = random.sample(problems_list, min(5, len(problems_list)))
+        sampled = random.sample(problems_list, 5)
         
         # Update sessions.last_active_at
         now_iso = datetime.now(timezone.utc).isoformat()
@@ -408,7 +380,7 @@ No math formatting."""
             if api_key:
                 try:
                     genai.configure(api_key=api_key)
-                    model = genai.GenerativeModel('gemini-2.5-flash-lite')
+                    model = genai.GenerativeModel('gemini-3.1-flash-lite')
                     response = await asyncio.wait_for(
                         model.generate_content_async(prompt),
                         timeout=15.0
