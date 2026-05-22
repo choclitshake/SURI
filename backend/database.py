@@ -114,12 +114,21 @@ async def init_db():
     try:
         await db.executescript(_TABLES_SQL)
         await db.commit()
-        
+
         # Migration: Ensure word_problem_text exists in practice_problems
         cursor = await db.execute("PRAGMA table_info(practice_problems)")
         columns = [row[1] for row in await cursor.fetchall()]
         if "word_problem_text" not in columns:
             await db.execute("ALTER TABLE practice_problems ADD COLUMN word_problem_text TEXT")
             await db.commit()
+
+        # Migration: Ensure simplified_lesson_text exists in content_records
+        try:
+            await db.execute(
+                "ALTER TABLE content_records ADD COLUMN simplified_lesson_text TEXT"
+            )
+            await db.commit()
+        except Exception:
+            pass  # column already exists
     finally:
         await db.close()

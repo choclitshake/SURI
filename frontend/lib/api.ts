@@ -97,8 +97,16 @@ export interface ContentResponse {
   worked_example: string;
   guided_explanation: string;
   source_doc: string;
-  source_chunk_id: string;
+  simplified_lesson_text?: string | null;
   error?: string;
+}
+
+export interface SimplifiedContentResponse {
+  lesson?: string;
+  worked_example?: string;
+  guided_explanation?: string;
+  simplified_lesson_text?: string;
+  [key: string]: unknown;
 }
 
 export interface PracticeStep {
@@ -239,13 +247,32 @@ export function submitDiagnosticAnswer(
 
 // ─── Content ─────────────────────────────────────────
 
-export function generateContent(body: {
-  session_id: string;
-  node_id: string;
-}): Promise<ContentResponse> {
-  return request<ContentResponse>("/api/content/generate", {
+export async function getContent(nodeId: string): Promise<ContentResponse> {
+  const url = `${API_BASE}/api/content/${nodeId}`;
+  const res = await fetch(url, { credentials: "include" });
+  const body = await res.json();
+  if (!res.ok) {
+    if (body?.error === "no_content") {
+      return {
+        node_id: body.node_id ?? nodeId,
+        node_label: "",
+        lesson: "",
+        worked_example: "",
+        guided_explanation: "",
+        source_doc: "",
+        error: "no_content",
+      };
+    }
+    throw new ApiError(res.status, body.detail || res.statusText);
+  }
+  return body as ContentResponse;
+}
+
+export function simplifyContent(
+  nodeId: string
+): Promise<SimplifiedContentResponse> {
+  return request<SimplifiedContentResponse>(`/api/content/${nodeId}/simplify`, {
     method: "POST",
-    body: JSON.stringify(body),
   });
 }
 

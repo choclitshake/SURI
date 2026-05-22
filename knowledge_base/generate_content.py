@@ -115,7 +115,7 @@ for node_id, node_data in GRAPH.items():
     # Concatenate context chunks
     context = "\n\n".join(documents[0])
 
-    # c. Build this exact prompt and call gemini-2.5-flash-lite:
+    # c. Build this exact prompt and call gemini-3.1-flash-lite:
     prompt = f"""You are a mathematics tutor writing lesson content for Philippine Junior 
 High School students. Use ONLY the retrieved DepEd SLM content provided 
 below. Do not add any information not present in the source.
