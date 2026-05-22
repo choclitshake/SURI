@@ -22,12 +22,28 @@ async def create_session(body: CreateSessionRequest, student=Depends(get_current
             detail=f"Invalid topic_entry_node: '{body.topic_entry_node}'"
         )
 
-    session_id = str(uuid.uuid4())
     student_id = student["id"]
-    now_iso = datetime.now(timezone.utc).isoformat()
-
     db = await get_db()
     try:
+        # Check for existing active session
+        cursor = await db.execute(
+            """
+            SELECT id, current_node FROM sessions 
+            WHERE student_id = ? AND topic_entry_node = ? AND completed = 0
+            LIMIT 1
+            """,
+            (student_id, body.topic_entry_node),
+        )
+        existing = await cursor.fetchone()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={"error": "session_exists", "session_id": existing["id"], "current_node": existing["current_node"]}
+            )
+
+        session_id = str(uuid.uuid4())
+        now_iso = datetime.now(timezone.utc).isoformat()
+
         await db.execute(
             """
             INSERT INTO sessions (

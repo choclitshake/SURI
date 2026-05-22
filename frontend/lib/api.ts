@@ -11,10 +11,10 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export class ApiError extends Error {
   status: number;
-  detail: string;
+  detail: any;
 
-  constructor(status: number, detail: string) {
-    super(detail);
+  constructor(status: number, detail: any) {
+    super(typeof detail === "string" ? detail : "API Error");
     this.name = "ApiError";
     this.status = status;
     this.detail = detail;
@@ -61,6 +61,7 @@ export interface TopicInfo {
 export interface TopicIntro {
   node_id: string;
   label: string;
+  grade: number;
   description: string;
   prerequisite_chain: string[];
 }
@@ -289,6 +290,12 @@ export function getTopicChain(
   nodeId: string
 ): Promise<{ chain: string[] }> {
   return request<{ chain: string[] }>(`/api/topics/${nodeId}/chain`);
+}
+
+export function getGraphChain(
+  topicEntryNode: string
+): Promise<{ topic_entry_node: string; chain: { node_id: string; node_label: string; grade: number }[] }> {
+  return request<{ topic_entry_node: string; chain: { node_id: string; node_label: string; grade: number }[] }>(`/api/graph/${topicEntryNode}/chain`);
 }
 
 // ─── Sessions ────────────────────────────────────────
