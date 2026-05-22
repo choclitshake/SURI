@@ -2,41 +2,54 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getTopics, createSession, TopicInfo } from "../../lib/api";
+import { getTopics, TopicInfo, getMe, getStudentProgress, createSession } from "../../lib/api";
 
 export default function TopicsPage() {
   const router = useRouter();
   const [topics, setTopics] = useState<TopicInfo[]>([]);
+  const [activeTopics, setActiveTopics] = useState<Record<string, string>>({}); // node_id -> session_id
+  const [completedTopics, setCompletedTopics] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState<string | null>(null); // tracks node_id being processed
 
   useEffect(() => {
-    getTopics()
-      .then((data) => {
+    const load = async () => {
+      try {
+        const [data, me] = await Promise.all([getTopics(), getMe()]);
+        const progress = await getStudentProgress(me.student_id);
+        
+        const activeMap: Record<string, string> = {};
+        for (const s of progress.active_sessions || []) {
+          activeMap[s.topic_entry_node] = s.id;
+        }
+        
+        const completedSet = new Set<string>();
+        for (const s of progress.completed_sessions || []) {
+          completedSet.add(s.topic_entry_node);
+        }
+        
+        setActiveTopics(activeMap);
+        setCompletedTopics(completedSet);
         setTopics(data);
+      } catch (err: any) {
+        setError(err.detail || err.message || "Failed to load topics. Are you logged in?");
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.detail || "Failed to load topics. Are you logged in?");
-        setLoading(false);
-      });
+      }
+    };
+    load();
   }, []);
 
-  const handleStart = async (nodeId: string, mode: "diagnostic" | "lesson") => {
-    setActionLoading(nodeId + "-" + mode);
-    setError(null);
-    try {
-      const session = await createSession({ topic_entry_node: nodeId });
-      if (mode === "diagnostic") {
-        router.push(`/session/${session.id}/diagnostic`);
-      } else {
-        router.push(`/session/${session.id}/lesson`);
-      }
-    } catch (err: any) {
-      setError(err.detail || "Failed to create learning session.");
-      setActionLoading(null);
-    }
+  const handleResume = (sessionId: string) => {
+    router.push(`/session/${sessionId}/lesson`);
+  };
+
+  const handleReviewAgain = (nodeId: string) => {
+    router.push(`/topics/${nodeId}`);
+  };
+
+  const handleStartTopic = (nodeId: string) => {
+    router.push(`/topics/${nodeId}`);
   };
 
   return (
@@ -47,7 +60,7 @@ export default function TopicsPage() {
       </header>
 
       {error && (
-        <div className="border border-black p-4 mb-6 text-sm font-mono bg-white">
+        <div className="border border-black p-4 mb-6 text-sm font-mono bg-white text-red-600">
           [ERROR] {error}
         </div>
       )}
@@ -57,12 +70,17 @@ export default function TopicsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {topics.map((topic) => {
-            const isDiagnosing = actionLoading === topic.node_id + "-diagnostic";
-            const isLessoning = actionLoading === topic.node_id + "-lesson";
-            const isDisabled = !!actionLoading;
+            const isActive = topic.node_id in activeTopics;
+            const isCompleted = completedTopics.has(topic.node_id);
 
             return (
-              <div key={topic.node_id} className="border border-black p-6 flex flex-col justify-between">
+              <div 
+                key={topic.node_id} 
+                className={`border border-black p-6 flex flex-col justify-between ${!isActive && !isCompleted ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+                onClick={() => {
+                  if (!isActive && !isCompleted) handleStartTopic(topic.node_id);
+                }}
+              >
                 <div>
                   <h2 className="text-xl font-mono font-bold uppercase">{topic.label}</h2>
                   <p className="text-xs font-mono text-gray-500 mt-1">
@@ -71,20 +89,30 @@ export default function TopicsPage() {
                 </div>
 
                 <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => handleStart(topic.node_id, "diagnostic")}
-                    disabled={isDisabled}
-                    className="flex-1 border border-black py-2 px-4 text-sm font-mono uppercase text-center transition-all bg-white hover:bg-black hover:text-white disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-black cursor-pointer"
-                  >
-                    {isDiagnosing ? "Starting..." : "Take Diagnostic"}
-                  </button>
-                  <button
-                    onClick={() => handleStart(topic.node_id, "lesson")}
-                    disabled={isDisabled}
-                    className="flex-1 border border-black py-2 px-4 text-sm font-mono uppercase text-center transition-all bg-white hover:bg-black hover:text-white disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-black cursor-pointer"
-                  >
-                    {isLessoning ? "Starting..." : "Go to Lesson"}
-                  </button>
+                  {isActive && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleResume(activeTopics[topic.node_id]); }}
+                      className="flex-1 border border-black py-2 px-4 text-sm font-mono uppercase text-center transition-all bg-black text-white hover:bg-gray-800 cursor-pointer"
+                    >
+                      Resume
+                    </button>
+                  )}
+                  {isCompleted && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleReviewAgain(topic.node_id); }}
+                      className="flex-1 border border-black py-2 px-4 text-sm font-mono uppercase text-center transition-all bg-white hover:bg-black hover:text-white cursor-pointer"
+                    >
+                      Review Again
+                    </button>
+                  )}
+                  {!isActive && !isCompleted && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleStartTopic(topic.node_id); }}
+                      className="flex-1 border border-black py-2 px-4 text-sm font-mono uppercase text-center transition-all bg-white hover:bg-black hover:text-white cursor-pointer"
+                    >
+                      Start Topic
+                    </button>
+                  )}
                 </div>
               </div>
             );

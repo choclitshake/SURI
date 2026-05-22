@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from backend.auth import get_current_student
 from backend.database import get_db
 from backend.graph import GRAPH
+from backend.competency_utils import get_status, upsert_status
 
 import google.generativeai as genai
 
@@ -33,7 +34,9 @@ def parse_gemini_json(text: str) -> dict:
     return json.loads(cleaned)
 
 
-def _content_row_to_response(node_id: str, row) -> dict:
+def _content_row_to_response(
+    node_id: str, row, competency_status: dict | None = None
+) -> dict:
     return {
         "node_id": node_id,
         "node_label": GRAPH[node_id]["label"],
@@ -42,6 +45,7 @@ def _content_row_to_response(node_id: str, row) -> dict:
         "guided_explanation": row["guided_explanation"],
         "source_doc": row["source_doc"],
         "simplified_lesson_text": row["simplified_lesson_text"],
+        "competency_status": competency_status,
     }
 
 
@@ -82,7 +86,31 @@ async def get_content(
                 content={"error": "no_content", "node_id": node_id},
             )
 
-        return _content_row_to_response(node_id, row)
+        student_id = student["id"]
+        status_row = await get_status(db, student_id, node_id)
+        if (
+            status_row
+            and status_row["status"] == "mastered"
+            and status_row["source"] == "diagnostic"
+        ):
+            await upsert_status(
+                db,
+                student_id,
+                node_id,
+                "in_progress",
+                "diagnostic_revisited",
+            )
+            status_row = await get_status(db, student_id, node_id)
+            await db.commit()
+
+        competency = None
+        if status_row:
+            competency = {
+                "status": status_row["status"],
+                "source": status_row["source"],
+            }
+
+        return _content_row_to_response(node_id, row, competency)
     finally:
         await db.close()
 

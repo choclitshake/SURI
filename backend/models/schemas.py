@@ -47,7 +47,7 @@ class UpdateSessionRequest(BaseModel):
 
 
 class UpdateProgressRequest(BaseModel):
-    completion_percentage: float
+    completion_percentage: Optional[float] = None
 
 
 # ─── Diagnostic ───────────────────────────────────────
@@ -61,6 +61,19 @@ class DiagnosticProbeResponse(BaseModel):
 class DiagnosticAnswerRequest(BaseModel):
     node_id: str
     selected_option_index: int
+
+
+class DiagnosticAnswerItem(BaseModel):
+    node_id: str
+    correct: bool
+
+
+class DiagnosticSubmitRequest(BaseModel):
+    answers: list[DiagnosticAnswerItem]
+
+
+class DiagnosticSkipRequest(BaseModel):
+    session_id: str
 
 
 class DiagnosticAnswerResponse(BaseModel):
