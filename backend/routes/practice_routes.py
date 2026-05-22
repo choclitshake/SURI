@@ -15,8 +15,6 @@ import asyncio
 import random
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import JSONResponse
-
 from backend.auth import get_current_student
 from backend.database import get_db
 from backend.graph import GRAPH
@@ -52,6 +50,17 @@ NODE_EXPRESSIONS = {
 }
 
 GRAPH_NODE_LIST = "\n".join([f"{nid}: {node['label']}" for nid, node in GRAPH.items()])
+
+
+def normalize_practice_steps(raw_steps: list) -> list[dict]:
+    """Map legacy seed keys (e.g. type) to the API schema (step_type)."""
+    normalized = []
+    for step in raw_steps:
+        s = dict(step)
+        if "step_type" not in s and "type" in s:
+            s["step_type"] = s.pop("type")
+        normalized.append(s)
+    return normalized
 
 
 async def generate_scaffold_for_expression(node_id: str, expression: str) -> dict:
@@ -222,19 +231,20 @@ async def start_practice(body: PracticeStartRequest, student=Depends(get_current
         existing_rows = await cursor.fetchall()
         problems_list = []
         for r in existing_rows:
+            raw_steps = json.loads(r["steps_json"])
             problems_list.append({
                 "id": r["id"],
                 "node_id": r["node_id"],
                 "problem_expr": r["problem_expr"],
                 "word_problem_text": r["word_problem_text"],
-                "steps": json.loads(r["steps_json"])
+                "steps": normalize_practice_steps(raw_steps),
             })
 
         # 2. Require at least 10 pre-seeded problems; sample 5 when available
         if len(problems_list) < 10:
-            return JSONResponse(
+            raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"error": "no_practice_content", "node_id": node_id},
+                detail={"error": "no_practice_content", "node_id": node_id},
             )
 
         sampled = random.sample(problems_list, 5)
@@ -271,7 +281,7 @@ async def submit_step(body: PracticeSubmitStepRequest, student=Depends(get_curre
         if not problem_row:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Problem not found")
 
-        parsed_steps = json.loads(problem_row["steps_json"])
+        parsed_steps = normalize_practice_steps(json.loads(problem_row["steps_json"]))
         student_submission_dict = {s.step_index: s.submitted_value for s in student_steps}
 
         # 2. Evaluate each step

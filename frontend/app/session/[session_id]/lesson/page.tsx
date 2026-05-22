@@ -105,6 +105,8 @@ export default function LessonPage() {
     return null;
   }
 
+  const lessonBody = resolveLessonText(content);
+
   return (
     <div className="min-h-screen bg-white text-black font-sans p-8 max-w-2xl mx-auto">
       <header className="border-b border-black pb-4 mb-8">
@@ -132,7 +134,7 @@ export default function LessonPage() {
             Lesson
           </h2>
           <div className="font-sans text-sm leading-relaxed space-y-4 whitespace-pre-line text-gray-800">
-            {content.lesson}
+            {lessonBody}
           </div>
         </section>
 
@@ -165,4 +167,20 @@ export default function LessonPage() {
       </footer>
     </div>
   );
+}
+
+function resolveLessonText(content: ContentResponse): string {
+  const simplified = content.simplified_lesson_text;
+  if (!simplified) {
+    return content.lesson;
+  }
+  try {
+    const parsed = JSON.parse(simplified) as { lesson?: string };
+    if (parsed.lesson) {
+      return parsed.lesson;
+    }
+  } catch {
+    return simplified;
+  }
+  return content.lesson;
 }

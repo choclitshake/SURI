@@ -130,5 +130,15 @@ async def init_db():
             await db.commit()
         except Exception:
             pass  # column already exists
+
+        # Sentinel row for batch practice_attempt summaries (FK target for problem_id='batch')
+        await db.execute(
+            """
+            INSERT OR IGNORE INTO practice_problems (
+                id, node_id, problem_expr, steps_json, word_problem_text, created_at
+            ) VALUES ('batch', '_system', 'practice round summary', '[]', NULL, '1970-01-01T00:00:00+00:00')
+            """
+        )
+        await db.commit()
     finally:
         await db.close()

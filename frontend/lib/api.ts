@@ -147,10 +147,26 @@ export interface PracticeSubmitStepResponse {
   feedback_text: string | null;
 }
 
+export interface MisconceptionNode {
+  node_id: string;
+  node_label: string;
+}
+
+export interface GoDeeperNode {
+  node_id: string;
+  node_label: string;
+}
+
 export interface ProgressionDecision {
   decision: "advance" | "remediate";
-  next_node_id: string | null;
   mastery_score: number;
+  passed_count: number;
+  next_node_id?: string | null;
+  next_node_label?: string | null;
+  topic_complete?: boolean;
+  misconception_nodes?: MisconceptionNode[];
+  go_deeper_available?: boolean;
+  go_deeper_node?: GoDeeperNode | null;
 }
 
 export interface StudentProgress {
@@ -278,14 +294,29 @@ export function simplifyContent(
 
 // ─── Practice ────────────────────────────────────────
 
-export function startPractice(body: {
+export async function startPractice(body: {
   session_id: string;
   node_id: string;
 }): Promise<PracticeStartResponse> {
-  return request<PracticeStartResponse>("/api/practice/start", {
+  const url = `${API_BASE}/api/practice/start`;
+  const res = await fetch(url, {
     method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const detail = data.detail ?? data;
+    const message =
+      typeof detail === "object" && detail?.error === "no_practice_content"
+        ? "Practice problems are not available for this topic yet."
+        : typeof detail === "string"
+          ? detail
+          : JSON.stringify(detail);
+    throw new ApiError(res.status, message);
+  }
+  return data as PracticeStartResponse;
 }
 
 export function submitPracticeStep(body: {
