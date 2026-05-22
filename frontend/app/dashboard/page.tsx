@@ -6,6 +6,7 @@ import {
   getMe,
   getStudentProgress,
   getSession,
+  createSession,
   ActiveSessionProgress,
   MisconceptionHistoryItem,
 } from "../../lib/api";
@@ -24,7 +25,8 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
-  const [sessions, setSessions] = useState<ActiveSessionProgress[]>([]);
+  const [activeSessions, setActiveSessions] = useState<ActiveSessionProgress[]>([]);
+  const [completedSessions, setCompletedSessions] = useState<ActiveSessionProgress[]>([]);
   const [misconceptions, setMisconceptions] = useState<MisconceptionHistoryItem[]>(
     []
   );
@@ -46,8 +48,9 @@ function DashboardContent() {
         const me = await getMe();
         setName(me.name);
         const progress = await getStudentProgress(me.student_id);
-        setSessions(progress.active_sessions);
-        setMisconceptions(progress.misconception_history);
+        setActiveSessions(progress.active_sessions || []);
+        setCompletedSessions(progress.completed_sessions || []);
+        setMisconceptions(progress.misconception_history || []);
       } catch (err: unknown) {
         const status =
           err && typeof err === "object" && "status" in err
@@ -73,6 +76,15 @@ function DashboardContent() {
       router.push(`/session/${sessionId}/lesson`);
     } catch {
       setErrorMsg("Could not resume session.");
+    }
+  };
+
+  const handleReviewAgain = async (topicEntryNode: string) => {
+    try {
+      const newSession = await createSession({ topic_entry_node: topicEntryNode });
+      router.push(`/session/${newSession.id}/diagnostic`);
+    } catch {
+      setErrorMsg("Could not create review session.");
     }
   };
 
@@ -109,7 +121,7 @@ function DashboardContent() {
           Active Topics
         </h2>
 
-        {sessions.length === 0 ? (
+        {activeSessions.length === 0 ? (
           <div className="border border-black p-6 text-center">
             <p className="font-mono text-sm mb-6">No active topics yet.</p>
             <button
@@ -122,47 +134,96 @@ function DashboardContent() {
           </div>
         ) : (
           <div className="space-y-6">
-            {sessions.map((s) => (
-              <div key={s.id} className="border border-black p-6">
+            {activeSessions.map((s) => {
+              const pct = parseFloat(String(s.completion_percentage)) || 0;
+              return (
+                <div key={s.id} className="border border-black p-6">
+                  <p className="text-lg font-bold font-mono uppercase">
+                    {s.topic_label}
+                  </p>
+                  <p className="text-sm font-mono text-gray-600 mt-1">
+                    Currently on: {s.current_node_label}
+                  </p>
+
+                  <div className="mt-4">
+                    <div className="w-full h-3 bg-gray-200 border border-black">
+                      <div
+                        className="h-full bg-black transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <p className="font-mono text-xs mt-2">
+                      {pct}%
+                    </p>
+                  </div>
+
+                  <p className="font-mono text-sm mt-3 text-gray-700">
+                    {s.mastered_count} of {s.total_in_chain} competencies mastered
+                    ({s.diagnostic_count} from diagnostic, {s.practice_count} from
+                    practice)
+                  </p>
+
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => handleResume(s.id)}
+                      className="border border-black py-2 px-5 text-sm font-mono uppercase font-bold bg-white hover:bg-black hover:text-white cursor-pointer"
+                    >
+                      Resume
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {completedSessions.length > 0 && (
+        <section className="mb-10">
+          <h2 className="text-lg font-mono font-bold uppercase mb-4">
+            Completed Topics
+          </h2>
+          <div className="space-y-6">
+            {completedSessions.map((s) => (
+              <div key={s.id} className="border border-black p-6 bg-white">
                 <p className="text-lg font-bold font-mono uppercase">
                   {s.topic_label}
                 </p>
                 <p className="text-sm font-mono text-gray-600 mt-1">
-                  Currently on: {s.current_node_label}
+                  All {s.total_in_chain} competencies mastered
                 </p>
 
                 <div className="mt-4">
                   <div className="w-full h-3 bg-gray-200 border border-black">
                     <div
                       className="h-full bg-black transition-all"
-                      style={{ width: `${s.completion_percentage}%` }}
+                      style={{ width: "100%" }}
                     />
                   </div>
                   <p className="font-mono text-xs mt-2">
-                    {s.completion_percentage}%
+                    100%
                   </p>
                 </div>
 
                 <p className="font-mono text-sm mt-3 text-gray-700">
-                  {s.mastered_count} of {s.total_in_chain} competencies mastered
-                  ({s.diagnostic_count} from diagnostic, {s.practice_count} from
-                  practice)
+                  Completed on: {s.completed_at ? formatDate(s.completed_at) : ""}
                 </p>
 
                 <div className="mt-4 flex justify-end">
                   <button
                     type="button"
-                    onClick={() => handleResume(s.id)}
+                    onClick={() => handleReviewAgain(s.topic_entry_node)}
                     className="border border-black py-2 px-5 text-sm font-mono uppercase font-bold bg-white hover:bg-black hover:text-white cursor-pointer"
                   >
-                    Resume
+                    Review Again
                   </button>
                 </div>
               </div>
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       <section className="mb-10">
         <div className="flex justify-between items-center mb-4">

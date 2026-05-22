@@ -15,6 +15,8 @@ from backend.competency_utils import (
     upsert_status,
     mark_prerequisites_mastered,
     find_next_upward,
+    get_status,
+    get_chain,
 )
 from backend.progress_utils import compute_and_save_session_progress
 from backend.models.schemas import ProgressionDecideRequest
@@ -157,7 +159,30 @@ async def decide_progression(
             next_node = await find_next_upward(
                 db, student_id, node_id, topic_entry_node
             )
-            if next_node is None:
+
+            # Check if all nodes in the chain are mastered
+            chain = get_chain(topic_entry_node)
+            all_statuses = []
+            for n in chain:
+                s = await get_status(db, student_id, n)
+                all_statuses.append(s['status'] if s else 'unresolved')
+            all_mastered = all(s == 'mastered' for s in all_statuses)
+
+            if all_mastered:
+                await db.execute(
+                    """
+                    UPDATE sessions
+                    SET completed = 1, last_active_at = ?
+                    WHERE id = ?
+                    """,
+                    (now_iso, session_id),
+                )
+                await compute_and_save_session_progress(
+                    db, session_id, student_id, topic_entry_node
+                )
+                await db.commit()
+                return {**base_response, "topic_complete": True}
+            elif next_node is None:
                 await db.execute(
                     """
                     UPDATE sessions

@@ -204,6 +204,7 @@ export interface ActiveSessionProgress {
   unresolved_nodes: CompetencyNodeSummary[];
   started_at: string;
   last_active_at: string;
+  completed_at?: string;
 }
 
 export interface MisconceptionHistoryItem {
@@ -215,6 +216,7 @@ export interface MisconceptionHistoryItem {
 
 export interface StudentProgress {
   active_sessions: ActiveSessionProgress[];
+  completed_sessions: ActiveSessionProgress[];
   misconception_history: MisconceptionHistoryItem[];
 }
 

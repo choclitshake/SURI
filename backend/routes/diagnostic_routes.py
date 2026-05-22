@@ -329,11 +329,21 @@ async def submit_diagnostic(
                 )
 
         gap_node = None
-        for node_id in chain:
-            row = await get_status(db, student_id, node_id)
-            if row and row["status"] == "unresolved":
+        for node_id in reversed(chain):
+            status_record = await get_status(db, student_id, node_id)
+            if status_record and status_record['status'] == 'unresolved':
                 gap_node = node_id
                 break
+
+        node_statuses = []
+        for node_id in chain:
+            row = await get_status(db, student_id, node_id)
+            node_statuses.append({
+                "node_id": node_id,
+                "node_label": GRAPH[node_id]["label"],
+                "status": row["status"] if row else None,
+                "source": row["source"] if row else None
+            })
 
         now_iso = datetime.now(timezone.utc).isoformat()
         mastered_nodes = []
@@ -374,6 +384,7 @@ async def submit_diagnostic(
                 "all_mastered": True,
                 "message": "You have already mastered all competencies in this topic.",
                 "redirect": "/dashboard",
+                "node_statuses": node_statuses,
             }
 
         await db.execute(
@@ -394,6 +405,7 @@ async def submit_diagnostic(
             "mastered_nodes": mastered_nodes,
             "unresolved_nodes": unresolved_nodes,
             "redirect": f"/session/{session_id}/gap-result",
+            "node_statuses": node_statuses,
         }
     finally:
         await db.close()

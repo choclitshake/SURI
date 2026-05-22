@@ -63,13 +63,14 @@ async def get_student_progress(
         cursor = await db.execute(
             """
             SELECT * FROM sessions
-            WHERE student_id = ? AND completed = 0
+            WHERE student_id = ?
             ORDER BY last_active_at DESC
             """,
             (student_id,),
         )
         session_rows = await cursor.fetchall()
         active_sessions = []
+        completed_sessions = []
 
         for session_row in session_rows:
             topic_entry_node = session_row["topic_entry_node"]
@@ -117,6 +118,10 @@ async def get_student_progress(
                 if n["source"] in ("practice", "implied")
             )
 
+            completion_percentage = round(
+                len(mastered_nodes) / total_in_chain * 100, 1
+            ) if total_in_chain > 0 else 0.0
+
             session_dict = dict(session_row)
             session_dict.update({
                 "topic_label": GRAPH[topic_entry_node]["label"],
@@ -128,10 +133,16 @@ async def get_student_progress(
                 "mastered_nodes": mastered_nodes,
                 "in_progress_nodes": in_progress_nodes,
                 "unresolved_nodes": unresolved_nodes,
+                "completion_percentage": completion_percentage,
             })
-            active_sessions.append(session_dict)
+            
+            if session_row["completed"] == 1:
+                session_dict["completed_at"] = session_row["last_active_at"]
+                completed_sessions.append(session_dict)
+            else:
+                active_sessions.append(session_dict)
 
-        session_ids = [s["id"] for s in active_sessions]
+        session_ids = [s["id"] for s in active_sessions] + [s["id"] for s in completed_sessions]
         misconception_history = []
         if session_ids:
             placeholders = ",".join("?" * len(session_ids))
@@ -158,6 +169,7 @@ async def get_student_progress(
 
         return {
             "active_sessions": active_sessions,
+            "completed_sessions": completed_sessions,
             "misconception_history": misconception_history,
         }
     finally:

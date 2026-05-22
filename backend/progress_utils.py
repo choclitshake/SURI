@@ -36,7 +36,7 @@ async def compute_and_save_session_progress(
     await db.execute(
         """
         UPDATE sessions
-        SET last_active_at = ?, completion_percentage = ?
+        SET completion_percentage = ?, last_active_at = ?
         WHERE id = ? AND student_id = ?
         """,
         (completion_percentage, now_iso, session_id, student_id),
