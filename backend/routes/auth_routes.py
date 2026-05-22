@@ -5,10 +5,15 @@ Authentication routes: register and login.
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 
-from backend.auth import hash_password, verify_password, create_access_token
+from backend.auth import (
+    hash_password,
+    verify_password,
+    create_access_token,
+    get_current_student,
+)
 from backend.database import get_db
 from backend.models.schemas import RegisterRequest, LoginRequest, AuthResponse
 
@@ -93,3 +98,13 @@ async def login(body: LoginRequest):
         return response
     finally:
         await db.close()
+
+
+@router.get("/me")
+async def get_me(student=Depends(get_current_student)):
+    """Return the authenticated student from the JWT cookie."""
+    return {
+        "student_id": student["id"],
+        "name": student["name"],
+        "email": None,
+    }

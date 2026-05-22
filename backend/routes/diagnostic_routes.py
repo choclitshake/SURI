@@ -4,8 +4,14 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from backend.auth import get_current_student
 from backend.database import get_db
-from backend.models.schemas import DiagnosticAnswerRequest
+from backend.models.schemas import (
+    DiagnosticAnswerRequest,
+    DiagnosticSubmitRequest,
+    DiagnosticSkipRequest,
+)
 from backend.graph import GRAPH, get_prerequisite_path
+from backend.competency_utils import get_chain, upsert_status, get_status
+from backend.progress_utils import compute_and_save_session_progress
 
 router = APIRouter(prefix="/api/diagnostic", tags=["diagnostic"])
 
@@ -224,6 +230,175 @@ PROBES = {
 }
 
 
+@router.post("/skip")
+async def skip_diagnostic(
+    body: DiagnosticSkipRequest,
+    student=Depends(get_current_student),
+):
+    """Skip diagnostic and start learning at the entry node."""
+    session_id = body.session_id
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            """
+            SELECT topic_entry_node, student_id
+            FROM sessions
+            WHERE id = ? AND student_id = ?
+            """,
+            (session_id, student["id"]),
+        )
+        session_row = await cursor.fetchone()
+        if not session_row:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found",
+            )
+
+        topic_entry_node = session_row["topic_entry_node"]
+        student_id = session_row["student_id"]
+        chain = get_chain(topic_entry_node)
+
+        if chain:
+            await upsert_status(
+                db, student_id, chain[0], "in_progress", "skipped"
+            )
+            for node_id in chain[1:]:
+                await upsert_status(
+                    db, student_id, node_id, "unresolved", "skipped"
+                )
+
+        now_iso = datetime.now(timezone.utc).isoformat()
+        await db.execute(
+            """
+            UPDATE sessions
+            SET current_node = ?, current_probe_index = NULL,
+                last_active_at = ?, completed = 0
+            WHERE id = ?
+            """,
+            (topic_entry_node, now_iso, session_id),
+        )
+        await db.commit()
+
+        return {
+            "redirect_node": topic_entry_node,
+            "node_label": GRAPH[topic_entry_node]["label"],
+            "redirect": f"/session/{session_id}/lesson",
+        }
+    finally:
+        await db.close()
+
+
+@router.post("/{session_id}/submit")
+async def submit_diagnostic(
+    session_id: str,
+    body: DiagnosticSubmitRequest,
+    student=Depends(get_current_student),
+):
+    """Finalize diagnostic: write per-node competency statuses and route."""
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            """
+            SELECT topic_entry_node, student_id
+            FROM sessions
+            WHERE id = ? AND student_id = ?
+            """,
+            (session_id, student["id"]),
+        )
+        session_row = await cursor.fetchone()
+        if not session_row:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found",
+            )
+
+        topic_entry_node = session_row["topic_entry_node"]
+        student_id = session_row["student_id"]
+        chain = get_chain(topic_entry_node)
+
+        for answer in body.answers:
+            if answer.node_id not in GRAPH:
+                continue
+            if answer.correct:
+                await upsert_status(
+                    db, student_id, answer.node_id, "mastered", "diagnostic"
+                )
+            else:
+                await upsert_status(
+                    db, student_id, answer.node_id, "unresolved", "diagnostic"
+                )
+
+        gap_node = None
+        for node_id in chain:
+            row = await get_status(db, student_id, node_id)
+            if row and row["status"] == "unresolved":
+                gap_node = node_id
+                break
+
+        now_iso = datetime.now(timezone.utc).isoformat()
+        mastered_nodes = []
+        unresolved_nodes = []
+        for node_id in chain:
+            row = await get_status(db, student_id, node_id)
+            if row and row["status"] == "mastered":
+                mastered_nodes.append(
+                    {
+                        "node_id": node_id,
+                        "node_label": GRAPH[node_id]["label"],
+                        "source": row["source"],
+                    }
+                )
+            elif row and row["status"] == "unresolved":
+                unresolved_nodes.append(
+                    {
+                        "node_id": node_id,
+                        "node_label": GRAPH[node_id]["label"],
+                    }
+                )
+
+        if gap_node is None:
+            await db.execute(
+                """
+                UPDATE sessions
+                SET completed = 1, current_node = ?,
+                    current_probe_index = NULL, last_active_at = ?
+                WHERE id = ?
+                """,
+                (topic_entry_node, now_iso, session_id),
+            )
+            await compute_and_save_session_progress(
+                db, session_id, student_id, topic_entry_node
+            )
+            await db.commit()
+            return {
+                "all_mastered": True,
+                "message": "You have already mastered all competencies in this topic.",
+                "redirect": "/dashboard",
+            }
+
+        await db.execute(
+            """
+            UPDATE sessions
+            SET current_node = ?, current_probe_index = NULL,
+                completed = 0, last_active_at = ?
+            WHERE id = ?
+            """,
+            (gap_node, now_iso, session_id),
+        )
+        await db.commit()
+
+        return {
+            "all_mastered": False,
+            "gap_node": gap_node,
+            "gap_node_label": GRAPH[gap_node]["label"],
+            "mastered_nodes": mastered_nodes,
+            "unresolved_nodes": unresolved_nodes,
+            "redirect": f"/session/{session_id}/gap-result",
+        }
+    finally:
+        await db.close()
+
+
 @router.get("/{session_id}/probe")
 async def get_diagnostic_probe(session_id: str, student=Depends(get_current_student)):
     """Get the next diagnostic probe question."""
@@ -354,41 +529,18 @@ async def submit_diagnostic_answer(
                 "prerequisite_path": None,
             }
         else:
-            # Prerequisite is None (deepest node reached - this is the weak node)
             identified_weak_node = current_node
-            student_id = student["id"]
-
-            # Upsert into competency_status
-            cursor = await db.execute(
-                "SELECT id FROM competency_status WHERE student_id = ? AND node_id = ?",
-                (student_id, identified_weak_node),
+            prereq_path = get_prerequisite_path(
+                identified_weak_node, session_row["topic_entry_node"]
             )
-            existing_row = await cursor.fetchone()
-
-            if existing_row:
-                await db.execute(
-                    "UPDATE competency_status SET status = 'weak', updated_at = ? WHERE id = ?",
-                    (now_iso, existing_row["id"]),
-                )
-            else:
-                status_id = str(uuid.uuid4())
-                await db.execute(
-                    """
-                    INSERT INTO competency_status (id, student_id, node_id, status, updated_at)
-                    VALUES (?, ?, ?, 'weak', ?)
-                    """,
-                    (status_id, student_id, identified_weak_node, now_iso),
-                )
-
-            # Mark session as completed
             await db.execute(
-                "UPDATE sessions SET completed = 1, last_active_at = ?, current_probe_index = NULL WHERE id = ?",
+                """
+                UPDATE sessions SET last_active_at = ?, current_probe_index = NULL
+                WHERE id = ?
+                """,
                 (now_iso, session_id),
             )
             await db.commit()
-
-            # Compute prerequisite path upward to topic entry node
-            prereq_path = get_prerequisite_path(identified_weak_node, session_row["topic_entry_node"])
 
             return {
                 "correct": is_correct,

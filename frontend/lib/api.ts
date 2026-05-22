@@ -90,6 +90,11 @@ export interface DiagnosticAnswer {
   prerequisite_path: string[] | null;
 }
 
+export interface CompetencyStatus {
+  status: string;
+  source: string;
+}
+
 export interface ContentResponse {
   node_id: string;
   node_label: string;
@@ -98,6 +103,7 @@ export interface ContentResponse {
   guided_explanation: string;
   source_doc: string;
   simplified_lesson_text?: string | null;
+  competency_status?: CompetencyStatus | null;
   error?: string;
 }
 
@@ -169,10 +175,75 @@ export interface ProgressionDecision {
   go_deeper_node?: GoDeeperNode | null;
 }
 
-export interface StudentProgress {
+export interface MeResponse {
   student_id: string;
-  competencies: Record<string, unknown>[];
-  sessions: Record<string, unknown>[];
+  name: string;
+  email: string | null;
+}
+
+export interface CompetencyNodeSummary {
+  node_id: string;
+  node_label: string;
+  source?: string;
+}
+
+export interface ActiveSessionProgress {
+  id: string;
+  student_id: string;
+  topic_entry_node: string;
+  current_node: string;
+  topic_label: string;
+  current_node_label: string;
+  completion_percentage: number;
+  total_in_chain: number;
+  mastered_count: number;
+  diagnostic_count: number;
+  practice_count: number;
+  mastered_nodes: CompetencyNodeSummary[];
+  in_progress_nodes: CompetencyNodeSummary[];
+  unresolved_nodes: CompetencyNodeSummary[];
+  started_at: string;
+  last_active_at: string;
+}
+
+export interface MisconceptionHistoryItem {
+  node_id: string;
+  node_label: string;
+  step_description: string;
+  logged_at: string;
+}
+
+export interface StudentProgress {
+  active_sessions: ActiveSessionProgress[];
+  misconception_history: MisconceptionHistoryItem[];
+}
+
+export interface DiagnosticSubmitAnswer {
+  node_id: string;
+  correct: boolean;
+}
+
+export interface DiagnosticSubmitResponse {
+  all_mastered: boolean;
+  message?: string;
+  redirect: string;
+  gap_node?: string;
+  gap_node_label?: string;
+  mastered_nodes?: CompetencyNodeSummary[];
+  unresolved_nodes?: CompetencyNodeSummary[];
+}
+
+export interface DiagnosticSkipResponse {
+  redirect_node: string;
+  node_label: string;
+  redirect: string;
+}
+
+export interface SaveProgressResponse {
+  success: boolean;
+  completion_percentage: number;
+  mastered_in_chain: number;
+  total_in_chain: number;
 }
 
 // ─── Auth ────────────────────────────────────────────
@@ -198,6 +269,10 @@ export function login(body: {
   });
 }
 
+export function getMe(): Promise<MeResponse> {
+  return request<MeResponse>("/api/auth/me");
+}
+
 // ─── Topics ──────────────────────────────────────────
 
 export function getTopics(): Promise<TopicInfo[]> {
@@ -206,6 +281,12 @@ export function getTopics(): Promise<TopicInfo[]> {
 
 export function getTopicIntro(nodeId: string): Promise<TopicIntro> {
   return request<TopicIntro>(`/api/topics/${nodeId}/intro`);
+}
+
+export function getTopicChain(
+  nodeId: string
+): Promise<{ chain: string[] }> {
+  return request<{ chain: string[] }>(`/api/topics/${nodeId}/chain`);
 }
 
 // ─── Sessions ────────────────────────────────────────
@@ -233,14 +314,13 @@ export function updateSession(
   });
 }
 
-export function updateSessionProgress(
-  sessionId: string,
-  body: { completion_percentage: number }
-): Promise<SessionResponse> {
-  return request<SessionResponse>(`/api/sessions/${sessionId}/progress`, {
-    method: "PATCH",
-    body: JSON.stringify(body),
-  });
+export function saveProgress(
+  sessionId: string
+): Promise<SaveProgressResponse> {
+  return request<SaveProgressResponse>(
+    `/api/sessions/${sessionId}/progress`,
+    { method: "PATCH" }
+  );
 }
 
 // ─── Diagnostic ──────────────────────────────────────
@@ -258,6 +338,25 @@ export function submitDiagnosticAnswer(
   return request<DiagnosticAnswer>(`/api/diagnostic/${sessionId}/answer`, {
     method: "POST",
     body: JSON.stringify(body),
+  });
+}
+
+export function submitDiagnostic(
+  sessionId: string,
+  body: { answers: DiagnosticSubmitAnswer[] }
+): Promise<DiagnosticSubmitResponse> {
+  return request<DiagnosticSubmitResponse>(
+    `/api/diagnostic/${sessionId}/submit`,
+    { method: "POST", body: JSON.stringify(body) }
+  );
+}
+
+export function skipDiagnostic(
+  sessionId: string
+): Promise<DiagnosticSkipResponse> {
+  return request<DiagnosticSkipResponse>("/api/diagnostic/skip", {
+    method: "POST",
+    body: JSON.stringify({ session_id: sessionId }),
   });
 }
 

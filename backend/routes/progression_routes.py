@@ -10,13 +10,19 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from backend.auth import get_current_student
 from backend.database import get_db
-from backend.graph import GRAPH, find_next_node_toward_entry
+from backend.graph import GRAPH
+from backend.competency_utils import (
+    upsert_status,
+    mark_prerequisites_mastered,
+    find_next_upward,
+)
+from backend.progress_utils import compute_and_save_session_progress
 from backend.models.schemas import ProgressionDecideRequest
 
 router = APIRouter(prefix="/api/progression", tags=["progression"])
 
 PRACTICE_SET_SIZE = 5
-MASTERY_THRESHOLD = 0.60
+PASS_THRESHOLD = 3
 
 
 @router.post("/decide")
@@ -38,7 +44,7 @@ async def decide_progression(
     try:
         cursor = await db.execute(
             """
-            SELECT id, student_id, topic_entry_node, current_node
+            SELECT id, student_id, topic_entry_node, last_active_at, started_at
             FROM sessions
             WHERE id = ? AND student_id = ?
             """,
@@ -56,7 +62,7 @@ async def decide_progression(
 
         cursor = await db.execute(
             """
-            SELECT id, passed, score
+            SELECT id, passed, attempted_at
             FROM practice_attempts
             WHERE session_id = ? AND node_id = ? AND problem_id != 'batch'
             ORDER BY attempted_at DESC
@@ -69,7 +75,7 @@ async def decide_progression(
 
         passed_count = sum(1 for row in attempt_rows if row["passed"] == 1)
         mastery_score = passed_count / PRACTICE_SET_SIZE
-        passed = mastery_score >= MASTERY_THRESHOLD
+        passed = passed_count >= PASS_THRESHOLD
 
         batch_attempt_id = str(uuid.uuid4())
         now_iso = datetime.now(timezone.utc).isoformat()
@@ -103,7 +109,6 @@ async def decide_progression(
             )
 
         decision = "advance" if passed else "remediate"
-        progression_id = str(uuid.uuid4())
         await db.execute(
             """
             INSERT INTO progression_logs (
@@ -111,7 +116,7 @@ async def decide_progression(
             ) VALUES (?, ?, ?, ?, ?, ?)
             """,
             (
-                progression_id,
+                str(uuid.uuid4()),
                 session_id,
                 node_id,
                 mastery_score,
@@ -127,74 +132,84 @@ async def decide_progression(
         }
 
         if passed:
-            competency_id = str(uuid.uuid4())
-            cursor = await db.execute(
-                """
-                SELECT id FROM competency_status
-                WHERE student_id = ? AND node_id = ?
-                """,
-                (student_id, node_id),
+            await upsert_status(
+                db, student_id, node_id, "mastered", "practice"
             )
-            existing_competency = await cursor.fetchone()
-            if existing_competency:
-                await db.execute(
-                    """
-                    UPDATE competency_status
-                    SET status = 'mastered', updated_at = ?
-                    WHERE student_id = ? AND node_id = ?
-                    """,
-                    (now_iso, student_id, node_id),
-                )
-            else:
-                await db.execute(
-                    """
-                    INSERT INTO competency_status (
-                        id, student_id, node_id, status, updated_at
-                    ) VALUES (?, ?, ?, 'mastered', ?)
-                    """,
-                    (competency_id, student_id, node_id, now_iso),
-                )
+            await mark_prerequisites_mastered(
+                db, student_id, node_id, topic_entry_node
+            )
 
-            next_node_id = find_next_node_toward_entry(node_id, topic_entry_node)
-
-            if next_node_id:
+            if node_id == topic_entry_node:
                 await db.execute(
                     """
                     UPDATE sessions
-                    SET current_node = ?, last_active_at = ?
+                    SET completed = 1, last_active_at = ?
                     WHERE id = ?
                     """,
-                    (next_node_id, now_iso, session_id),
+                    (now_iso, session_id),
+                )
+                await compute_and_save_session_progress(
+                    db, session_id, student_id, topic_entry_node
                 )
                 await db.commit()
-                return {
-                    **base_response,
-                    "next_node_id": next_node_id,
-                    "next_node_label": GRAPH[next_node_id]["label"],
-                    "topic_complete": False,
-                }
+                return {**base_response, "topic_complete": True}
 
+            next_node = await find_next_upward(
+                db, student_id, node_id, topic_entry_node
+            )
+            if next_node is None:
+                await db.execute(
+                    """
+                    UPDATE sessions
+                    SET completed = 1, last_active_at = ?
+                    WHERE id = ?
+                    """,
+                    (now_iso, session_id),
+                )
+                await compute_and_save_session_progress(
+                    db, session_id, student_id, topic_entry_node
+                )
+                await db.commit()
+                return {**base_response, "topic_complete": True}
+
+            await upsert_status(
+                db, student_id, next_node, "in_progress", "practice"
+            )
             await db.execute(
                 """
                 UPDATE sessions
-                SET completed = 1, last_active_at = ?
+                SET current_node = ?, last_active_at = ?
                 WHERE id = ?
                 """,
-                (now_iso, session_id),
+                (next_node, now_iso, session_id),
+            )
+            await compute_and_save_session_progress(
+                db, session_id, student_id, topic_entry_node
             )
             await db.commit()
             return {
                 **base_response,
-                "topic_complete": True,
+                "next_node_id": next_node,
+                "next_node_label": GRAPH[next_node]["label"],
+                "topic_complete": False,
             }
 
+        await upsert_status(
+            db, student_id, node_id, "unresolved", "practice"
+        )
+
+        round_start = (
+            min(row["attempted_at"] for row in attempt_rows)
+            if attempt_rows
+            else session_row["started_at"]
+        )
         cursor = await db.execute(
             """
             SELECT DISTINCT mapped_node_id
             FROM misconception_logs
-            WHERE practice_attempt_id = ?
+            WHERE session_id = ? AND logged_at >= ?
             """,
-            (batch_attempt_id,),
+            (session_id, round_start),
         )
         misconception_rows = await cursor.fetchall()
         misconception_nodes = [
@@ -203,13 +218,17 @@ async def decide_progression(
                 "node_label": GRAPH[row["mapped_node_id"]]["label"],
             }
             for row in misconception_rows
-            if row["mapped_node_id"] != node_id and row["mapped_node_id"] in GRAPH
+            if row["mapped_node_id"] != node_id
+            and row["mapped_node_id"] in GRAPH
         ]
 
         prereq = GRAPH[node_id]["prerequisite"]
         go_deeper_available = prereq is not None
         go_deeper_node = None
         if go_deeper_available:
+            await upsert_status(
+                db, student_id, prereq, "in_progress", "practice"
+            )
             go_deeper_node = {
                 "node_id": prereq,
                 "node_label": GRAPH[prereq]["label"],
@@ -218,6 +237,9 @@ async def decide_progression(
         await db.execute(
             "UPDATE sessions SET last_active_at = ? WHERE id = ?",
             (now_iso, session_id),
+        )
+        await compute_and_save_session_progress(
+            db, session_id, student_id, topic_entry_node
         )
         await db.commit()
 

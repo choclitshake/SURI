@@ -43,8 +43,10 @@ CREATE TABLE IF NOT EXISTS competency_status (
     id TEXT PRIMARY KEY,
     student_id TEXT NOT NULL REFERENCES students(id),
     node_id TEXT NOT NULL,
-    status TEXT NOT NULL CHECK(status IN ('weak', 'mastered')),
-    updated_at TEXT NOT NULL
+    status TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'practice',
+    updated_at TEXT NOT NULL,
+    UNIQUE(student_id, node_id)
 );
 
 CREATE TABLE IF NOT EXISTS content_records (
@@ -100,6 +102,73 @@ CREATE TABLE IF NOT EXISTS progression_logs (
 """
 
 
+async def _needs_competency_rebuild(db: aiosqlite.Connection) -> bool:
+    """True if legacy CHECK constraint blocks new status values."""
+    try:
+        await db.execute(
+            """
+            INSERT INTO competency_status
+            (id, student_id, node_id, status, source, updated_at)
+            VALUES ('__schema_test__', '__none__', '__none__', 'in_progress', 'practice', '1970-01-01')
+            """
+        )
+        await db.execute(
+            "DELETE FROM competency_status WHERE id = '__schema_test__'"
+        )
+        return False
+    except Exception:
+        return True
+
+
+async def _rebuild_competency_status_table(db: aiosqlite.Connection):
+    """Recreate competency_status with source column and new status values."""
+    await db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS competency_status_new (
+            id TEXT PRIMARY KEY,
+            student_id TEXT NOT NULL REFERENCES students(id),
+            node_id TEXT NOT NULL,
+            status TEXT NOT NULL,
+            source TEXT NOT NULL DEFAULT 'practice',
+            updated_at TEXT NOT NULL,
+            UNIQUE(student_id, node_id)
+        )
+        """
+    )
+    cursor = await db.execute(
+        "SELECT id, student_id, node_id, status, updated_at FROM competency_status"
+    )
+    rows = await cursor.fetchall()
+    for row in rows:
+        old_status = row["status"]
+        if old_status == "weak":
+            new_status, new_source = "unresolved", "diagnostic"
+        elif old_status == "mastered":
+            new_status, new_source = "mastered", "practice"
+        else:
+            new_status, new_source = old_status, "practice"
+        await db.execute(
+            """
+            INSERT OR IGNORE INTO competency_status_new
+            (id, student_id, node_id, status, source, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                row["id"],
+                row["student_id"],
+                row["node_id"],
+                new_status,
+                new_source,
+                row["updated_at"],
+            ),
+        )
+    await db.execute("DROP TABLE IF EXISTS competency_status")
+    await db.execute(
+        "ALTER TABLE competency_status_new RENAME TO competency_status"
+    )
+    await db.commit()
+
+
 async def get_db() -> aiosqlite.Connection:
     """Get an async database connection."""
     db = await aiosqlite.connect(DATABASE_URL)
@@ -111,6 +180,7 @@ async def get_db() -> aiosqlite.Connection:
 async def init_db():
     """Create all tables on startup."""
     db = await aiosqlite.connect(DATABASE_URL)
+    db.row_factory = aiosqlite.Row
     try:
         await db.executescript(_TABLES_SQL)
         await db.commit()
@@ -130,6 +200,18 @@ async def init_db():
             await db.commit()
         except Exception:
             pass  # column already exists
+
+        # Migration: competency_status source column and expanded status values
+        try:
+            await db.execute(
+                "ALTER TABLE competency_status ADD COLUMN source TEXT DEFAULT 'practice'"
+            )
+            await db.commit()
+        except Exception:
+            pass
+
+        if await _needs_competency_rebuild(db):
+            await _rebuild_competency_status_table(db)
 
         # Sentinel row for batch practice_attempt summaries (FK target for problem_id='batch')
         await db.execute(

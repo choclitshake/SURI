@@ -6,7 +6,7 @@ import {
   getSession,
   decideProgression,
   updateSession,
-  updateSessionProgress,
+  saveProgress,
   simplifyContent,
   ProgressionDecision,
   MisconceptionNode,
@@ -110,13 +110,8 @@ export default function ResultsPage() {
   const handleQuit = async () => {
     setActionLoading(true);
     try {
-      const session = await getSession(sessionId);
-      const pct = Math.max(
-        session.completion_percentage ?? 0,
-        (result?.mastery_score ?? 0) * 100
-      );
-      await updateSessionProgress(sessionId, { completion_percentage: pct });
-      router.push("/dashboard?saved=1");
+      await saveProgress(sessionId);
+      router.push("/dashboard?saved=true");
     } catch (err: unknown) {
       console.error(err);
       setErrorMsg("Failed to save progress. Please try again.");
