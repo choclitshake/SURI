@@ -149,10 +149,26 @@ class ProgressionDecideRequest(BaseModel):
     node_id: str
 
 
+class MisconceptionNode(BaseModel):
+    node_id: str
+    node_label: str
+
+
+class GoDeeperNode(BaseModel):
+    node_id: str
+    node_label: str
+
+
 class ProgressionDecideResponse(BaseModel):
     decision: str  # 'advance' or 'remediate'
-    next_node_id: Optional[str] = None
     mastery_score: float
+    passed_count: int
+    next_node_id: Optional[str] = None
+    next_node_label: Optional[str] = None
+    topic_complete: Optional[bool] = None
+    misconception_nodes: Optional[list[MisconceptionNode]] = None
+    go_deeper_available: Optional[bool] = None
+    go_deeper_node: Optional[GoDeeperNode] = None
 
 
 # ─── Student ──────────────────────────────────────────

@@ -173,3 +173,36 @@ def get_next_node_toward_entry(current_node_id: str, entry_node_id: str):
             return current
         current = prereq
     return None
+
+
+def node_leads_to_entry(node_id: str, entry_node_id: str) -> bool:
+    """True if entry_node_id is reachable from node_id by following dependents."""
+    if node_id == entry_node_id:
+        return True
+    for dependent_id in GRAPH[node_id]["dependents"]:
+        if node_leads_to_entry(dependent_id, entry_node_id):
+            return True
+    return False
+
+
+def find_next_node_toward_entry(current_node_id: str, entry_node_id: str):
+    """
+    Return the dependent of current_node_id on the path toward entry_node_id,
+    or None if current is already the entry node or no valid dependent exists.
+    """
+    if current_node_id == entry_node_id:
+        return None
+
+    candidates = [
+        dep_id
+        for dep_id in GRAPH[current_node_id]["dependents"]
+        if node_leads_to_entry(dep_id, entry_node_id)
+    ]
+    if not candidates:
+        return None
+
+    entry_chains = set(GRAPH[entry_node_id]["chains"])
+    for dep_id in candidates:
+        if entry_chains.intersection(GRAPH[dep_id]["chains"]):
+            return dep_id
+    return candidates[0]
