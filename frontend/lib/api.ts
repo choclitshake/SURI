@@ -276,6 +276,12 @@ export function getMe(): Promise<MeResponse> {
   return request<MeResponse>("/api/auth/me");
 }
 
+export function logout(): Promise<{ message: string }> {
+  return request<{ message: string }>("/api/auth/logout", {
+    method: "POST",
+  });
+}
+
 // ─── Topics ──────────────────────────────────────────
 
 export function getTopics(): Promise<TopicInfo[]> {

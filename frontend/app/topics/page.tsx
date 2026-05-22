@@ -54,9 +54,17 @@ export default function TopicsPage() {
 
   return (
     <div className="min-h-screen bg-white text-black font-sans p-8 max-w-4xl mx-auto">
-      <header className="border-b border-black pb-4 mb-8">
-        <h1 className="text-3xl font-mono uppercase tracking-wider">SURI — Mathematics</h1>
-        <p className="text-sm mt-1 text-gray-600 font-mono">Available Learning Tracks</p>
+      <header className="border-b border-black pb-4 mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-mono uppercase tracking-wider">SURI — Mathematics</h1>
+          <p className="text-sm mt-1 text-gray-600 font-mono">Available Learning Tracks</p>
+        </div>
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="border border-black py-2 px-4 text-xs font-mono uppercase hover:bg-black hover:text-white cursor-pointer"
+        >
+          Go Back to Dashboard
+        </button>
       </header>
 
       {error && (

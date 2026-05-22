@@ -52,8 +52,8 @@ export default function LessonPage() {
     router.push(`/session/${sessionId}/practice`);
   };
 
-  const handleBackToTopics = () => {
-    router.push("/topics");
+  const handleExit = () => {
+    router.push("/dashboard");
   };
 
   if (errorType === "no_content") {
@@ -64,10 +64,10 @@ export default function LessonPage() {
             Content unavailable
           </h2>
           <button
-            onClick={handleBackToTopics}
+            onClick={handleExit}
             className="border border-black py-3 px-6 text-sm font-mono uppercase transition-all bg-white hover:bg-black hover:text-white cursor-pointer font-bold"
           >
-            Back
+            Exit
           </button>
         </div>
       </div>
@@ -90,10 +90,10 @@ export default function LessonPage() {
               Retry
             </button>
             <button
-              onClick={handleBackToTopics}
+              onClick={handleExit}
               className="border border-black py-3 px-6 text-sm font-mono uppercase transition-all bg-white hover:bg-black hover:text-white cursor-pointer font-bold"
             >
-              Back
+              Exit
             </button>
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function LessonPage() {
             </p>
           </div>
           <button
-            onClick={handleBackToTopics}
+            onClick={handleExit}
             className="border border-black py-1.5 px-3 text-xs font-mono uppercase transition-all bg-white hover:bg-black hover:text-white cursor-pointer font-bold"
           >
             Exit
