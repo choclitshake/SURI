@@ -100,6 +100,18 @@ async def login(body: LoginRequest):
         await db.close()
 
 
+@router.post("/logout")
+async def logout():
+    """Log out by clearing the access_token cookie."""
+    response = JSONResponse(content={"message": "Logged out successfully"})
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        samesite="lax",
+    )
+    return response
+
+
 @router.get("/me")
 async def get_me(student=Depends(get_current_student)):
     """Return the authenticated student from the JWT cookie."""

@@ -9,6 +9,7 @@ import {
   createSession,
   ActiveSessionProgress,
   MisconceptionHistoryItem,
+  logout,
 } from "../../lib/api";
 
 function formatDate(iso: string): string {
@@ -88,6 +89,15 @@ function DashboardContent() {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await logout();
+      router.push("/login");
+    } catch {
+      setErrorMsg("Failed to sign out.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white text-black font-sans flex items-center justify-center p-8">
@@ -110,10 +120,16 @@ function DashboardContent() {
         </div>
       )}
 
-      <header className="border-b border-black pb-4 mb-8">
+      <header className="border-b border-black pb-4 mb-8 flex justify-between items-end">
         <h1 className="text-2xl font-mono font-bold uppercase">
           {name}&apos;s Dashboard
         </h1>
+        <button
+          onClick={handleSignOut}
+          className="border border-black py-1 px-3 text-xs font-mono uppercase hover:bg-black hover:text-white cursor-pointer"
+        >
+          Sign Out
+        </button>
       </header>
 
       <section className="mb-10">
