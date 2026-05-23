@@ -292,6 +292,12 @@ export default function PracticePage() {
   const problem = problems[currentProblemIdx];
   const submissionResult = submittedResults[currentProblemIdx];
 
+  const requiresTextInput = (val: string) => {
+    // Strip latex commands (e.g., \sqrt, \frac) before checking for actual words
+    const withoutLatex = val.replace(/\\[a-zA-Z]+/g, "");
+    return /[a-zA-Z]{2,}/.test(withoutLatex) || withoutLatex.includes(",");
+  };
+
   return (
     <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
       <div className="max-w-3xl mx-auto space-y-6">
@@ -364,18 +370,20 @@ export default function PracticePage() {
 
               const isCorrect = stepResult?.correct;
               const hasSubmitted = !!submissionResult;
-              
+
               const exprParts = step.blank_expression.split("___");
               const beforeBlank = exprParts[0];
               const afterBlank = exprParts[1] || "";
 
-              const isMisconceptionStep = 
-                submissionResult?.misconception_found && 
+              const isMisconceptionStep =
+                submissionResult?.misconception_found &&
                 submissionResult?.misconception_step_index === step.step_index;
 
-              let borderClass = "border-slate-200";
+              const isTextStep = requiresTextInput(step.correct_value);
+
+              let borderClass = "border-slate-200 hover:border-[#001a54]/30";
               let bgClass = "bg-white";
-              let accentClass = "bg-slate-300";
+              let accentClass = "bg-[#fdd400] shadow-[0_0_6px_rgba(253,212,0,0.5)]";
 
               if (hasSubmitted) {
                 if (isCorrect) {
@@ -391,20 +399,19 @@ export default function PracticePage() {
                   bgClass = "bg-slate-50/40";
                   accentClass = "bg-slate-400";
                 }
-              } else {
-                borderClass = "border-slate-200 hover:border-[#001a54]/30";
-                accentClass = "bg-[#fdd400] shadow-[0_0_6px_rgba(253,212,0,0.5)]";
               }
 
+              const formatMathValue = (val: string) =>
+                val.startsWith("$") || !val.match(/[x^+\-*\/=]/) ? val : `$${val}$`;
+
               return (
-                <div 
-                  key={step.step_index} 
+                <div
+                  key={step.step_index}
                   className={`border rounded-2xl p-5 md:p-6 transition-all duration-300 relative overflow-hidden flex gap-4 ${borderClass} ${bgClass}`}
                 >
                   <div className={`w-1 h-12 rounded-full self-center shrink-0 ${accentClass} transition-all duration-300`} />
 
                   <div className="flex-1 space-y-3">
-                    {/* Step Header */}
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-bold text-[#001a54]">Step {idx + 1}</span>
@@ -416,7 +423,7 @@ export default function PracticePage() {
                           {step.step_type === "variable_identification" ? "Concept Setup" : "Algebraic Step"}
                         </span>
                       </div>
-                      
+
                       {hasSubmitted && (
                         <span className={`font-mono text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
                           isCorrect ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
@@ -426,70 +433,87 @@ export default function PracticePage() {
                       )}
                     </div>
 
-                    {/* Instruction */}
                     <div className="text-slate-700 text-sm md:text-base font-semibold leading-relaxed markdown-content">
                       <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                         {step.instruction}
                       </ReactMarkdown>
                     </div>
 
-                    {/* Fill in the blank section */}
                     <div className="font-mono text-sm md:text-base flex flex-wrap items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3">
-                      <ReactMarkdown 
-                        remarkPlugins={[remarkMath]} 
+                      <ReactMarkdown
+                        remarkPlugins={[remarkMath]}
                         rehypePlugins={[rehypeKatex]}
-                        components={{ p: ({node, ...props}) => <span {...props} /> }}
+                        components={{ p: ({ node, ...props }) => <span {...props} /> }}
                       >
                         {beforeBlank}
                       </ReactMarkdown>
-                      
+
                       {!hasSubmitted ? (
-                        <div className="w-64 max-w-full">
-                          <MathField
+                        isTextStep ? (
+                          <input
+                            type="text"
                             value={inputs[step.step_index] || ""}
-                            onChange={(value) =>
-                              handleInputChange(step.step_index, value)
-                            }
+                            onChange={(e) => handleInputChange(step.step_index, e.target.value)}
                             disabled={isSubmitting}
+                            placeholder="..."
+                            className="border-b-2 border-[#001a54] bg-white px-2 py-1 text-center font-mono focus:outline-none focus:border-slate-400 w-64 max-w-full transition-all text-sm rounded"
                           />
-                        </div>
+                        ) : (
+                          <div className="w-64 max-w-full">
+                            <MathField
+                              value={inputs[step.step_index] || ""}
+                              onChange={(value) => handleInputChange(step.step_index, value)}
+                              disabled={isSubmitting}
+                            />
+                          </div>
+                        )
                       ) : (
                         <span className={`font-bold px-2 py-1 rounded-lg border text-sm md:text-base ${
-                          isCorrect 
+                          isCorrect
                             ? "border-green-200 text-green-700 bg-green-50"
                             : "border-red-200 text-red-700 bg-red-50"
                         }`}>
-                          {stepResult?.submitted_value || "—"}
+                          {stepResult?.submitted_value ? (
+                            <ReactMarkdown
+                              remarkPlugins={[remarkMath]}
+                              rehypePlugins={[rehypeKatex]}
+                              components={{ p: ({ node, ...props }) => <span {...props} /> }}
+                            >
+                              {isTextStep
+                                ? stepResult.submitted_value
+                                : formatMathValue(stepResult.submitted_value)}
+                            </ReactMarkdown>
+                          ) : (
+                            "—"
+                          )}
                         </span>
                       )}
 
-                      <ReactMarkdown 
-                        remarkPlugins={[remarkMath]} 
+                      <ReactMarkdown
+                        remarkPlugins={[remarkMath]}
                         rehypePlugins={[rehypeKatex]}
-                        components={{ p: ({node, ...props}) => <span {...props} /> }}
+                        components={{ p: ({ node, ...props }) => <span {...props} /> }}
                       >
                         {afterBlank}
                       </ReactMarkdown>
                     </div>
 
-                    {/* If submitted & incorrect, reveal correct value */}
                     {hasSubmitted && !isCorrect && (
                       <p className="text-[10px] font-mono text-slate-500 flex items-center gap-1.5 mt-2">
-                        Expected Formulation: 
+                        Expected Formulation:
                         <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                          <ReactMarkdown 
-                            remarkPlugins={[remarkMath]} 
+                          <ReactMarkdown
+                            remarkPlugins={[remarkMath]}
                             rehypePlugins={[rehypeKatex]}
-                            components={{ p: ({node, ...props}) => <span {...props} /> }}
+                            components={{ p: ({ node, ...props }) => <span {...props} /> }}
                           >
-                            {step.correct_value.startsWith("$") || !step.correct_value.match(/[x^+\-*\/=]/) ? step.correct_value : `$${step.correct_value}$`}
+                            {formatMathValue(step.correct_value)}
                           </ReactMarkdown>
                         </span>
                       </p>
                     )}
 
-                    {/* Misconception AI tutor alert */}
-                    {isMisconceptionStep && submissionResult.feedback_text && (
+                    {isMisconceptionStep && submissionResult?.feedback_text && (
                       <div className="border-l-4 border-red-500 bg-red-50/50 rounded-r-xl p-4 mt-4 text-red-950">
                         <p className="text-[9px] font-mono uppercase tracking-widest font-extrabold text-red-700 mb-1">
                           Tutor Feedback
