@@ -10,7 +10,10 @@ import {
   PracticeSubmitStepResponse,
   StepEvaluationResult
 } from "../../../../lib/api";
-
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 export default function PracticePage() {
   const router = useRouter();
   const params = useParams();
@@ -245,16 +248,22 @@ export default function PracticePage() {
             <span className="absolute -top-3 left-4 bg-white border border-black px-2 py-0.5 text-[10px] font-mono uppercase font-bold">
               Real-World Scenario
             </span>
-            <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-line mt-1">
-              {problem.word_problem_text}
-            </p>
+            <div className="text-gray-800 text-sm leading-relaxed mt-1 markdown-content">
+              <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                {problem.word_problem_text}
+              </ReactMarkdown>
+            </div>
           </section>
         )}
 
         {/* Expression Section */}
         <div className="border border-black p-4 text-center font-mono">
           <p className="text-xs text-gray-400 uppercase tracking-widest">Target Expression</p>
-          <p className="text-2xl font-bold mt-1 tracking-wide">{problem.problem_expr}</p>
+          <div className="text-2xl font-bold mt-1 tracking-wide flex justify-center markdown-content">
+            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+              {problem.problem_expr.startsWith("$") ? problem.problem_expr : `$${problem.problem_expr}$`}
+            </ReactMarkdown>
+          </div>
         </div>
 
         {/* Scaffold Steps */}
@@ -317,11 +326,21 @@ export default function PracticePage() {
                 </div>
 
                 {/* Instruction */}
-                <p className="text-gray-700 text-sm font-sans mb-3">{step.instruction}</p>
+                <div className="text-gray-700 text-sm font-sans mb-3 markdown-content">
+                  <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                    {step.instruction}
+                  </ReactMarkdown>
+                </div>
 
                 {/* Fill in the blank section */}
                 <div className="font-mono text-base flex flex-wrap items-center gap-2 bg-gray-50/50 p-2.5 border border-dashed border-gray-300">
-                  <span>{beforeBlank}</span>
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkMath]} 
+                    rehypePlugins={[rehypeKatex]}
+                    components={{ p: ({node, ...props}) => <span {...props} /> }}
+                  >
+                    {beforeBlank}
+                  </ReactMarkdown>
                   
                   {!hasSubmitted ? (
                     <input
@@ -342,13 +361,27 @@ export default function PracticePage() {
                     </span>
                   )}
 
-                  <span>{afterBlank}</span>
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkMath]} 
+                    rehypePlugins={[rehypeKatex]}
+                    components={{ p: ({node, ...props}) => <span {...props} /> }}
+                  >
+                    {afterBlank}
+                  </ReactMarkdown>
                 </div>
 
                 {/* If submitted & incorrect, reveal correct value */}
                 {hasSubmitted && !isCorrect && (
-                  <p className="mt-2 text-xs font-mono text-gray-500">
-                    Expected: <span className="font-bold text-gray-800 bg-gray-100 px-1.5 py-0.5 border border-gray-300">{step.correct_value}</span>
+                  <p className="mt-2 text-xs font-mono text-gray-500 flex items-center gap-1">
+                    Expected: <span className="font-bold text-gray-800 bg-gray-100 px-1.5 py-0.5 border border-gray-300">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkMath]} 
+                        rehypePlugins={[rehypeKatex]}
+                        components={{ p: ({node, ...props}) => <span {...props} /> }}
+                      >
+                        {step.correct_value.startsWith("$") || !step.correct_value.match(/[x^+\-*\/=]/) ? step.correct_value : `$${step.correct_value}$`}
+                      </ReactMarkdown>
+                    </span>
                   </p>
                 )}
 
@@ -358,9 +391,11 @@ export default function PracticePage() {
                     <p className="text-[10px] font-mono uppercase tracking-widest font-bold text-red-700 mb-1">
                       Tutor Feedback
                     </p>
-                    <p className="text-xs font-sans italic leading-relaxed">
-                      "{submissionResult.feedback_text}"
-                    </p>
+                    <div className="text-xs font-sans italic leading-relaxed markdown-content">
+                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                        {submissionResult.feedback_text}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 )}
               </div>
