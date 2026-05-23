@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.database import init_db
+from backend.database import init_pool, close_pool
 from backend.routes.auth_routes import router as auth_router
 from backend.routes.session_routes import router as session_router
 from backend.routes.diagnostic_routes import router as diagnostic_router
@@ -23,9 +23,10 @@ from backend.routes.graph_routes import router as graph_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Run database initialization on startup."""
-    await init_db()
+    """Initialize the database pool on startup and close it on shutdown."""
+    await init_pool()
     yield
+    await close_pool()
 
 
 app = FastAPI(

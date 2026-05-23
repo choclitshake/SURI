@@ -22,51 +22,53 @@ def get_chain(entry_node_id: str) -> list[str]:
 
 
 async def upsert_status(
-    db,
+    conn,
     student_id: str,
     node_id: str,
     status: str,
     source: str,
 ):
     """Upsert a single competency_status record."""
-    cursor = await db.execute(
+    existing = await conn.fetchrow(
         """
         SELECT id FROM competency_status
-        WHERE student_id = ? AND node_id = ?
+        WHERE student_id = $1 AND node_id = $2
         """,
-        (student_id, node_id),
+        student_id, node_id,
     )
-    existing = await cursor.fetchone()
     record_id = existing["id"] if existing else str(uuid.uuid4())
     now_iso = datetime.now(timezone.utc).isoformat()
 
-    await db.execute(
+    await conn.execute(
         """
-        INSERT OR REPLACE INTO competency_status
-        (id, student_id, node_id, status, source, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO competency_status (id, student_id, node_id, status, source, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        ON CONFLICT (student_id, node_id) DO UPDATE SET
+            id = EXCLUDED.id,
+            status = EXCLUDED.status,
+            source = EXCLUDED.source,
+            updated_at = EXCLUDED.updated_at
         """,
-        (record_id, student_id, node_id, status, source, now_iso),
+        record_id, student_id, node_id, status, source, now_iso,
     )
 
 
-async def get_status(db, student_id: str, node_id: str) -> dict | None:
+async def get_status(conn, student_id: str, node_id: str) -> dict | None:
     """Return { status, source } for a student+node, or None."""
-    cursor = await db.execute(
+    row = await conn.fetchrow(
         """
         SELECT status, source FROM competency_status
-        WHERE student_id = ? AND node_id = ?
+        WHERE student_id = $1 AND node_id = $2
         """,
-        (student_id, node_id),
+        student_id, node_id,
     )
-    row = await cursor.fetchone()
     if row:
         return {"status": row["status"], "source": row["source"]}
     return None
 
 
 async def mark_prerequisites_mastered(
-    db, student_id: str, passed_node_id: str, entry_node_id: str
+    conn, student_id: str, passed_node_id: str, entry_node_id: str
 ):
     """
     Mark prerequisite nodes below passed_node_id as mastered (implied).
@@ -76,19 +78,19 @@ async def mark_prerequisites_mastered(
     if passed_node_id not in chain:
         return
     passed_index = chain.index(passed_node_id)
-    for node_id in chain[passed_index + 1 :]:
-        existing = await get_status(db, student_id, node_id)
+    for node_id in chain[passed_index + 1:]:
+        existing = await get_status(conn, student_id, node_id)
         if (
             existing
             and existing["status"] == "mastered"
             and existing["source"] in _PRACTICE_MASTERED
         ):
             continue
-        await upsert_status(db, student_id, node_id, "mastered", "implied")
+        await upsert_status(conn, student_id, node_id, "mastered", "implied")
 
 
 async def find_next_upward(
-    db, student_id: str, current_node_id: str, entry_node_id: str
+    conn, student_id: str, current_node_id: str, entry_node_id: str
 ) -> str | None:
     """
     First node toward entry (lower index) that is not yet mastered.
@@ -99,7 +101,7 @@ async def find_next_upward(
         return None
     current_index = chain.index(current_node_id)
     for i in range(current_index - 1, -1, -1):
-        existing = await get_status(db, student_id, chain[i])
+        existing = await get_status(conn, student_id, chain[i])
         if not existing or existing["status"] != "mastered":
             return chain[i]
     return None

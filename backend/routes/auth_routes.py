@@ -14,7 +14,7 @@ from backend.auth import (
     create_access_token,
     get_current_student,
 )
-from backend.database import get_db
+from backend.database import get_db, release_db
 from backend.models.schemas import RegisterRequest, LoginRequest, AuthResponse
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -23,11 +23,12 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 @router.post("/register", response_model=AuthResponse)
 async def register(body: RegisterRequest):
     """Register a new student account."""
-    db = await get_db()
+    conn = await get_db()
     try:
         # Check if name already exists
-        cursor = await db.execute("SELECT id FROM students WHERE name = ?", (body.name,))
-        existing = await cursor.fetchone()
+        existing = await conn.fetchrow(
+            "SELECT id FROM students WHERE name = $1", body.name
+        )
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -38,11 +39,10 @@ async def register(body: RegisterRequest):
         password_hash = hash_password(body.password)
         created_at = datetime.now(timezone.utc).isoformat()
 
-        await db.execute(
-            "INSERT INTO students (id, name, grade_level, password_hash, created_at) VALUES (?, ?, ?, ?, ?)",
-            (student_id, body.name, body.grade_level, password_hash, created_at),
+        await conn.execute(
+            "INSERT INTO students (id, name, grade_level, password_hash, created_at) VALUES ($1, $2, $3, $4, $5)",
+            student_id, body.name, body.grade_level, password_hash, created_at,
         )
-        await db.commit()
 
         token = create_access_token(student_id, body.name)
 
@@ -59,16 +59,17 @@ async def register(body: RegisterRequest):
         )
         return response
     finally:
-        await db.close()
+        await release_db(conn)
 
 
 @router.post("/login", response_model=AuthResponse)
 async def login(body: LoginRequest):
     """Log in with name and password."""
-    db = await get_db()
+    conn = await get_db()
     try:
-        cursor = await db.execute("SELECT * FROM students WHERE name = ?", (body.name,))
-        student = await cursor.fetchone()
+        student = await conn.fetchrow(
+            "SELECT * FROM students WHERE name = $1", body.name
+        )
 
         if not student:
             raise HTTPException(
@@ -97,7 +98,7 @@ async def login(body: LoginRequest):
         )
         return response
     finally:
-        await db.close()
+        await release_db(conn)
 
 
 @router.post("/logout")

@@ -4,7 +4,7 @@ Student and topic routes.
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from backend.auth import get_current_student
-from backend.database import get_db
+from backend.database import get_db, release_db
 from backend.graph import GRAPH, ENTRY_NODES
 from backend.competency_utils import get_chain
 
@@ -58,17 +58,16 @@ async def get_student_progress(
             detail="Cannot view another student's progress",
         )
 
-    db = await get_db()
+    conn = await get_db()
     try:
-        cursor = await db.execute(
+        session_rows = await conn.fetch(
             """
             SELECT * FROM sessions
-            WHERE student_id = ?
+            WHERE student_id = $1
             ORDER BY last_active_at DESC
             """,
-            (student_id,),
+            student_id,
         )
-        session_rows = await cursor.fetchall()
         active_sessions = []
         completed_sessions = []
 
@@ -79,15 +78,13 @@ async def get_student_progress(
             total_in_chain = len(chain)
 
             if chain:
-                placeholders = ",".join("?" * len(chain))
-                cursor = await db.execute(
-                    f"""
+                status_rows = await conn.fetch(
+                    """
                     SELECT node_id, status, source FROM competency_status
-                    WHERE student_id = ? AND node_id IN ({placeholders})
+                    WHERE student_id = $1 AND node_id = ANY($2)
                     """,
-                    [student_id, *chain],
+                    student_id, chain,
                 )
-                status_rows = await cursor.fetchall()
             else:
                 status_rows = []
 
@@ -135,7 +132,7 @@ async def get_student_progress(
                 "unresolved_nodes": unresolved_nodes,
                 "completion_percentage": completion_percentage,
             })
-            
+
             if session_row["completed"] == 1:
                 session_dict["completed_at"] = session_row["last_active_at"]
                 completed_sessions.append(session_dict)
@@ -145,18 +142,17 @@ async def get_student_progress(
         session_ids = [s["id"] for s in active_sessions] + [s["id"] for s in completed_sessions]
         misconception_history = []
         if session_ids:
-            placeholders = ",".join("?" * len(session_ids))
-            cursor = await db.execute(
-                f"""
+            misc_rows = await conn.fetch(
+                """
                 SELECT mapped_node_id, step_description, logged_at
                 FROM misconception_logs
-                WHERE session_id IN ({placeholders})
+                WHERE session_id = ANY($1)
                 ORDER BY logged_at DESC
                 LIMIT 20
                 """,
                 session_ids,
             )
-            for row in await cursor.fetchall():
+            for row in misc_rows:
                 mapped = row["mapped_node_id"]
                 if mapped not in GRAPH:
                     continue
@@ -173,4 +169,4 @@ async def get_student_progress(
             "misconception_history": misconception_history,
         }
     finally:
-        await db.close()
+        await release_db(conn)

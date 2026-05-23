@@ -11,7 +11,7 @@ import bcrypt
 from fastapi import Depends, HTTPException, Request, status
 from jose import JWTError, jwt
 
-from backend.database import get_db
+from backend.database import get_db, release_db
 
 JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-in-production")
 JWT_ALGORITHM = "HS256"
@@ -72,12 +72,13 @@ async def get_current_student(request: Request):
             detail="Invalid token payload",
         )
 
-    db = await get_db()
+    conn = await get_db()
     try:
-        cursor = await db.execute("SELECT * FROM students WHERE id = ?", (student_id,))
-        student = await cursor.fetchone()
+        student = await conn.fetchrow(
+            "SELECT * FROM students WHERE id = $1", student_id
+        )
     finally:
-        await db.close()
+        await release_db(conn)
 
     if not student:
         raise HTTPException(
