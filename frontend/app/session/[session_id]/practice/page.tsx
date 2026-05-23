@@ -280,6 +280,12 @@ export default function PracticePage() {
   const problem = problems[currentProblemIdx];
   const submissionResult = submittedResults[currentProblemIdx];
 
+  const requiresTextInput = (val: string) => {
+    // Strip latex commands (e.g., \sqrt, \frac) before checking for actual words
+    const withoutLatex = val.replace(/\\[a-zA-Z]+/g, "");
+    return /[a-zA-Z]{2,}/.test(withoutLatex) || withoutLatex.includes(",");
+  };
+
   return (
     <div className="min-h-screen bg-white text-black font-sans p-6 sm:p-8 max-w-3xl mx-auto">
       <header className="border-b border-black pb-4 mb-8">
@@ -349,6 +355,8 @@ export default function PracticePage() {
             const isMisconceptionStep = 
               submissionResult?.misconception_found && 
               submissionResult?.misconception_step_index === step.step_index;
+              
+            const isTextStep = requiresTextInput(step.correct_value);
 
             return (
               <div 
@@ -368,11 +376,11 @@ export default function PracticePage() {
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm font-bold">Step {idx + 1}</span>
                     <span className={`text-[10px] font-mono uppercase px-2 py-0.5 border ${
-                      step.step_type === "variable_identification"
+                      step.step_type === "variable_identification" || step.step_type === "variable_id"
                         ? "border-blue-600 text-blue-700 bg-blue-50/50"
                         : "border-purple-600 text-purple-700 bg-purple-50/50"
                     }`}>
-                      {step.step_type === "variable_identification" ? "Concept Setup" : "Algebraic Step"}
+                      {step.step_type === "variable_identification" || step.step_type === "variable_id" ? "Concept Setup" : "Algebraic Step"}
                     </span>
                   </div>
                   
@@ -403,22 +411,41 @@ export default function PracticePage() {
                   </ReactMarkdown>
                   
                   {!hasSubmitted ? (
-                   <div className="w-64">
-                    <MathField
-                      value={inputs[step.step_index] || ""}
-                      onChange={(value) =>
-                        handleInputChange(step.step_index, value)
-                      }
-                      disabled={isSubmitting}
-                    />
-                  </div>
+                    isTextStep ? (
+                      <input
+                        type="text"
+                        value={inputs[step.step_index] || ""}
+                        onChange={(e) => handleInputChange(step.step_index, e.target.value)}
+                        disabled={isSubmitting}
+                        placeholder="..."
+                        className="border-b-2 border-black bg-white px-2 py-1 text-center font-mono focus:outline-none focus:border-gray-500 w-64 transition-all text-sm"
+                      />
+                    ) : (
+                      <div className="w-64">
+                        <MathField
+                          value={inputs[step.step_index] || ""}
+                          onChange={(value) =>
+                            handleInputChange(step.step_index, value)
+                          }
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    )
                   ) : (
                     <span className={`font-bold px-2 py-0.5 border-b-2 ${
                       isCorrect 
                         ? "border-green-600 text-green-700 bg-green-50"
                         : "border-red-600 text-red-700 bg-red-50"
                     }`}>
-                      {stepResult?.submitted_value || "—"}
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkMath]} 
+                        rehypePlugins={[rehypeKatex]}
+                        components={{ p: ({node, ...props}) => <span {...props} /> }}
+                      >
+                        {stepResult?.submitted_value
+                          ? (!isTextStep ? `$${stepResult.submitted_value}$` : stepResult.submitted_value)
+                          : "—"}
+                      </ReactMarkdown>
                     </span>
                   )}
 
