@@ -51,7 +51,7 @@ export default function MainPage({ children }: MainPageProps) {
         </aside>
 
         <aside className={`${sidebarWidth} bg-[#001a54] rounded-[18px] flex flex-col py-3 shadow-[0_10px_28px_rgba(0,26,84,0.25)] transition-all duration-300 flex-1 ${collapsed ? "items-center justify-center" : "items-start justify-center"}`}>
-          <nav className={`flex flex-col gap-[25px] ${collapsed ? "items-center" : "items-start w-full px-3"}`}>
+          <nav className={`flex flex-col gap-4 ${collapsed ? "items-center" : "items-start w-full px-3"}`}>
             {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
               const isActive = href ? pathname === href || (href !== "/" && pathname.startsWith(href)) : false;
               return href ? (
@@ -60,7 +60,7 @@ export default function MainPage({ children }: MainPageProps) {
                   onClick={() => router.push(href)}
                   className={`flex items-center gap-3 rounded-[14px] transition-all duration-200 cursor-pointer ${
                     isActive ? "bg-yellow-400 text-[#001a54]" : "text-white/60 hover:bg-yellow-400/20 hover:text-yellow-200"
-                  } ${collapsed ? "w-10 h-10 justify-center" : "w-full h-10 px-3"}`}
+                  } ${collapsed ? "w-12 h-12 justify-center" : "w-full h-12 px-3"}`}
                 >
                   <Icon className="w-6 h-6 shrink-0" />
                   {!collapsed && <span className="text-sm font-medium whitespace-nowrap">{label}</span>}
@@ -68,7 +68,7 @@ export default function MainPage({ children }: MainPageProps) {
               ) : (
                 <span
                   key={label}
-                  className={`flex items-center gap-3 rounded-[14px] text-white/60 transition-all duration-200 ${collapsed ? "w-10 h-10 justify-center" : "w-full h-10 px-3"}`}
+                  className={`flex items-center gap-3 rounded-[14px] text-white/60 transition-all duration-200 ${collapsed ? "w-12 h-12 justify-center" : "w-full h-12 px-3"}`}
                 >
                   <Icon className="w-6 h-6 shrink-0" />
                   {!collapsed && <span className="text-sm font-medium whitespace-nowrap">{label}</span>}
@@ -77,7 +77,7 @@ export default function MainPage({ children }: MainPageProps) {
             })}
             <button
               onClick={() => setCollapsed((v) => !v)}
-              className={`flex items-center gap-3 rounded-[14px] text-white/60 hover:text-white hover:bg-white/20 transition-all duration-200 ${collapsed ? "w-10 h-10 justify-center" : "w-full h-10 px-3"}`}
+              className={`flex items-center gap-3 rounded-[14px] text-white/60 hover:text-white hover:bg-white/20 transition-all duration-200 ${collapsed ? "w-12 h-12 justify-center" : "w-full h-12 px-3"}`}
             >
               <ChevronRight className={`w-6 h-6 shrink-0 transition-transform duration-300 ${collapsed ? "" : "rotate-180"}`} />
               {!collapsed && <span className="text-sm font-medium whitespace-nowrap">Collapse</span>}
@@ -89,7 +89,7 @@ export default function MainPage({ children }: MainPageProps) {
           <button
             onClick={handleLogout}
             title="Logout"
-            className={`flex items-center gap-3 rounded-[12px] text-white ${collapsed ? "w-10 h-10 justify-center" : "w-full h-10 px-3 justify-start"}`}
+            className={`flex items-center gap-3 rounded-[12px] text-white ${collapsed ? "w-12 h-12 justify-center" : "w-full h-12 px-3 justify-start"}`}
           >
             <LogOut className="w-6 h-6 shrink-0" />
             {!collapsed && <span className="text-sm font-medium whitespace-nowrap">Logout</span>}
