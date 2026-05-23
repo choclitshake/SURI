@@ -12,6 +12,10 @@ import {
 
 import { useEffect, useRef, useState } from "react";
 import "mathlive";
+if (typeof customElements !== "undefined") {
+  const MFE = customElements.get("math-field");
+  if (MFE) MFE.fontsDirectory = "https://cdn.jsdelivr.net/npm/mathlive@0.109.2/fonts";
+}
 import MainPage from "@/components/mainpage";
 import React from "react";
 
@@ -117,6 +121,7 @@ function MathField({
   return React.createElement("math-field", {
     ref: mathFieldRef,
     disabled,
+    suppressHydrationWarning: true,
     "virtual-keyboard-mode": "onfocus",
     "virtual-keyboards": "all",
     style: {
