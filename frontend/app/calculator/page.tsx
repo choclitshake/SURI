@@ -10,8 +10,10 @@ import {
   X,
 } from "lucide-react";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import "mathlive";
 import MainPage from "@/components/mainpage";
+import React from "react";
 
 // ── Types ─────────────────────────────────────────────────────────
 
@@ -47,6 +49,89 @@ function formatChangeType(raw: string): string {
     .replace(/^\w/, (c) => c.toUpperCase());
 }
 
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      "math-field": any;
+    }
+  }
+}
+
+type MathFieldProps = {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  onEnter?: () => void;
+};
+
+function MathField({
+  value,
+  onChange,
+  disabled = false,
+  onEnter,
+}: MathFieldProps) {
+  const mathFieldRef = useRef<any>(null);
+
+  // Update math-field value when prop changes
+  useEffect(() => {
+    if (mathFieldRef.current && mathFieldRef.current.value !== value) {
+      mathFieldRef.current.value = value;
+    }
+  }, [value]);
+
+  // Set up event listeners
+  useEffect(() => {
+    const mf = mathFieldRef.current;
+    if (!mf) return;
+
+    const handleInput = () => {
+      onChange(mf.getValue("ascii-math"));
+    };
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        e.stopPropagation();
+        onEnter?.();
+      }
+    };
+
+    mf.addEventListener("input", handleInput);
+    mf.addEventListener("keydown", handleKey);
+
+    return () => {
+      mf.removeEventListener("input", handleInput);
+      mf.removeEventListener("keydown", handleKey);
+    };
+  }, [onChange, onEnter]);
+
+  // Focus management when field becomes active
+  useEffect(() => {
+    if (!disabled && mathFieldRef.current) {
+      setTimeout(() => {
+        mathFieldRef.current?.focus();
+      }, 100);
+    }
+  }, [disabled]);
+
+  return React.createElement("math-field", {
+    ref: mathFieldRef,
+    disabled,
+    "virtual-keyboard-mode": "onfocus",
+    "virtual-keyboards": "all",
+    style: {
+      width: "100%",
+      minWidth: "180px",
+      minHeight: "48px",
+      padding: "8px",
+      border: "2px solid black",
+      background: disabled ? "#f5f5f5" : "white",
+      fontSize: "1.1rem",
+      outline: "none",
+    },
+  });
+}
+
 // ── Component ─────────────────────────────────────────────────────
 
 export default function PracticePage() {
@@ -62,7 +147,7 @@ export default function PracticePage() {
 
   const [submitted, setSubmitted] = useState(false);
 
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const mathFieldRefs = useRef<any[]>([]);
 
   // ── Fetch steps ────────────────────────────────────────────────
 
@@ -111,8 +196,13 @@ export default function PracticePage() {
         }))
       );
 
+      // Reset refs array
+      mathFieldRefs.current = [];
+
       setTimeout(() => {
-        inputRefs.current[0]?.focus();
+        if (mathFieldRefs.current[0]) {
+          mathFieldRefs.current[0].focus();
+        }
       }, 100);
     } catch {
       setError(
@@ -127,10 +217,12 @@ export default function PracticePage() {
 
   function checkStep(index: number) {
     const step = steps[index];
+    if (!step) return;
 
     const correct = step.newNode?.trim() ?? "";
-    const answer = userSteps[index].value.trim();
+    const answer = userSteps[index]?.value.trim() ?? "";
 
+    // Normalize comparison by removing spaces
     const isCorrect =
       answer.replace(/\s/g, "") === correct.replace(/\s/g, "");
 
@@ -149,17 +241,22 @@ export default function PracticePage() {
       setActiveStep(index + 1);
 
       setTimeout(() => {
-        inputRefs.current[index + 1]?.focus();
-      }, 80);
+        if (mathFieldRefs.current[index + 1]) {
+          mathFieldRefs.current[index + 1].focus();
+        }
+      }, 100);
     }
   }
 
   function skipStep(index: number) {
+    const step = steps[index];
+    if (!step) return;
+
     setUserSteps((prev) =>
       prev.map((s, i) =>
         i === index
           ? {
-              value: steps[index].newNode ?? "",
+              value: step.newNode ?? "",
               state: "skipped",
             }
           : s
@@ -170,12 +267,15 @@ export default function PracticePage() {
       setActiveStep(index + 1);
 
       setTimeout(() => {
-        inputRefs.current[index + 1]?.focus();
-      }, 80);
+        if (mathFieldRefs.current[index + 1]) {
+          mathFieldRefs.current[index + 1].focus();
+        }
+      }, 100);
     }
   }
 
   function handleSubmit() {
+    // Mark any idle steps as wrong
     setUserSteps((prev) =>
       prev.map((s) =>
         s.state === "idle"
@@ -198,6 +298,7 @@ export default function PracticePage() {
     setSubmitted(false);
     setError(null);
     setSolvedExpr("");
+    mathFieldRefs.current = [];
   }
 
   // ── Stats ──────────────────────────────────────────────────────
@@ -223,6 +324,18 @@ export default function PracticePage() {
     steps.length > 0 &&
     userSteps.every((s) => s.state !== "idle");
 
+  // Focus management when active step changes
+  useEffect(() => {
+    if (!submitted && activeStep < mathFieldRefs.current.length) {
+      setTimeout(() => {
+        const activeField = mathFieldRefs.current[activeStep];
+        if (activeField && !activeField.disabled) {
+          activeField.focus();
+        }
+      }, 100);
+    }
+  }, [activeStep, submitted]);
+
   return (
     <MainPage>
       <div className="flex flex-col gap-6">
@@ -242,19 +355,14 @@ export default function PracticePage() {
         {/* Input */}
         <div className="border border-black bg-white p-6">
           <div className="mb-4 flex flex-col gap-3 md:flex-row">
-            <input
-              className="flex-1 border border-black p-3 font-mono"
-              type="text"
-              placeholder="e.g. 2x + 3x"
-              value={expression}
-              onChange={(e) =>
-                setExpression(e.target.value)
-              }
-              onKeyDown={(e) =>
-                e.key === "Enter" && handleSolve()
-              }
-              disabled={loading}
-            />
+            <div className="flex-1">
+              <MathField
+                value={expression}
+                disabled={loading}
+                onChange={(value) => setExpression(value)}
+                onEnter={() => handleSolve()}
+              />
+            </div>
 
             <button
               className="flex items-center justify-center gap-2 border border-black bg-black px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
@@ -278,7 +386,7 @@ export default function PracticePage() {
             {SAMPLE_PROBLEMS.map((p) => (
               <button
                 key={p.expression}
-                className="border border-black px-3 py-2 font-mono text-sm hover:bg-black hover:text-white"
+                className="border border-black px-3 py-2 font-mono text-sm hover:bg-black hover:text-white transition-colors"
                 onClick={() => {
                   setExpression(p.expression);
                   handleSolve(p.expression);
@@ -311,16 +419,16 @@ export default function PracticePage() {
               const us = userSteps[i];
 
               const isActive =
-                i === activeStep && !submitted;
+                i === activeStep && !submitted && us?.state === "idle";
 
-              const isDone = us.state !== "idle";
+              const isDone = us?.state !== "idle";
 
               return (
                 <div
                   key={i}
-                  className="border-t border-black py-5"
+                  className="border-t border-black py-5 first:border-t-0"
                 >
-                  <p className="mb-2 font-mono text-xs uppercase">
+                  <p className="mb-2 font-mono text-xs uppercase font-semibold">
                     {formatChangeType(step.changeType)}
                   </p>
 
@@ -331,89 +439,88 @@ export default function PracticePage() {
                   )}
 
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="font-mono text-lg">
+                    <span className="font-mono text-lg font-bold">
                       =
                     </span>
 
                     {isDone ? (
                       <div
                         className={`min-w-[180px] border border-black p-3 font-mono ${
-                          us.state === "correct"
-                            ? "text-green-600"
-                            : us.state === "skipped"
-                            ? "text-yellow-700"
-                            : "text-red-600"
+                          us?.state === "correct"
+                            ? "bg-green-50 text-green-700 border-green-300"
+                            : us?.state === "skipped"
+                            ? "bg-yellow-50 text-yellow-700 border-yellow-300"
+                            : "bg-red-50 text-red-700 border-red-300"
                         }`}
                       >
                         {step.newNode}
 
-                        {us.state === "wrong" &&
-                          us.value && (
-                            <div className="mt-1 text-xs text-gray-500">
+                        {us?.state === "wrong" &&
+                          us?.value &&
+                          us.value !== step.newNode && (
+                            <div className="mt-1 text-xs text-gray-600">
                               Your answer: {us.value}
                             </div>
                           )}
                       </div>
                     ) : (
-                      <input
-                        ref={(el) => {
-                          inputRefs.current[i] = el;
-                        }}
-                        className="min-w-[180px] border border-black p-3 font-mono disabled:bg-gray-100"
-                        type="text"
-                        value={us.value}
-                        disabled={!isActive}
-                        onChange={(e) =>
-                          setUserSteps((prev) =>
-                            prev.map((s, idx) =>
-                              idx === i
-                                ? {
-                                    ...s,
-                                    value:
-                                      e.target.value,
-                                  }
-                                : s
+                      <div className="flex-1">
+                        <MathField
+                          value={us?.value || ""}
+                          disabled={!isActive}
+                          onChange={(value) =>
+                            setUserSteps((prev) =>
+                              prev.map((s, idx) =>
+                                idx === i
+                                  ? {
+                                      ...s,
+                                      value,
+                                    }
+                                  : s
+                              )
                             )
-                          )
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            checkStep(i);
                           }
-                        }}
-                      />
+                          onEnter={() => checkStep(i)}
+                        />
+                      </div>
                     )}
 
                     {isActive && !isDone && (
-                      <>
+                      <div className="flex gap-2">
                         <button
-                          className="border border-black px-4 py-2 font-bold hover:bg-black hover:text-white"
+                          className="border border-black px-4 py-2 font-bold hover:bg-black hover:text-white transition-colors"
                           onClick={() => checkStep(i)}
                         >
                           Check
                         </button>
 
                         <button
-                          className="border border-black px-4 py-2 font-bold hover:bg-gray-100"
+                          className="border border-black px-4 py-2 font-bold hover:bg-gray-100 transition-colors"
                           onClick={() => skipStep(i)}
                         >
                           Skip
                         </button>
-                      </>
+                      </div>
                     )}
 
-                    {us.state === "correct" && (
+                    {us?.state === "correct" && (
                       <CheckCircle2
                         className="text-green-600"
-                        size={18}
+                        size={20}
                       />
                     )}
 
-                    {us.state === "wrong" && (
+                    {us?.state === "wrong" && (
                       <X
                         className="text-red-600"
-                        size={18}
+                        size={20}
                       />
+                    )}
+
+                    {us?.state === "skipped" && (
+                      <span className="text-xs text-yellow-600 font-mono">
+                        skipped
+                      </span>
                     )}
                   </div>
                 </div>
@@ -421,10 +528,10 @@ export default function PracticePage() {
             })}
 
             {/* Footer */}
-            <div className="mt-6 flex flex-wrap items-center gap-3">
+            <div className="mt-6 pt-4 border-t border-black flex flex-wrap items-center gap-3">
               {!submitted ? (
                 <button
-                  className="border border-black bg-black px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  className="border border-black bg-black px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-900 transition-colors"
                   disabled={!allDone}
                   onClick={handleSubmit}
                 >
@@ -432,13 +539,13 @@ export default function PracticePage() {
                 </button>
               ) : (
                 <>
-                  <div className="font-mono text-sm">
+                  <div className="font-mono text-sm bg-gray-100 px-4 py-2">
                     Score: {score}% | ✓ {correct} | ✗{" "}
                     {wrong} | ↷ {skipped}
                   </div>
 
                   <button
-                    className="flex items-center gap-2 border border-black bg-black px-4 py-3 text-white"
+                    className="flex items-center gap-2 border border-black bg-black px-4 py-3 text-white hover:bg-gray-900 transition-colors"
                     onClick={handleReset}
                   >
                     <RefreshCw size={16} />
