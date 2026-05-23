@@ -66,14 +66,18 @@ function MathField({
     style: {
       width: "100%",
       minWidth: "180px",
-      minHeight: "48px",
-      padding: "8px",
-      border: "2px solid black",
+      minHeight: "44px",
+      padding: "8px 12px",
+      border: "1px solid #cbd5e1",
+      borderRadius: "12px",
       background: "white",
-      fontSize: "1.1rem",
+      fontSize: "1rem",
+      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+      outline: "none",
     },
   });
 }
+
 export default function PracticePage() {
   const router = useRouter();
   const params = useParams();
@@ -102,12 +106,10 @@ export default function PracticePage() {
     setLoadingText("Loading practice problems...");
 
     try {
-      // 1. Fetch the session to get current_node
       const session = await getSession(sessionId);
       const currentNode = session.current_node;
       setNodeId(currentNode);
 
-      // 2. Fetch or generate 5 practice problems
       const practiceData = await startPractice({
         session_id: sessionId,
         node_id: currentNode,
@@ -136,13 +138,11 @@ export default function PracticePage() {
     }));
   };
 
-  // Check if all steps in the current problem have a non-empty value entered
   const currentProblem = problems[currentProblemIdx];
   const allInputsFilled = currentProblem 
     ? currentProblem.steps.every(step => (inputs[step.step_index] || "").trim() !== "")
     : false;
 
-  // Submit current problem steps
   const handleSubmitProblem = async () => {
     if (!currentProblem || !allInputsFilled || isSubmitting) return;
 
@@ -175,14 +175,12 @@ export default function PracticePage() {
     }
   };
 
-  // Move to next problem
   const handleNextProblem = () => {
     setInputs({});
     setProblemCompleted(false);
     setCurrentProblemIdx(prev => prev + 1);
   };
 
-  // Navigates to the results screen
   const handleGetResults = () => {
     router.push(`/session/${sessionId}/results`);
   };
@@ -193,9 +191,13 @@ export default function PracticePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white text-black font-sans flex items-center justify-center p-8">
-        <div className="border border-black p-8 max-w-sm w-full text-center">
-          <p className="font-mono text-sm animate-pulse uppercase tracking-wider">{loadingText}</p>
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-sm w-full text-center shadow-[0_15px_30px_rgba(0,26,84,0.05)]">
+          <div className="relative w-12 h-12 mx-auto mb-4">
+            <div className="absolute inset-0 border-4 border-slate-100 rounded-full" />
+            <div className="absolute inset-0 border-4 border-[#001a54] border-t-[#fdd400] rounded-full animate-spin" />
+          </div>
+          <p className="font-mono text-xs text-slate-500 animate-pulse uppercase tracking-wider">{loadingText}</p>
         </div>
       </div>
     );
@@ -203,20 +205,24 @@ export default function PracticePage() {
 
   if (errorMsg && problems.length === 0) {
     return (
-      <div className="min-h-screen bg-white text-black font-sans p-8 max-w-xl mx-auto flex flex-col justify-center">
-        <div className="border border-black p-8 text-center">
-          <h2 className="text-xl font-mono uppercase font-bold mb-4">Error</h2>
-          <p className="font-mono text-xs text-red-600 mb-8 break-words">[ERROR] {errorMsg}</p>
-          <div className="flex gap-4 justify-center">
+      <div className="min-h-screen bg-slate-50 p-6 md:p-8 flex flex-col justify-center items-center">
+        <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl p-8 shadow-[0_15px_30px_rgba(0,26,84,0.05)] text-center relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#fdd400]/10 rounded-full blur-[40px] pointer-events-none" />
+          <span className="font-mono text-[9px] text-red-600 bg-red-50 border border-red-100 px-2.5 py-1 rounded-md font-bold uppercase tracking-wider">DIAGNOSTIC FAULT</span>
+          <h2 className="text-xl font-bold font-['Hanken_Grotesk',_sans-serif] text-[#001a54] mt-3 mb-2">Error</h2>
+          <p className="font-mono text-xs text-red-600 bg-red-50/50 border border-red-100 rounded-lg p-3 my-4 break-all text-left">
+            [FAULT_LOG] {errorMsg}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
             <button
               onClick={loadPracticeData}
-              className="border border-black py-3 px-6 text-sm font-mono uppercase transition-all bg-white hover:bg-black hover:text-white cursor-pointer font-bold"
+              className="bg-[#001a54] text-white hover:bg-[#001545] py-3 px-6 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)]"
             >
-              Retry
+              Retry Connection
             </button>
             <button
               onClick={handleBackToTopics}
-              className="border border-black py-3 px-6 text-sm font-mono uppercase transition-all bg-white hover:bg-black hover:text-white cursor-pointer font-bold"
+              className="bg-white hover:bg-slate-50 text-[#001a54] border border-slate-200 hover:border-slate-300 py-3 px-6 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer"
             >
               Back to Topics
             </button>
@@ -226,39 +232,45 @@ export default function PracticePage() {
     );
   }
 
-  // Final summary screen state
   const isPracticeOver = currentProblemIdx >= problems.length;
 
   if (isPracticeOver) {
-    // Count how many problems were fully correct (every step correct)
     const fullyCorrectCount = Object.values(submittedResults).reduce((count, result) => {
       const allCorrect = result.step_results.every(r => r.correct);
       return count + (allCorrect ? 1 : 0);
     }, 0);
 
     return (
-      <div className="min-h-screen bg-white text-black font-sans p-8 max-w-2xl mx-auto flex flex-col justify-center">
-        <div className="border border-black p-8 text-center space-y-6">
-          <h1 className="text-3xl font-mono font-bold uppercase tracking-wider">Practice Complete!</h1>
+      <div className="min-h-screen bg-slate-50 text-slate-800 p-6 md:p-8 flex items-center justify-center">
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 max-w-2xl w-full shadow-[0_15px_40px_rgba(0,26,84,0.06)] relative overflow-hidden text-center space-y-6">
+          <div className="absolute -top-20 -right-20 w-48 h-48 bg-[#fdd400]/10 rounded-full blur-[60px] pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-[#001a54]/5 rounded-full blur-[60px] pointer-events-none" />
+
+          <span className="font-mono text-[9px] text-[#001a54] bg-[#fdd400] px-3 py-1 rounded-full font-extrabold uppercase tracking-widest">SESSION COMPLETE</span>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-[#001a54] font-['Hanken_Grotesk',_sans-serif]">Practice Complete!</h1>
           
-          <div className="border-y border-black py-6 my-4">
-            <p className="text-gray-600 font-mono uppercase text-xs">Your Score</p>
-            <p className="text-5xl font-mono font-bold mt-2">
-              {fullyCorrectCount} / {problems.length}
+          <div className="border-y border-slate-100 py-6 my-4 bg-slate-50/50 rounded-xl px-4">
+            <p className="text-slate-400 font-mono uppercase text-[10px] tracking-wider">Your Score</p>
+            <p className="text-5xl font-mono font-bold mt-1 text-[#001a54]">
+              {fullyCorrectCount} <span className="text-slate-300">/</span> {problems.length}
             </p>
-            <p className="text-sm font-sans mt-2 text-gray-800">
-              Problems solved perfectly
+            <p className="text-xs font-sans mt-2 text-slate-500 font-medium">
+              Problems solved perfectly without missteps
             </p>
           </div>
 
-          <div className="text-left font-mono text-sm space-y-2 max-w-md mx-auto">
+          <div className="text-left font-mono text-xs space-y-2.5 max-w-md mx-auto bg-slate-50 p-4 rounded-xl border border-slate-200/50">
             {problems.map((prob, idx) => {
               const res = submittedResults[idx];
               const allCorrect = res?.step_results.every(r => r.correct);
               return (
-                <div key={prob.id} className="flex justify-between border-b border-gray-100 pb-2">
-                  <span>Problem {idx + 1}: {prob.problem_expr}</span>
-                  <span className={allCorrect ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
+                <div key={prob.id} className="flex justify-between items-center border-b border-slate-200/60 last:border-b-0 pb-2 last:pb-0">
+                  <span className="text-slate-600 font-semibold truncate max-w-[240px]">Problem {idx + 1}: {prob.problem_expr}</span>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                    allCorrect 
+                      ? "bg-green-50 text-green-700 border border-green-200" 
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}>
                     {allCorrect ? "✓ ALL CORRECT" : "✗ INCORRECT"}
                   </span>
                 </div>
@@ -268,9 +280,9 @@ export default function PracticePage() {
 
           <button
             onClick={handleGetResults}
-            className="w-full border border-black py-4 text-base font-mono uppercase font-bold tracking-wider transition-all bg-white hover:bg-black hover:text-white cursor-pointer"
+            className="w-full bg-[#001a54] text-white hover:bg-[#001545] py-4 text-sm font-mono uppercase font-bold tracking-wider transition-all rounded-2xl shadow-[0_4px_20px_rgba(0,26,84,0.12)] hover:shadow-[0_0_25px_rgba(253,212,0,0.15)] cursor-pointer flex items-center justify-center gap-2"
           >
-            Get Results
+            Get Session Summary <span className="text-[#fdd400]">→</span>
           </button>
         </div>
       </div>
@@ -287,239 +299,269 @@ export default function PracticePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans p-6 sm:p-8 max-w-3xl mx-auto">
-      <header className="border-b border-black pb-4 mb-8">
-        <div className="flex justify-between items-start gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-mono font-bold uppercase tracking-wide">
-              Scaffolded Practice
+    <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
+      <div className="max-w-3xl mx-auto space-y-6">
+
+        {/* Bento Grid Header Block */}
+        <header className="bg-[#001a54] rounded-2xl p-6 md:p-8 border border-white/10 shadow-[0_0_30px_rgba(0,26,84,0.4)] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          {/* Subtle ambient gold and navy glow offsets */}
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#fdd400]/10 rounded-full blur-[50px] pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#fdd400]/5 rounded-full blur-[50px] pointer-events-none" />
+          
+          <div className="flex items-center justify-between mb-4 z-10">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400]" />
+              <span className="font-mono text-xs text-slate-300 font-bold tracking-[0.2em] uppercase">SCAFFOLDED PRACTICE</span>
+            </div>
+            <button
+              onClick={handleBackToTopics}
+              className="font-mono text-[10px] text-black bg-[#fdd400] hover:bg-black hover:text-white px-3 py-1.5 rounded-xl border border-white/5 transition-all cursor-pointer font-bold uppercase tracking-wider"
+            >
+              Exit
+            </button>
+          </div>
+
+          <div className="z-10">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-['Hanken_Grotesk',_sans-serif]">
+              Problem Solving Workspace
             </h1>
-            <p className="text-xs font-mono text-gray-500 mt-2">
-              Problem {currentProblemIdx + 1} of {problems.length}
+            <p className="font-mono text-[10px] text-slate-300 mt-2 tracking-wide uppercase">
+              Problem <span className="text-[#fdd400] font-bold">{currentProblemIdx + 1}</span> of {problems.length}
             </p>
           </div>
-          <button
-            onClick={handleBackToTopics}
-            className="border border-black py-1.5 px-3 text-xs font-mono uppercase transition-all bg-white hover:bg-black hover:text-white cursor-pointer font-bold"
-          >
-            Exit
-          </button>
-        </div>
-      </header>
+        </header>
 
-      <main className="space-y-6">
-        {/* Word Problem Card */}
-        {problem.word_problem_text && (
-          <section className="border border-black p-5 bg-gray-50 relative">
-            <span className="absolute -top-3 left-4 bg-white border border-black px-2 py-0.5 text-[10px] font-mono uppercase font-bold">
-              Real-World Scenario
-            </span>
-            <div className="text-gray-800 text-sm leading-relaxed mt-1 markdown-content">
+        <main className="space-y-6">
+          {/* Word Problem Card */}
+          {problem.word_problem_text && (
+            <section className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-[0_4px_12px_rgba(0,26,84,0.02)] relative overflow-hidden">
+              <span className="absolute top-0 right-0 bg-[#fdd400]/20 text-[#001a54] px-3 py-1 text-[9px] font-mono uppercase font-bold tracking-wider rounded-bl-xl border-l border-b border-slate-200/10">
+                REAL-WORLD SCENARIO
+              </span>
+              <div className="text-slate-700 text-sm md:text-base leading-relaxed mt-2 markdown-content font-medium">
+                <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                  {problem.word_problem_text}
+                </ReactMarkdown>
+              </div>
+            </section>
+          )}
+
+          {/* Expression Focus Panel */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-[0_4px_12px_rgba(0,26,84,0.02)] text-center relative overflow-hidden">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[3px] w-24 bg-[#fdd400] rounded-b-full shadow-[0_0_8px_#fdd400]" />
+            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-mono font-bold">Target Mathematical Expression</p>
+            <div className="text-2xl md:text-3xl font-bold mt-2 text-[#001a54] flex justify-center markdown-content">
               <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                {problem.word_problem_text}
+                {problem.problem_expr.startsWith("$") ? problem.problem_expr : `$${problem.problem_expr}$`}
               </ReactMarkdown>
             </div>
-          </section>
-        )}
-
-        {/* Expression Section */}
-        <div className="border border-black p-4 text-center font-mono">
-          <p className="text-xs text-gray-400 uppercase tracking-widest">Target Expression</p>
-          <div className="text-2xl font-bold mt-1 tracking-wide flex justify-center markdown-content">
-            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-              {problem.problem_expr.startsWith("$") ? problem.problem_expr : `$${problem.problem_expr}$`}
-            </ReactMarkdown>
           </div>
-        </div>
 
-        {/* Scaffold Steps */}
-        <section className="space-y-4">
-          <h2 className="text-sm font-mono uppercase tracking-widest text-gray-500">
-            Guided Steps
-          </h2>
+          {/* Scaffold Steps */}
+          <section className="space-y-4">
+            <h2 className="text-[10px] font-mono uppercase tracking-widest font-bold text-slate-400">
+              Guided Equation Steps
+            </h2>
 
-          {problem.steps.map((step, idx) => {
-            const stepResult = submissionResult?.step_results.find(
-              r => r.step_index === step.step_index
-            );
+            {problem.steps.map((step, idx) => {
+              const stepResult = submissionResult?.step_results.find(
+                r => r.step_index === step.step_index
+              );
 
-            const isCorrect = stepResult?.correct;
-            const hasSubmitted = !!submissionResult;
-            
-            // Split blank_expression by '___' to place the input inline
-            const exprParts = step.blank_expression.split("___");
-            const beforeBlank = exprParts[0];
-            const afterBlank = exprParts[1] || "";
+              const isCorrect = stepResult?.correct;
+              const hasSubmitted = !!submissionResult;
 
-            // Check if this step is the misconception point
-            const isMisconceptionStep = 
-              submissionResult?.misconception_found && 
-              submissionResult?.misconception_step_index === step.step_index;
-              
-            const isTextStep = requiresTextInput(step.correct_value);
+              const exprParts = step.blank_expression.split("___");
+              const beforeBlank = exprParts[0];
+              const afterBlank = exprParts[1] || "";
 
-            return (
-              <div 
-                key={step.step_index} 
-                className={`border p-4 transition-all duration-300 ${
-                  hasSubmitted
-                    ? isCorrect
-                      ? "border-green-600 bg-green-50/20"
-                      : isMisconceptionStep
-                        ? "border-red-600 bg-red-50/40 ring-1 ring-red-600"
-                        : "border-gray-300 bg-gray-50/30"
-                    : "border-black"
-                }`}
-              >
-                {/* Step Header */}
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-gray-200 pb-2 mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold">Step {idx + 1}</span>
-                    <span className={`text-[10px] font-mono uppercase px-2 py-0.5 border ${
-                      step.step_type === "variable_identification" || step.step_type === "variable_id"
-                        ? "border-blue-600 text-blue-700 bg-blue-50/50"
-                        : "border-purple-600 text-purple-700 bg-purple-50/50"
-                    }`}>
-                      {step.step_type === "variable_identification" || step.step_type === "variable_id" ? "Concept Setup" : "Algebraic Step"}
-                    </span>
-                  </div>
-                  
-                  {hasSubmitted && (
-                    <span className={`font-mono text-xs font-bold uppercase ${
-                      isCorrect ? "text-green-600" : "text-red-600"
-                    }`}>
-                      {isCorrect ? "✓ Correct" : "✗ Incorrect"}
-                    </span>
-                  )}
-                </div>
+              const isMisconceptionStep =
+                submissionResult?.misconception_found &&
+                submissionResult?.misconception_step_index === step.step_index;
 
-                {/* Instruction */}
-                <div className="text-gray-700 text-sm font-sans mb-3 markdown-content">
-                  <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                    {step.instruction}
-                  </ReactMarkdown>
-                </div>
+              const isTextStep = requiresTextInput(step.correct_value);
 
-                {/* Fill in the blank section */}
-                <div className="font-mono text-base flex flex-wrap items-center gap-2 bg-gray-50/50 p-2.5 border border-dashed border-gray-300">
-                  <ReactMarkdown 
-                    remarkPlugins={[remarkMath]} 
-                    rehypePlugins={[rehypeKatex]}
-                    components={{ p: ({node, ...props}) => <span {...props} /> }}
-                  >
-                    {beforeBlank}
-                  </ReactMarkdown>
-                  
-                  {!hasSubmitted ? (
-                    isTextStep ? (
-                      <input
-                        type="text"
-                        value={inputs[step.step_index] || ""}
-                        onChange={(e) => handleInputChange(step.step_index, e.target.value)}
-                        disabled={isSubmitting}
-                        placeholder="..."
-                        className="border-b-2 border-black bg-white px-2 py-1 text-center font-mono focus:outline-none focus:border-gray-500 w-64 transition-all text-sm"
-                      />
-                    ) : (
-                      <div className="w-64">
-                        <MathField
-                          value={inputs[step.step_index] || ""}
-                          onChange={(value) =>
-                            handleInputChange(step.step_index, value)
-                          }
-                          disabled={isSubmitting}
-                        />
+              let borderClass = "border-slate-200 hover:border-[#001a54]/30";
+              let bgClass = "bg-white";
+              let accentClass = "bg-[#fdd400] shadow-[0_0_6px_rgba(253,212,0,0.5)]";
+
+              if (hasSubmitted) {
+                if (isCorrect) {
+                  borderClass = "border-green-300/80";
+                  bgClass = "bg-green-50/20";
+                  accentClass = "bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.4)]";
+                } else if (isMisconceptionStep) {
+                  borderClass = "border-red-300";
+                  bgClass = "bg-red-50/10";
+                  accentClass = "bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.4)]";
+                } else {
+                  borderClass = "border-slate-300";
+                  bgClass = "bg-slate-50/40";
+                  accentClass = "bg-slate-400";
+                }
+              }
+
+              const formatMathValue = (val: string) =>
+                val.startsWith("$") || !val.match(/[x^+\-*\/=]/) ? val : `$${val}$`;
+
+              return (
+                <div
+                  key={step.step_index}
+                  className={`border rounded-2xl p-5 md:p-6 transition-all duration-300 relative overflow-hidden flex gap-4 ${borderClass} ${bgClass}`}
+                >
+                  <div className={`w-1 h-12 rounded-full self-center shrink-0 ${accentClass} transition-all duration-300`} />
+
+                  <div className="flex-1 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-[#001a54]">Step {idx + 1}</span>
+                        <span className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded-md border font-bold ${
+                          step.step_type === "variable_identification"
+                            ? "border-blue-200 text-blue-700 bg-blue-50/50"
+                            : "border-purple-200 text-purple-700 bg-purple-50/50"
+                        }`}>
+                          {step.step_type === "variable_identification" ? "Concept Setup" : "Algebraic Step"}
+                        </span>
                       </div>
-                    )
-                  ) : (
-                    <span className={`font-bold px-2 py-0.5 border-b-2 ${
-                      isCorrect 
-                        ? "border-green-600 text-green-700 bg-green-50"
-                        : "border-red-600 text-red-700 bg-red-50"
-                    }`}>
-                      <ReactMarkdown 
-                        remarkPlugins={[remarkMath]} 
-                        rehypePlugins={[rehypeKatex]}
-                        components={{ p: ({node, ...props}) => <span {...props} /> }}
-                      >
-                        {stepResult?.submitted_value
-                          ? (!isTextStep ? `$${stepResult.submitted_value}$` : stepResult.submitted_value)
-                          : "—"}
-                      </ReactMarkdown>
-                    </span>
-                  )}
 
-                  <ReactMarkdown 
-                    remarkPlugins={[remarkMath]} 
-                    rehypePlugins={[rehypeKatex]}
-                    components={{ p: ({node, ...props}) => <span {...props} /> }}
-                  >
-                    {afterBlank}
-                  </ReactMarkdown>
-                </div>
+                      {hasSubmitted && (
+                        <span className={`font-mono text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
+                          isCorrect ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                        }`}>
+                          {isCorrect ? "✓ Correct" : "✗ Incorrect"}
+                        </span>
+                      )}
+                    </div>
 
-                {/* If submitted & incorrect, reveal correct value */}
-                {hasSubmitted && !isCorrect && (
-                  <p className="mt-2 text-xs font-mono text-gray-500 flex items-center gap-1">
-                    Expected: <span className="font-bold text-gray-800 bg-gray-100 px-1.5 py-0.5 border border-gray-300">
-                      <ReactMarkdown 
-                        remarkPlugins={[remarkMath]} 
-                        rehypePlugins={[rehypeKatex]}
-                        components={{ p: ({node, ...props}) => <span {...props} /> }}
-                      >
-                        {step.correct_value.startsWith("$") || !step.correct_value.match(/[x^+\-*\/=]/) ? step.correct_value : `$${step.correct_value}$`}
-                      </ReactMarkdown>
-                    </span>
-                  </p>
-                )}
-
-                {/* Misconception AI tutor alert */}
-                {isMisconceptionStep && submissionResult.feedback_text && (
-                  <div className="mt-4 border-l-4 border-red-600 bg-red-50 p-3 text-red-900">
-                    <p className="text-[10px] font-mono uppercase tracking-widest font-bold text-red-700 mb-1">
-                      Tutor Feedback
-                    </p>
-                    <div className="text-xs font-sans italic leading-relaxed markdown-content">
+                    <div className="text-slate-700 text-sm md:text-base font-semibold leading-relaxed markdown-content">
                       <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                        {submissionResult.feedback_text}
+                        {step.instruction}
                       </ReactMarkdown>
                     </div>
+
+                    <div className="font-mono text-sm md:text-base flex flex-wrap items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkMath]}
+                        rehypePlugins={[rehypeKatex]}
+                        components={{ p: ({ node, ...props }) => <span {...props} /> }}
+                      >
+                        {beforeBlank}
+                      </ReactMarkdown>
+
+                      {!hasSubmitted ? (
+                        isTextStep ? (
+                          <input
+                            type="text"
+                            value={inputs[step.step_index] || ""}
+                            onChange={(e) => handleInputChange(step.step_index, e.target.value)}
+                            disabled={isSubmitting}
+                            placeholder="..."
+                            className="border-b-2 border-[#001a54] bg-white px-2 py-1 text-center font-mono focus:outline-none focus:border-slate-400 w-64 max-w-full transition-all text-sm rounded"
+                          />
+                        ) : (
+                          <div className="w-64 max-w-full">
+                            <MathField
+                              value={inputs[step.step_index] || ""}
+                              onChange={(value) => handleInputChange(step.step_index, value)}
+                              disabled={isSubmitting}
+                            />
+                          </div>
+                        )
+                      ) : (
+                        <span className={`font-bold px-2 py-1 rounded-lg border text-sm md:text-base ${
+                          isCorrect
+                            ? "border-green-200 text-green-700 bg-green-50"
+                            : "border-red-200 text-red-700 bg-red-50"
+                        }`}>
+                          {stepResult?.submitted_value ? (
+                            <ReactMarkdown
+                              remarkPlugins={[remarkMath]}
+                              rehypePlugins={[rehypeKatex]}
+                              components={{ p: ({ node, ...props }) => <span {...props} /> }}
+                            >
+                              {isTextStep
+                                ? stepResult.submitted_value
+                                : formatMathValue(stepResult.submitted_value)}
+                            </ReactMarkdown>
+                          ) : (
+                            "—"
+                          )}
+                        </span>
+                      )}
+
+                      <ReactMarkdown
+                        remarkPlugins={[remarkMath]}
+                        rehypePlugins={[rehypeKatex]}
+                        components={{ p: ({ node, ...props }) => <span {...props} /> }}
+                      >
+                        {afterBlank}
+                      </ReactMarkdown>
+                    </div>
+
+                    {hasSubmitted && !isCorrect && (
+                      <p className="text-[10px] font-mono text-slate-500 flex items-center gap-1.5 mt-2">
+                        Expected Formulation:
+                        <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkMath]}
+                            rehypePlugins={[rehypeKatex]}
+                            components={{ p: ({ node, ...props }) => <span {...props} /> }}
+                          >
+                            {formatMathValue(step.correct_value)}
+                          </ReactMarkdown>
+                        </span>
+                      </p>
+                    )}
+
+                    {isMisconceptionStep && submissionResult?.feedback_text && (
+                      <div className="border-l-4 border-red-500 bg-red-50/50 rounded-r-xl p-4 mt-4 text-red-950">
+                        <p className="text-[9px] font-mono uppercase tracking-widest font-extrabold text-red-700 mb-1">
+                          Tutor Feedback
+                        </p>
+                        <div className="text-xs md:text-sm font-sans italic leading-relaxed markdown-content font-medium">
+                          <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                            {submissionResult.feedback_text}
+                          </ReactMarkdown>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </section>
-      </main>
+                </div>
+              );
+            })}
+          </section>
+        </main>
 
-      {errorMsg && (
-        <div className="mt-6 border border-red-600 bg-red-50 p-4 text-xs font-mono text-red-600 break-words">
-          [ERROR] {errorMsg}
-        </div>
-      )}
-
-      <footer className="mt-12 pt-6 border-t border-black">
-        {!problemCompleted ? (
-          <button
-            onClick={handleSubmitProblem}
-            disabled={!allInputsFilled || isSubmitting}
-            className={`w-full border border-black py-4 text-base font-mono uppercase font-bold tracking-wider transition-all ${
-              !allInputsFilled || isSubmitting
-                ? "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
-                : "bg-white hover:bg-black hover:text-white cursor-pointer"
-            }`}
-          >
-            {isSubmitting ? "Evaluating steps..." : "Submit Answer"}
-          </button>
-        ) : (
-          <button
-            onClick={handleNextProblem}
-            className="w-full border border-black py-4 text-base font-mono uppercase font-bold tracking-wider transition-all bg-white hover:bg-black hover:text-white cursor-pointer"
-          >
-            {currentProblemIdx + 1 === problems.length ? "See Results" : "Next Problem"}
-          </button>
+        {errorMsg && (
+          <div className="mt-6 border border-red-200 bg-red-50 p-4 text-xs font-mono text-red-600 rounded-xl break-words">
+            [ERROR] {errorMsg}
+          </div>
         )}
-      </footer>
+
+        <footer className="mt-8 pt-6 border-t border-slate-200">
+          {!problemCompleted ? (
+            <button
+              onClick={handleSubmitProblem}
+              disabled={!allInputsFilled || isSubmitting}
+              className={`w-full py-4 text-sm font-mono uppercase font-bold tracking-wider transition-all rounded-2xl flex items-center justify-center gap-2 ${
+                !allInputsFilled || isSubmitting
+                  ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+                  : "bg-[#001a54] text-white hover:bg-[#001545] cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.12)] hover:shadow-[0_0_20px_rgba(253,212,0,0.15)]"
+              }`}
+            >
+              {isSubmitting ? "Evaluating steps..." : "Submit Answer"}
+            </button>
+          ) : (
+            <button
+              onClick={handleNextProblem}
+              className="w-full bg-[#001a54] text-white hover:bg-[#001545] py-4 text-sm font-mono uppercase font-bold tracking-wider transition-all rounded-2xl shadow-[0_4px_20px_rgba(0,26,84,0.12)] hover:shadow-[0_0_25px_rgba(253,212,0,0.15)] cursor-pointer flex items-center justify-center gap-2"
+            >
+              {currentProblemIdx + 1 === problems.length ? "See Results" : "Next Problem"} <span className="text-[#fdd400]">→</span>
+            </button>
+          )}
+        </footer>
+
+      </div>
     </div>
   );
 }

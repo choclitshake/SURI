@@ -144,125 +144,189 @@ export default function DiagnosticPage() {
 
   if (phase === "intro") {
     return (
-      <div className="min-h-screen bg-white text-black font-sans p-8 max-w-2xl mx-auto">
-        <header className="border-b border-black pb-4 mb-8">
-          <h1 className="text-2xl font-mono uppercase tracking-wider">
-            Placement Diagnostic
-          </h1>
-          <p className="text-xs font-mono text-gray-600 mt-1">
-            Session ID: {sessionId}
-          </p>
-        </header>
+      <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
+        <div className="max-w-3xl mx-auto space-y-6">
 
-        {error && (
-          <div className="border border-black p-4 mb-6 text-sm font-mono">
-            [ERROR] {error}
-          </div>
-        )}
+          {/* Premium Bento Header (Navy with Gold Accents) */}
+          <header className="bg-[#001a54] rounded-2xl p-6 md:p-8 border border-white/10 shadow-[0_0_30px_rgba(0,26,84,0.4)] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+            {/* Subtle ambient gold and navy glow offsets */}
+            <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#fdd400]/10 rounded-full blur-[50px] pointer-events-none" />
+            <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#fdd400]/5 rounded-full blur-[50px] pointer-events-none" />
+            
+            <div className="flex items-center justify-between mb-4 z-10">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400]" />
+                <span className="font-mono text-xs text-slate-300 font-bold tracking-[0.2em] uppercase">PLACEMENT DIAGNOSTIC</span>
+              </div>
+              <span className="font-mono text-[10px] text-slate-400 bg-black/30 px-3 py-1.5 rounded-xl border border-white/5 uppercase">DB_SYNC</span>
+            </div>
 
-        <div className="border border-black p-6 space-y-6">
-          <p className="font-sans text-sm text-gray-800 leading-relaxed">
-            This short diagnostic walks through the prerequisite chain for your
-            topic. Your answers help SURI find the best place to start learning.
-          </p>
+            <div className="z-10">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-['Hanken_Grotesk',_sans-serif]">
+                Baseline Diagnostic
+              </h1>
+              <p className="font-mono text-[10px] text-slate-300 mt-2 tracking-wide uppercase">
+                Session ID: <span className="text-[#fdd400]">{sessionId}</span>
+              </p>
+            </div>
+          </header>
 
-          <button
-            type="button"
-            onClick={fetchNextProbe}
-            disabled={loading}
-            className="w-full border border-black py-3 text-sm font-mono uppercase font-bold bg-white hover:bg-black hover:text-white disabled:opacity-50 cursor-pointer"
-          >
-            {loading ? "Loading..." : "Start Diagnostic"}
-          </button>
+          {error && (
+            <div className="bg-red-50/50 border border-red-200 rounded-2xl p-5 shadow-[0_10px_20px_rgba(239,68,68,0.03)] flex items-start gap-4">
+              <div className="w-2 h-2 rounded-full bg-red-600 mt-1.5 shrink-0" />
+              <div>
+                <span className="font-mono text-xs text-red-700 font-bold uppercase tracking-widest block mb-1">[DIAGNOSTIC FAULT]</span>
+                <p className="font-mono text-sm text-red-800">{error}</p>
+              </div>
+            </div>
+          )}
 
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={handleSkip}
-              disabled={skipping}
-              className="w-full border border-gray-400 py-3 text-sm font-mono uppercase text-gray-700 bg-white hover:bg-gray-100 disabled:opacity-50 cursor-pointer"
-            >
-              {skipping ? "Starting..." : "Skip and Start Learning"}
-            </button>
-            <p className="font-mono text-xs text-gray-500 mt-2">
-              Go straight to the first lesson
+          {/* Diagnostic Intro Information Card */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-6 md:p-8 shadow-[0_4px_12px_rgba(0,26,84,0.02)] space-y-6">
+            <p className="font-sans text-sm md:text-base text-slate-600 leading-relaxed font-medium">
+              This short diagnostic walks through the prerequisite chain for your active topic. 
+              Your answers help map out existing baseline knowledge block skills to identify custom starting nodes.
             </p>
+
+            <div className="space-y-4">
+              <button
+                type="button"
+                onClick={fetchNextProbe}
+                disabled={loading}
+                className="w-full bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] disabled:opacity-50"
+              >
+                {loading ? "Initializing Diagnostics..." : "Start Placement Diagnostic"}
+              </button>
+
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  disabled={skipping}
+                  className="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 py-3 text-xs font-mono uppercase rounded-xl tracking-wider transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {skipping ? "Redirecting..." : "Skip Diagnostics"}
+                </button>
+                <p className="font-mono text-[10px] text-slate-400 mt-2">
+                  Bypass questions and jump directly to the first active lesson segment.
+                </p>
+              </div>
+            </div>
           </div>
+
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans p-8 max-w-2xl mx-auto">
-      <header className="border-b border-black pb-4 mb-8">
-        <h1 className="text-2xl font-mono uppercase tracking-wider">
-          GO1 — Placement Diagnostic
-        </h1>
-        <p className="text-xs font-mono text-gray-600 mt-1">Session ID: {sessionId}</p>
-      </header>
+    <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
+      <div className="max-w-3xl mx-auto space-y-6">
 
-      {error && (
-        <div className="border border-black p-4 mb-6 text-sm font-mono bg-white">
-          [ERROR] {error}
-        </div>
-      )}
-
-      {loading ? (
-        <p className="font-mono text-sm">Loading next question...</p>
-      ) : probe ? (
-        <form onSubmit={handleSubmit} className="border border-black p-6">
-          <div className="border-b border-black pb-3 mb-6">
-            <span className="bg-black text-white font-mono text-xs uppercase px-2 py-1">
-              Assessing: {probe.node_id}
-            </span>
-          </div>
-
-          <h2 className="text-lg font-mono font-bold mb-6">{probe.question_text}</h2>
-
-          <div className="space-y-4 mb-8">
-            {probe.options.map((option, idx) => (
-              <label
-                key={idx}
-                className={`flex items-start p-4 border border-black cursor-pointer transition-all hover:bg-gray-100 ${
-                  selectedIdx === idx
-                    ? "bg-black text-white hover:bg-black"
-                    : "bg-white text-black"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="probe-option"
-                  checked={selectedIdx === idx}
-                  onChange={() => setSelectedIdx(idx)}
-                  disabled={submitting || feedback !== null}
-                  className="sr-only"
-                />
-                <span className="font-mono text-sm mr-3 font-bold">
-                  {String.fromCharCode(65 + idx)}.
-                </span>
-                <span className="font-mono text-sm">{option}</span>
-              </label>
-            ))}
-          </div>
-
-          {feedback && (
-            <div className="border border-black p-4 mb-6 text-center font-mono text-sm uppercase">
-              {feedback.correct ? "[CORRECT]" : "[INCORRECT]"} Moving on...
+        {/* Dynamic Probe header */}
+        <header className="bg-[#001a54] rounded-2xl p-6 md:p-8 border border-white/10 shadow-[0_0_30px_rgba(0,26,84,0.4)] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#fdd400]/10 rounded-full blur-[50px] pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#fdd400]/5 rounded-full blur-[50px] pointer-events-none" />
+          
+          <div className="flex items-center justify-between mb-4 z-10">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400]" />
+              <span className="font-mono text-xs text-slate-300 font-bold tracking-[0.2em] uppercase">EVALUATION ACTIVE</span>
             </div>
-          )}
+            <span className="font-mono text-[10px] text-slate-400 bg-black/30 px-3 py-1.5 rounded-xl border border-white/5 uppercase">DB_SYNC</span>
+          </div>
 
-          <button
-            type="submit"
-            disabled={selectedIdx === null || submitting || feedback !== null}
-            className="w-full border border-black py-3 text-sm font-mono uppercase transition-all bg-white hover:bg-black hover:text-white disabled:opacity-50 cursor-pointer"
-          >
-            {submitting ? "Submitting..." : "Submit Answer"}
-          </button>
-        </form>
-      ) : (
-        <p className="font-mono text-sm">No diagnostic questions active.</p>
-      )}
+          <div className="z-10">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-['Hanken_Grotesk',_sans-serif]">
+              Diagnostic Probe
+            </h1>
+            <p className="font-mono text-[10px] text-slate-300 mt-2 tracking-wide uppercase">
+              Session ID: <span className="text-[#fdd400]">{sessionId}</span>
+            </p>
+          </div>
+        </header>
+
+        {error && (
+          <div className="bg-red-50/50 border border-red-200 rounded-2xl p-5 shadow-[0_10px_20px_rgba(239,68,68,0.03)] flex items-start gap-4">
+            <div className="w-2 h-2 rounded-full bg-red-600 mt-1.5 shrink-0" />
+            <div>
+              <span className="font-mono text-xs text-red-700 font-bold uppercase tracking-widest block mb-1">[SUBMISSION FAULT]</span>
+              <p className="font-mono text-sm text-red-800">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-12 shadow-[0_4px_12px_rgba(0,26,84,0.02)] flex flex-col items-center justify-center space-y-4">
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 border-4 border-slate-100 rounded-full" />
+              <div className="absolute inset-0 border-4 border-[#001a54] border-t-[#fdd400] rounded-full animate-spin" />
+            </div>
+            <p className="font-mono text-[10px] text-slate-500 tracking-widest uppercase animate-pulse">Retrieving next evaluation query...</p>
+          </div>
+        ) : probe ? (
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200/80 p-6 md:p-8 shadow-[0_4px_12px_rgba(0,26,84,0.02)] space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-6">
+              <span className="bg-[#fdd400] text-[#001a54] font-mono text-[10px] font-bold uppercase px-2.5 py-1 rounded">
+                Assessing: {probe.node_id}
+              </span>
+            </div>
+
+            <h2 className="text-base md:text-lg font-['Hanken_Grotesk',_sans-serif] font-extrabold text-[#001a54] leading-snug mb-6">
+              {probe.question_text}
+            </h2>
+
+            <div className="space-y-4 mb-8">
+              {probe.options.map((option, idx) => (
+                <label
+                  key={idx}
+                  className={`flex items-start p-4 rounded-xl border cursor-pointer transition-all duration-200 ${
+                    selectedIdx === idx
+                      ? "border-[#001a54] bg-[#001a54] text-white shadow-[0_4px_12px_rgba(0,26,84,0.15)]"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="probe-option"
+                    checked={selectedIdx === idx}
+                    onChange={() => setSelectedIdx(idx)}
+                    disabled={submitting || feedback !== null}
+                    className="sr-only"
+                  />
+                  <span className={`font-mono text-sm mr-3 font-bold ${selectedIdx === idx ? "text-[#fdd400]" : "text-[#001a54]"}`}>
+                    {String.fromCharCode(65 + idx)}.
+                  </span>
+                  <span className="font-mono text-sm font-semibold">{option}</span>
+                </label>
+              ))}
+            </div>
+
+            {feedback && (
+              <div className={`rounded-xl p-4 mb-6 text-center font-mono text-xs uppercase tracking-wider font-extrabold border ${
+                feedback.correct 
+                  ? "bg-green-50 text-green-700 border-green-200" 
+                  : "bg-red-50 text-red-700 border-red-200"
+              }`}>
+                {feedback.correct ? "✓ [CORRECT]" : "✗ [INCORRECT]"} Moving on to next node...
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={selectedIdx === null || submitting || feedback !== null}
+              className="w-full bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] disabled:opacity-50"
+            >
+              {submitting ? "Submitting Evaluation..." : "Submit Answer"}
+            </button>
+          </form>
+        ) : (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+            <p className="font-mono text-sm text-slate-500">No active evaluation targets.</p>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }

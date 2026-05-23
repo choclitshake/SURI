@@ -18,8 +18,8 @@ const NAV_ITEMS: { label: string; icon: React.ComponentType<{ className?: string
   { label: "Dashboard", icon: LayoutGrid, href: "/dashboard" },
   { label: "Topics", icon: BookOpen, href: "/topics" },
   { label: "Error History", icon: AlertTriangle, href: "/error-history" },
-  { label: "Practice", icon: PencilLine },
-  { label: "Progress", icon: LineChart },
+  // { label: "Practice", icon: PencilLine },
+  // { label: "Progress", icon: LineChart },
   { label: "Calculator", icon: Calculator, href: "/calculator" },
 ];
 
