@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import MainPage from "@/components/mainpage";
 import { getTopics, TopicInfo, getMe, getStudentProgress, createSession } from "../../lib/api";
 
 export default function TopicsPage() {
   const router = useRouter();
   const [topics, setTopics] = useState<TopicInfo[]>([]);
-  const [activeTopics, setActiveTopics] = useState<Record<string, string>>({}); // node_id -> session_id
+  const [activeTopics, setActiveTopics] = useState<Record<string, string>>({});
   const [completedTopics, setCompletedTopics] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,22 +54,14 @@ export default function TopicsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans p-8 max-w-4xl mx-auto">
-      <header className="border-b border-black pb-4 mb-8 flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-mono uppercase tracking-wider">SURI — Mathematics</h1>
-          <p className="text-sm mt-1 text-gray-600 font-mono">Available Learning Tracks</p>
-        </div>
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="border border-black py-2 px-4 text-xs font-mono uppercase hover:bg-black hover:text-white cursor-pointer"
-        >
-          Go Back to Dashboard
-        </button>
+    <MainPage>
+      <header className="border-b border-black pb-4 mb-8">
+        <h1 className="text-2xl font-mono font-bold uppercase">Topics</h1>
+        <p className="text-sm mt-1 text-gray-600 font-mono">Available Learning Tracks</p>
       </header>
 
       {error && (
-        <div className="border border-black p-4 mb-6 text-sm font-mono bg-white text-red-600">
+        <div className="border border-black p-4 mb-6 text-sm font-mono text-red-600">
           [ERROR] {error}
         </div>
       )}
@@ -127,6 +120,6 @@ export default function TopicsPage() {
           })}
         </div>
       )}
-    </div>
+    </MainPage>
   );
 }

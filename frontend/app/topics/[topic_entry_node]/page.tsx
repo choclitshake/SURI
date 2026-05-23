@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import MainPage from "@/components/mainpage";
 import { getTopicIntro, getGraphChain, createSession, skipDiagnostic } from "../../../lib/api";
 
 const TOPIC_DESCRIPTIONS: Record<string, string> = {
@@ -90,21 +91,14 @@ export default function TopicIntroPage() {
   const description = TOPIC_DESCRIPTIONS[topicEntryNode] || `Learn about ${label}.`;
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans p-8 max-w-2xl mx-auto relative">
-      <button 
-        onClick={() => router.push("/dashboard")}
-        className="absolute top-8 right-8 text-sm font-mono uppercase text-gray-500 hover:text-black hover:underline cursor-pointer"
-      >
-        [Exit]
-      </button>
-
-      <header className="border-b border-black pb-4 mb-8 mt-12">
-        <h1 className="text-3xl font-mono font-bold uppercase">{label}</h1>
+    <MainPage>
+      <header className="border-b border-black pb-4 mb-8">
+        <h1 className="text-2xl font-mono font-bold uppercase">{label}</h1>
         <p className="text-sm mt-1 text-gray-600 font-mono">Grade {grade} • {topicEntryNode}</p>
       </header>
 
       {error && (
-        <div className="border border-black p-4 mb-6 text-sm font-mono bg-white text-red-600">
+        <div className="border border-black p-4 mb-6 text-sm font-mono text-red-600">
           [ERROR] {error}
         </div>
       )}
@@ -134,7 +128,7 @@ export default function TopicIntroPage() {
         </div>
       </section>
 
-      <div className="flex flex-col sm:flex-row gap-4 mt-8">
+      <div className="flex flex-col sm:flex-row gap-4">
         <button
           onClick={() => handleCreateSession("diagnostic")}
           disabled={actionLoading}
@@ -153,6 +147,6 @@ export default function TopicIntroPage() {
           <span className="font-mono text-xs text-gray-400 mt-1">Go straight to the first lesson</span>
         </button>
       </div>
-    </div>
+    </MainPage>
   );
 }
