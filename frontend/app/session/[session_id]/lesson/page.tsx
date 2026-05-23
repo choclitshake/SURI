@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getSession, getContent, ContentResponse } from "../../../../lib/api";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 export default function LessonPage() {
   const router = useRouter();
@@ -133,8 +137,10 @@ export default function LessonPage() {
           <h2 className="text-lg font-mono font-bold uppercase mb-4 pb-2 border-b border-gray-200">
             Lesson
           </h2>
-          <div className="font-sans text-sm leading-relaxed space-y-4 whitespace-pre-line text-gray-800">
-            {lessonBody}
+          <div className="font-sans text-sm leading-relaxed space-y-4 text-gray-800 markdown-content">
+            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+              {lessonBody}
+            </ReactMarkdown>
           </div>
         </section>
 
@@ -142,8 +148,10 @@ export default function LessonPage() {
           <h2 className="text-lg font-mono font-bold uppercase mb-4 pb-2 border-b border-gray-200">
             Worked Example
           </h2>
-          <div className="font-sans text-sm leading-relaxed whitespace-pre-line text-gray-800">
-            {content.worked_example}
+          <div className="font-sans text-sm leading-relaxed space-y-4 text-gray-800 markdown-content">
+            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+              {content.worked_example}
+            </ReactMarkdown>
           </div>
         </section>
 
@@ -151,8 +159,10 @@ export default function LessonPage() {
           <h2 className="text-lg font-mono font-bold uppercase mb-4 pb-2 border-b border-gray-200">
             Guided Explanation
           </h2>
-          <div className="font-sans text-sm leading-relaxed whitespace-pre-line text-gray-800">
-            {content.guided_explanation}
+          <div className="font-sans text-sm leading-relaxed space-y-4 text-gray-800 markdown-content">
+            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+              {content.guided_explanation}
+            </ReactMarkdown>
           </div>
         </section>
       </main>
