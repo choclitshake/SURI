@@ -20,7 +20,7 @@ const NAV_ITEMS: { label: string; icon: React.ComponentType<{ className?: string
   { label: "Error History", icon: AlertTriangle, href: "/error-history" },
   { label: "Practice", icon: PencilLine },
   { label: "Progress", icon: LineChart },
-  { label: "Calculator", icon: Calculator },
+  { label: "Calculator", icon: Calculator, href: "/calculator" },
 ];
 
 type MainPageProps = {
