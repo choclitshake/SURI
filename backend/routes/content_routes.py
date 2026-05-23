@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 
 from backend.auth import get_current_student
-from backend.database import get_db
+from backend.database import get_db, release_db
 from backend.graph import GRAPH
 from backend.competency_utils import get_status, upsert_status
 
@@ -68,18 +68,17 @@ async def get_content(
             detail=f"Invalid node_id: '{node_id}'",
         )
 
-    db = await get_db()
+    conn = await get_db()
     try:
-        cursor = await db.execute(
+        row = await conn.fetchrow(
             """
             SELECT lesson_text, worked_example, guided_explanation, source_doc,
                    simplified_lesson_text
             FROM content_records
-            WHERE node_id = ?
+            WHERE node_id = $1
             """,
-            (node_id,),
+            node_id,
         )
-        row = await cursor.fetchone()
         if not row:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -87,21 +86,20 @@ async def get_content(
             )
 
         student_id = student["id"]
-        status_row = await get_status(db, student_id, node_id)
+        status_row = await get_status(conn, student_id, node_id)
         if (
             status_row
             and status_row["status"] == "mastered"
             and status_row["source"] == "diagnostic"
         ):
             await upsert_status(
-                db,
+                conn,
                 student_id,
                 node_id,
                 "in_progress",
                 "diagnostic_revisited",
             )
-            status_row = await get_status(db, student_id, node_id)
-            await db.commit()
+            status_row = await get_status(conn, student_id, node_id)
 
         competency = None
         if status_row:
@@ -112,7 +110,7 @@ async def get_content(
 
         return _content_row_to_response(node_id, row, competency)
     finally:
-        await db.close()
+        await release_db(conn)
 
 
 @router.post("/{node_id}/simplify")
@@ -127,18 +125,17 @@ async def simplify_content(
             detail=f"Invalid node_id: '{node_id}'",
         )
 
-    db = await get_db()
+    conn = await get_db()
     try:
-        cursor = await db.execute(
+        row = await conn.fetchrow(
             """
             SELECT lesson_text, worked_example, guided_explanation,
                    simplified_lesson_text
             FROM content_records
-            WHERE node_id = ?
+            WHERE node_id = $1
             """,
-            (node_id,),
+            node_id,
         )
-        row = await cursor.fetchone()
         if not row:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -202,16 +199,15 @@ async def simplify_content(
             )
 
         simplified_json = json.dumps(parsed)
-        await db.execute(
+        await conn.execute(
             """
             UPDATE content_records
-            SET simplified_lesson_text = ?
-            WHERE node_id = ?
+            SET simplified_lesson_text = $1
+            WHERE node_id = $2
             """,
-            (simplified_json, node_id),
+            simplified_json, node_id,
         )
-        await db.commit()
 
         return parsed
     finally:
-        await db.close()
+        await release_db(conn)

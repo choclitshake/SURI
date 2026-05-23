@@ -16,7 +16,7 @@ import random
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from backend.auth import get_current_student
-from backend.database import get_db
+from backend.database import get_db, release_db
 from backend.graph import GRAPH
 from backend.models.schemas import (
     PracticeStartRequest,
@@ -65,7 +65,6 @@ def normalize_practice_steps(raw_steps: list) -> list[dict]:
 
 async def generate_scaffold_for_expression(node_id: str, expression: str) -> dict:
     """Call mathsteps runner to simplify, then invoke Gemini to generate a full scaffold problem."""
-    # Step 1: call mathsteps runner as an async subprocess
     try:
         proc = await asyncio.create_subprocess_exec(
             'node', 'mathsteps_runner/runner.js', expression,
@@ -86,7 +85,6 @@ async def generate_scaffold_for_expression(node_id: str, expression: str) -> dic
         print(f"mathsteps runner failed or timed out: {e}")
         mathsteps_output = []
 
-    # Step 2: call Gemini to convert to scaffold steps
     prompt = f"""
 You are generating a step-by-step fill-in-the-blanks scaffold problem for a Philippine JHS algebra student.
 The student is practicing: {GRAPH[node_id]['label']} (node_id: {node_id}, Grade {GRAPH[node_id]['grade']})
@@ -133,7 +131,6 @@ No other text, no markdown, no code fences. Return raw JSON string only.
         text = response.text.strip()
     except Exception as e:
         print(f"Gemini API failed: {e}")
-        # Return fallback scaffold
         text = json.dumps({
             "word_problem_text": f"Solve the following algebra problem: {expression}",
             "steps": [
@@ -149,7 +146,6 @@ No other text, no markdown, no code fences. Return raw JSON string only.
             ]
         })
 
-    # Clean text if Gemini wraps it in markdown code block
     if text.startswith("```"):
         text = re.sub(r"^```(?:json)?\n", "", text)
         text = re.sub(r"\n```$", "", text)
@@ -174,7 +170,6 @@ No other text, no markdown, no code fences. Return raw JSON string only.
             }
         ]
 
-    # Validate all mapped_node_ids
     valid_ids = set(GRAPH.keys())
     for step in steps:
         if step.get('mapped_node_id') not in valid_ids:
@@ -193,9 +188,7 @@ No other text, no markdown, no code fences. Return raw JSON string only.
 def normalize_val(val: str) -> str:
     """Normalize input strings for robust mathematical comparison."""
     val = val.strip().lower()
-    # Remove spaces around operators: +, -, *, /, =, (, ), ^, ,
     val = re.sub(r'\s*([\+\-\*/=\(\)\^,])\s*', r'\1', val)
-    # Collapse multiple whitespace to single space
     val = re.sub(r'\s+', ' ', val)
     return val
 
@@ -221,14 +214,12 @@ async def start_practice(body: PracticeStartRequest, student=Depends(get_current
             detail=f"Invalid node_id: '{node_id}'"
         )
     
-    db = await get_db()
+    conn = await get_db()
     try:
-        # 1. Fetch existing practice_problems for this node_id
-        cursor = await db.execute(
-            "SELECT id, node_id, problem_expr, steps_json, word_problem_text FROM practice_problems WHERE node_id = ?",
-            (node_id,),
+        existing_rows = await conn.fetch(
+            "SELECT id, node_id, problem_expr, steps_json, word_problem_text FROM practice_problems WHERE node_id = $1",
+            node_id,
         )
-        existing_rows = await cursor.fetchall()
         problems_list = []
         for r in existing_rows:
             raw_steps = json.loads(r["steps_json"])
@@ -240,7 +231,6 @@ async def start_practice(body: PracticeStartRequest, student=Depends(get_current
                 "steps": normalize_practice_steps(raw_steps),
             })
 
-        # 2. Require at least 10 pre-seeded problems; sample 5 when available
         if len(problems_list) < 10:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -249,17 +239,15 @@ async def start_practice(body: PracticeStartRequest, student=Depends(get_current
 
         sampled = random.sample(problems_list, 5)
         
-        # Update sessions.last_active_at
         now_iso = datetime.now(timezone.utc).isoformat()
-        await db.execute(
-            "UPDATE sessions SET last_active_at = ? WHERE id = ?",
-            (now_iso, session_id),
+        await conn.execute(
+            "UPDATE sessions SET last_active_at = $1 WHERE id = $2",
+            now_iso, session_id,
         )
-        await db.commit()
 
         return {"problems": sampled}
     finally:
-        await db.close()
+        await release_db(conn)
 
 
 @router.post("/submit-step", response_model=PracticeSubmitStepResponse)
@@ -270,21 +258,18 @@ async def submit_step(body: PracticeSubmitStepRequest, student=Depends(get_curre
     problem_id = body.problem_id
     student_steps = body.student_steps
 
-    db = await get_db()
+    conn = await get_db()
     try:
-        # 1. Load problem from practice_problems
-        cursor = await db.execute(
-            "SELECT steps_json, problem_expr FROM practice_problems WHERE id = ?",
-            (problem_id,),
+        problem_row = await conn.fetchrow(
+            "SELECT steps_json, problem_expr FROM practice_problems WHERE id = $1",
+            problem_id,
         )
-        problem_row = await cursor.fetchone()
         if not problem_row:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Problem not found")
 
         parsed_steps = normalize_practice_steps(json.loads(problem_row["steps_json"]))
         student_submission_dict = {s.step_index: s.submitted_value for s in student_steps}
 
-        # 2. Evaluate each step
         step_results = []
         misconception_found = False
         misconception_step_index = None
@@ -297,11 +282,9 @@ async def submit_step(body: PracticeSubmitStepRequest, student=Depends(get_curre
             correct_value = step["correct_value"]
             submitted_value = student_submission_dict.get(step_index, "")
 
-            # Normalization
             sub_norm = normalize_val(submitted_value)
             corr_norm = normalize_val(correct_value)
 
-            # Floats with 0.01 tolerance comparison
             if is_float(sub_norm) and is_float(corr_norm):
                 correct = abs(float(sub_norm) - float(corr_norm)) <= 0.01
             else:
@@ -314,30 +297,26 @@ async def submit_step(body: PracticeSubmitStepRequest, student=Depends(get_curre
                 "correct_value": correct_value
             })
 
-            # Check if this is the first wrong step to log as misconception
             if not correct and not misconception_found:
                 misconception_found = True
                 misconception_step_index = step_index
                 misconception_node_id = step.get("mapped_node_id", node_id)
 
-        # 3. Log misconception and generate tutor feedback if found
         temp_attempt_id = str(uuid.uuid4())
         now_iso = datetime.now(timezone.utc).isoformat()
 
-        # Calculate score and pass status
         total_steps = len(parsed_steps)
         correct_count = sum(1 for r in step_results if r["correct"])
         score = int((correct_count / total_steps) * 100) if total_steps > 0 else 0
         passed = 1 if correct_count == total_steps else 0
 
-        # Create record in practice_attempts to satisfy the foreign keys
-        await db.execute(
-            """
-            INSERT INTO practice_attempts (
-                id, session_id, node_id, problem_id, student_steps_json, score, passed, attempted_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
+        async with conn.transaction():
+            await conn.execute(
+                """
+                INSERT INTO practice_attempts (
+                    id, session_id, node_id, problem_id, student_steps_json, score, passed, attempted_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                """,
                 temp_attempt_id,
                 session_id,
                 node_id,
@@ -347,25 +326,22 @@ async def submit_step(body: PracticeSubmitStepRequest, student=Depends(get_curre
                 passed,
                 now_iso,
             )
-        )
 
-        if misconception_found:
-            mapped_node_label = GRAPH.get(misconception_node_id, {}).get("label", "Concept")
-            misconception_node_label = mapped_node_label
+            if misconception_found:
+                mapped_node_label = GRAPH.get(misconception_node_id, {}).get("label", "Concept")
+                misconception_node_label = mapped_node_label
 
-            step_obj = parsed_steps[misconception_step_index]
-            submitted_val_wrong = student_submission_dict.get(misconception_step_index, "")
-            correct_val_wrong = step_obj["correct_value"]
+                step_obj = parsed_steps[misconception_step_index]
+                submitted_val_wrong = student_submission_dict.get(misconception_step_index, "")
+                correct_val_wrong = step_obj["correct_value"]
 
-            # Store in misconception_logs
-            misconception_log_id = str(uuid.uuid4())
-            await db.execute(
-                """
-                INSERT INTO misconception_logs (
-                    id, session_id, practice_attempt_id, problem_id, step_index, step_description, mapped_node_id, logged_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
+                misconception_log_id = str(uuid.uuid4())
+                await conn.execute(
+                    """
+                    INSERT INTO misconception_logs (
+                        id, session_id, practice_attempt_id, problem_id, step_index, step_description, mapped_node_id, logged_at
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                    """,
                     misconception_log_id,
                     session_id,
                     temp_attempt_id,
@@ -375,39 +351,35 @@ async def submit_step(body: PracticeSubmitStepRequest, student=Depends(get_curre
                     misconception_node_id,
                     now_iso,
                 )
-            )
 
-            # Generate feedback via Gemini
-            node_label = GRAPH.get(node_id, {}).get("label", "Topic")
-            prompt = f"""You are a math tutor. The student is practicing {node_label}.
+                node_label = GRAPH.get(node_id, {}).get("label", "Topic")
+                prompt = f"""You are a math tutor. The student is practicing {node_label}.
 They got Step {misconception_step_index+1} wrong: '{step_obj.get("instruction")}'.
 They wrote: '{submitted_val_wrong}'. Correct answer: '{correct_val_wrong}'.
 This step tests: {mapped_node_label}.
 Write 2-3 sentences of plain, encouraging feedback explaining the error and what concept to review. Name the concept {mapped_node_label} explicitly.
 No math formatting."""
-            
-            api_key = os.getenv("GEMINI_API_KEY")
-            if api_key:
-                try:
-                    genai.configure(api_key=api_key)
-                    model = genai.GenerativeModel('gemini-3.1-flash-lite')
-                    response = await asyncio.wait_for(
-                        model.generate_content_async(prompt),
-                        timeout=15.0
-                    )
-                    feedback_text = response.text.strip()
-                except Exception as ex:
-                    print(f"Gemini feedback generation failed: {ex}")
+                
+                api_key = os.getenv("GEMINI_API_KEY")
+                if api_key:
+                    try:
+                        genai.configure(api_key=api_key)
+                        model = genai.GenerativeModel('gemini-3.1-flash-lite')
+                        response = await asyncio.wait_for(
+                            model.generate_content_async(prompt),
+                            timeout=15.0
+                        )
+                        feedback_text = response.text.strip()
+                    except Exception as ex:
+                        print(f"Gemini feedback generation failed: {ex}")
+                        feedback_text = f"Keep practicing! It seems you had some trouble with {mapped_node_label}. Review this topic to strengthen your understanding."
+                else:
                     feedback_text = f"Keep practicing! It seems you had some trouble with {mapped_node_label}. Review this topic to strengthen your understanding."
-            else:
-                feedback_text = f"Keep practicing! It seems you had some trouble with {mapped_node_label}. Review this topic to strengthen your understanding."
 
-        # Update sessions.last_active_at
-        await db.execute(
-            "UPDATE sessions SET last_active_at = ? WHERE id = ?",
-            (now_iso, session_id),
-        )
-        await db.commit()
+            await conn.execute(
+                "UPDATE sessions SET last_active_at = $1 WHERE id = $2",
+                now_iso, session_id,
+            )
 
         return {
             "step_results": step_results,
@@ -418,4 +390,4 @@ No math formatting."""
             "feedback_text": feedback_text
         }
     finally:
-        await db.close()
+        await release_db(conn)

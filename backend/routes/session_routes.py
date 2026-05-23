@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from backend.auth import get_current_student
-from backend.database import get_db
+from backend.database import get_db, release_db
 from backend.models.schemas import (
     CreateSessionRequest,
     UpdateSessionRequest,
@@ -23,18 +23,17 @@ async def create_session(body: CreateSessionRequest, student=Depends(get_current
         )
 
     student_id = student["id"]
-    db = await get_db()
+    conn = await get_db()
     try:
         # Check for existing active session
-        cursor = await db.execute(
+        existing = await conn.fetchrow(
             """
-            SELECT id, current_node FROM sessions 
-            WHERE student_id = ? AND topic_entry_node = ? AND completed = 0
+            SELECT id, current_node FROM sessions
+            WHERE student_id = $1 AND topic_entry_node = $2 AND completed = 0
             LIMIT 1
             """,
-            (student_id, body.topic_entry_node),
+            student_id, body.topic_entry_node,
         )
-        existing = await cursor.fetchone()
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -44,26 +43,19 @@ async def create_session(body: CreateSessionRequest, student=Depends(get_current
         session_id = str(uuid.uuid4())
         now_iso = datetime.now(timezone.utc).isoformat()
 
-        await db.execute(
+        await conn.execute(
             """
             INSERT INTO sessions (
-                id, student_id, topic_entry_node, current_node, 
-                current_probe_index, started_at, last_active_at, 
+                id, student_id, topic_entry_node, current_node,
+                current_probe_index, started_at, last_active_at,
                 completed, completion_percentage
-            ) VALUES (?, ?, ?, ?, NULL, ?, ?, 0, 0.0)
+            ) VALUES ($1, $2, $3, $4, NULL, $5, $6, 0, 0.0)
             """,
-            (
-                session_id,
-                student_id,
-                body.topic_entry_node,
-                body.topic_entry_node,
-                now_iso,
-                now_iso,
-            ),
+            session_id, student_id, body.topic_entry_node,
+            body.topic_entry_node, now_iso, now_iso,
         )
-        await db.commit()
     finally:
-        await db.close()
+        await release_db(conn)
 
     return {
         "id": session_id,
@@ -76,13 +68,12 @@ async def create_session(body: CreateSessionRequest, student=Depends(get_current
 @router.get("/{session_id}")
 async def get_session(session_id: str, student=Depends(get_current_student)):
     """Get session details."""
-    db = await get_db()
+    conn = await get_db()
     try:
-        cursor = await db.execute(
-            "SELECT * FROM sessions WHERE id = ? AND student_id = ?",
-            (session_id, student["id"]),
+        row = await conn.fetchrow(
+            "SELECT * FROM sessions WHERE id = $1 AND student_id = $2",
+            session_id, student["id"],
         )
-        row = await cursor.fetchone()
         if not row:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -90,7 +81,7 @@ async def get_session(session_id: str, student=Depends(get_current_student)):
             )
         return dict(row)
     finally:
-        await db.close()
+        await release_db(conn)
 
 
 @router.patch("/{session_id}")
@@ -106,13 +97,13 @@ async def update_session(
             detail=f"Invalid current_node: '{body.current_node}'",
         )
 
-    db = await get_db()
+    conn = await get_db()
     try:
-        cursor = await db.execute(
-            "SELECT id FROM sessions WHERE id = ? AND student_id = ?",
-            (session_id, student["id"]),
+        existing = await conn.fetchrow(
+            "SELECT id FROM sessions WHERE id = $1 AND student_id = $2",
+            session_id, student["id"],
         )
-        if not await cursor.fetchone():
+        if not existing:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Session not found",
@@ -120,12 +111,16 @@ async def update_session(
 
         updates = []
         params = []
+        param_idx = 1
+
         if body.current_node is not None:
-            updates.append("current_node = ?")
+            updates.append(f"current_node = ${param_idx}")
             params.append(body.current_node)
+            param_idx += 1
         if body.completed is not None:
-            updates.append("completed = ?")
+            updates.append(f"completed = ${param_idx}")
             params.append(body.completed)
+            param_idx += 1
 
         if not updates:
             raise HTTPException(
@@ -134,24 +129,24 @@ async def update_session(
             )
 
         now_iso = datetime.now(timezone.utc).isoformat()
-        updates.append("last_active_at = ?")
+        updates.append(f"last_active_at = ${param_idx}")
         params.append(now_iso)
+        param_idx += 1
+
         params.append(session_id)
         params.append(student["id"])
 
-        await db.execute(
-            f"UPDATE sessions SET {', '.join(updates)} WHERE id = ? AND student_id = ?",
-            params,
+        await conn.execute(
+            f"UPDATE sessions SET {', '.join(updates)} WHERE id = ${param_idx} AND student_id = ${param_idx + 1}",
+            *params,
         )
-        await db.commit()
 
-        cursor = await db.execute(
-            "SELECT * FROM sessions WHERE id = ?",
-            (session_id,),
+        row = await conn.fetchrow(
+            "SELECT * FROM sessions WHERE id = $1", session_id
         )
-        return dict(await cursor.fetchone())
+        return dict(row)
     finally:
-        await db.close()
+        await release_db(conn)
 
 
 @router.patch("/{session_id}/progress")
@@ -160,16 +155,15 @@ async def update_progress(
     student=Depends(get_current_student),
 ):
     """Recompute and persist session completion from competency mastery."""
-    db = await get_db()
+    conn = await get_db()
     try:
-        cursor = await db.execute(
+        session_row = await conn.fetchrow(
             """
             SELECT id, student_id, topic_entry_node
-            FROM sessions WHERE id = ? AND student_id = ?
+            FROM sessions WHERE id = $1 AND student_id = $2
             """,
-            (session_id, student["id"]),
+            session_id, student["id"],
         )
-        session_row = await cursor.fetchone()
         if not session_row:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -177,12 +171,11 @@ async def update_progress(
             )
 
         result = await compute_and_save_session_progress(
-            db,
+            conn,
             session_id,
             session_row["student_id"],
             session_row["topic_entry_node"],
         )
-        await db.commit()
         return result
     finally:
-        await db.close()
+        await release_db(conn)
