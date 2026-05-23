@@ -1,6 +1,6 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import "mathlive";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { 
   getSession, 
@@ -14,6 +14,66 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
+import React from "react";
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      "math-field": any;
+    }
+  }
+}
+
+type MathFieldProps = {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+};
+
+function MathField({
+  value,
+  onChange,
+  disabled = false,
+}: MathFieldProps) {
+  const mathFieldRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (mathFieldRef.current && mathFieldRef.current.value !== value) {
+      mathFieldRef.current.value = value;
+    }
+  }, [value]);
+
+  useEffect(() => {
+    const mf = mathFieldRef.current;
+
+    if (!mf) return;
+
+    const handleInput = () => {
+      onChange(mf.value);
+    };
+
+    mf.addEventListener("input", handleInput);
+
+    return () => {
+      mf.removeEventListener("input", handleInput);
+    };
+  }, [onChange]);
+
+  return React.createElement("math-field", {
+    ref: mathFieldRef,
+    disabled,
+    "virtual-keyboard-mode": "onfocus",
+    style: {
+      width: "100%",
+      minWidth: "180px",
+      minHeight: "48px",
+      padding: "8px",
+      border: "2px solid black",
+      background: "white",
+      fontSize: "1.1rem",
+    },
+  });
+}
 export default function PracticePage() {
   const router = useRouter();
   const params = useParams();
@@ -343,14 +403,15 @@ export default function PracticePage() {
                   </ReactMarkdown>
                   
                   {!hasSubmitted ? (
-                    <input
-                      type="text"
+                   <div className="w-64">
+                    <MathField
                       value={inputs[step.step_index] || ""}
-                      onChange={(e) => handleInputChange(step.step_index, e.target.value)}
+                      onChange={(value) =>
+                        handleInputChange(step.step_index, value)
+                      }
                       disabled={isSubmitting}
-                      placeholder="..."
-                      className="border-b-2 border-black bg-white px-2 py-0.5 text-center font-mono focus:outline-none focus:border-gray-500 w-36 transition-all"
                     />
+                  </div>
                   ) : (
                     <span className={`font-bold px-2 py-0.5 border-b-2 ${
                       isCorrect 
