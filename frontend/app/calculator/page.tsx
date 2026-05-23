@@ -225,146 +225,31 @@ export default function PracticePage() {
 
   return (
     <MainPage>
-      <style jsx>{`
-        .practice-view {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-        }
-
-        .practice-card {
-          border: 1px solid black;
-          padding: 24px;
-          background: white;
-        }
-
-        .practice-title {
-          font-size: 28px;
-          font-weight: 800;
-          margin-bottom: 8px;
-        }
-
-        .practice-subtitle {
-          font-size: 14px;
-          color: #666;
-          margin-bottom: 20px;
-        }
-
-        .practice-input-row {
-          display: flex;
-          gap: 12px;
-          margin-bottom: 16px;
-        }
-
-        .practice-input {
-          flex: 1;
-          border: 1px solid black;
-          padding: 12px;
-          font-family: monospace;
-        }
-
-        .practice-btn {
-          border: 1px solid black;
-          background: black;
-          color: white;
-          padding: 12px 20px;
-          cursor: pointer;
-          font-weight: bold;
-        }
-
-        .practice-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .practice-chip-row {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-
-        .practice-chip {
-          border: 1px solid black;
-          background: white;
-          padding: 6px 10px;
-          font-family: monospace;
-          cursor: pointer;
-        }
-
-        .practice-step {
-          border-top: 1px solid black;
-          padding: 16px 0;
-        }
-
-        .practice-step-row {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-
-        .practice-answer {
-          border: 1px solid black;
-          padding: 10px;
-          font-family: monospace;
-          min-width: 180px;
-        }
-
-        .practice-check-btn,
-        .practice-skip-btn {
-          border: 1px solid black;
-          padding: 8px 14px;
-          background: white;
-          cursor: pointer;
-          font-weight: bold;
-        }
-
-        .practice-correct {
-          color: green;
-        }
-
-        .practice-wrong {
-          color: red;
-        }
-
-        .practice-error {
-          color: red;
-          margin-top: 12px;
-          font-size: 14px;
-        }
-
-        .practice-footer {
-          margin-top: 24px;
-          display: flex;
-          gap: 12px;
-          flex-wrap: wrap;
-          align-items: center;
-        }
-      `}</style>
-
-      <div className="practice-view">
+      <div className="flex flex-col gap-6">
         {/* Header */}
         <header className="border-b border-black pb-4">
-          <h1 className="practice-title flex items-center gap-2">
+          <h1 className="flex items-center gap-2 text-3xl font-black">
             <Sparkles size={26} />
             Scaffolded Practice
           </h1>
 
-          <p className="practice-subtitle">
-            Enter an algebra expression and solve each intermediate
-            step one at a time.
+          <p className="mt-2 text-sm text-gray-600">
+            Enter an algebra expression and solve each
+            intermediate step one at a time.
           </p>
         </header>
 
         {/* Input */}
-        <div className="practice-card">
-          <div className="practice-input-row">
+        <div className="border border-black bg-white p-6">
+          <div className="mb-4 flex flex-col gap-3 md:flex-row">
             <input
-              className="practice-input"
+              className="flex-1 border border-black p-3 font-mono"
               type="text"
               placeholder="e.g. 2x + 3x"
               value={expression}
-              onChange={(e) => setExpression(e.target.value)}
+              onChange={(e) =>
+                setExpression(e.target.value)
+              }
               onKeyDown={(e) =>
                 e.key === "Enter" && handleSolve()
               }
@@ -372,23 +257,28 @@ export default function PracticePage() {
             />
 
             <button
-              className="practice-btn"
+              className="flex items-center justify-center gap-2 border border-black bg-black px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
               onClick={() => handleSolve()}
               disabled={loading || !expression.trim()}
             >
               {loading ? (
-                <Loader2 className="animate-spin" size={16} />
+                <Loader2
+                  className="animate-spin"
+                  size={16}
+                />
               ) : (
                 <ChevronRight size={16} />
               )}
+
+              {loading ? "Solving..." : "Solve"}
             </button>
           </div>
 
-          <div className="practice-chip-row">
+          <div className="flex flex-wrap gap-2">
             {SAMPLE_PROBLEMS.map((p) => (
               <button
                 key={p.expression}
-                className="practice-chip"
+                className="border border-black px-3 py-2 font-mono text-sm hover:bg-black hover:text-white"
                 onClick={() => {
                   setExpression(p.expression);
                   handleSolve(p.expression);
@@ -400,7 +290,7 @@ export default function PracticePage() {
           </div>
 
           {error && (
-            <div className="practice-error flex items-center gap-2">
+            <div className="mt-4 flex items-center gap-2 text-sm text-red-600">
               <AlertCircle size={16} />
               {error}
             </div>
@@ -409,10 +299,11 @@ export default function PracticePage() {
 
         {/* Steps */}
         {steps.length > 0 && (
-          <div className="practice-card">
+          <div className="border border-black bg-white p-6">
             <div className="mb-6">
               <p className="font-mono text-sm">
-                Simplify: <strong>{solvedExpr}</strong>
+                Simplify:{" "}
+                <strong>{solvedExpr}</strong>
               </p>
             </div>
 
@@ -425,36 +316,50 @@ export default function PracticePage() {
               const isDone = us.state !== "idle";
 
               return (
-                <div key={i} className="practice-step">
-                  <p className="font-mono text-xs uppercase mb-2">
+                <div
+                  key={i}
+                  className="border-t border-black py-5"
+                >
+                  <p className="mb-2 font-mono text-xs uppercase">
                     {formatChangeType(step.changeType)}
                   </p>
 
                   {step.oldNode && (
-                    <p className="font-mono text-sm mb-3 text-gray-600">
+                    <p className="mb-3 font-mono text-sm text-gray-600">
                       → {step.oldNode}
                     </p>
                   )}
 
-                  <div className="practice-step-row">
-                    <span className="font-mono text-lg">=</span>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="font-mono text-lg">
+                      =
+                    </span>
 
                     {isDone ? (
                       <div
-                        className={`practice-answer ${
+                        className={`min-w-[180px] border border-black p-3 font-mono ${
                           us.state === "correct"
-                            ? "practice-correct"
-                            : "practice-wrong"
+                            ? "text-green-600"
+                            : us.state === "skipped"
+                            ? "text-yellow-700"
+                            : "text-red-600"
                         }`}
                       >
                         {step.newNode}
+
+                        {us.state === "wrong" &&
+                          us.value && (
+                            <div className="mt-1 text-xs text-gray-500">
+                              Your answer: {us.value}
+                            </div>
+                          )}
                       </div>
                     ) : (
                       <input
                         ref={(el) => {
                           inputRefs.current[i] = el;
                         }}
-                        className="practice-answer"
+                        className="min-w-[180px] border border-black p-3 font-mono disabled:bg-gray-100"
                         type="text"
                         value={us.value}
                         disabled={!isActive}
@@ -464,7 +369,8 @@ export default function PracticePage() {
                               idx === i
                                 ? {
                                     ...s,
-                                    value: e.target.value,
+                                    value:
+                                      e.target.value,
                                   }
                                 : s
                             )
@@ -481,14 +387,14 @@ export default function PracticePage() {
                     {isActive && !isDone && (
                       <>
                         <button
-                          className="practice-check-btn"
+                          className="border border-black px-4 py-2 font-bold hover:bg-black hover:text-white"
                           onClick={() => checkStep(i)}
                         >
                           Check
                         </button>
 
                         <button
-                          className="practice-skip-btn"
+                          className="border border-black px-4 py-2 font-bold hover:bg-gray-100"
                           onClick={() => skipStep(i)}
                         >
                           Skip
@@ -498,14 +404,14 @@ export default function PracticePage() {
 
                     {us.state === "correct" && (
                       <CheckCircle2
-                        className="practice-correct"
+                        className="text-green-600"
                         size={18}
                       />
                     )}
 
                     {us.state === "wrong" && (
                       <X
-                        className="practice-wrong"
+                        className="text-red-600"
                         size={18}
                       />
                     )}
@@ -515,10 +421,10 @@ export default function PracticePage() {
             })}
 
             {/* Footer */}
-            <div className="practice-footer">
+            <div className="mt-6 flex flex-wrap items-center gap-3">
               {!submitted ? (
                 <button
-                  className="practice-btn"
+                  className="border border-black bg-black px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={!allDone}
                   onClick={handleSubmit}
                 >
@@ -527,15 +433,16 @@ export default function PracticePage() {
               ) : (
                 <>
                   <div className="font-mono text-sm">
-                    Score: {score}% | ✓ {correct} | ✗ {wrong}
-                    {" | "}↷ {skipped}
+                    Score: {score}% | ✓ {correct} | ✗{" "}
+                    {wrong} | ↷ {skipped}
                   </div>
 
                   <button
-                    className="practice-btn"
+                    className="flex items-center gap-2 border border-black bg-black px-4 py-3 text-white"
                     onClick={handleReset}
                   >
                     <RefreshCw size={16} />
+                    Try Again
                   </button>
                 </>
               )}
