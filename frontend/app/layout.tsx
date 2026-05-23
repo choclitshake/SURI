@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "SURI — Adaptive Math Learning",
   description:
     "Adaptive mathematics learning application for Philippine Junior High School students",
+  icons: {
+    icon: "/SURI.png",
+  },
 };
 
 export default function RootLayout({
