@@ -122,9 +122,13 @@ export default function ResultsPage() {
 
   if (loading || simplifying) {
     return (
-      <div className="min-h-screen bg-white text-black font-sans flex items-center justify-center p-8">
-        <div className="border border-black p-8 max-w-sm w-full text-center">
-          <p className="font-mono text-sm animate-pulse uppercase tracking-wider">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-sm w-full text-center shadow-[0_15px_30px_rgba(0,26,84,0.05)]">
+          <div className="relative w-12 h-12 mx-auto mb-4">
+            <div className="absolute inset-0 border-4 border-slate-100 rounded-full" />
+            <div className="absolute inset-0 border-4 border-[#001a54] border-t-[#fdd400] rounded-full animate-spin" />
+          </div>
+          <p className="font-mono text-xs text-slate-500 animate-pulse uppercase tracking-wider">
             {simplifying ? simplifyText : loadingText}
           </p>
         </div>
@@ -134,15 +138,17 @@ export default function ResultsPage() {
 
   if (errorMsg || !result) {
     return (
-      <div className="min-h-screen bg-white text-black font-sans p-8 max-w-xl mx-auto flex flex-col justify-center">
-        <div className="border border-black p-8 text-center">
-          <h2 className="text-xl font-mono uppercase font-bold mb-4">Error</h2>
-          <p className="font-mono text-xs text-red-600 mb-8 break-words">
-            [ERROR] {errorMsg || "No results available."}
+      <div className="min-h-screen bg-slate-50 p-6 md:p-8 flex flex-col justify-center items-center">
+        <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl p-8 shadow-[0_15px_30px_rgba(0,26,84,0.05)] text-center relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#fdd400]/10 rounded-full blur-[40px] pointer-events-none" />
+          <span className="font-mono text-[9px] text-red-600 bg-red-50 border border-red-100 px-2.5 py-1 rounded-md font-bold uppercase tracking-wider">EVALUATION FAULT</span>
+          <h2 className="text-xl font-bold font-['Hanken_Grotesk',_sans-serif] text-[#001a54] mt-3 mb-2">Error</h2>
+          <p className="font-mono text-xs text-red-600 bg-red-50/50 border border-red-100 rounded-lg p-3 my-4 break-all text-left">
+            [FAULT_LOG] {errorMsg || "No results available."}
           </p>
           <button
             onClick={() => router.push(`/session/${sessionId}/practice`)}
-            className="border border-black py-3 px-6 text-sm font-mono uppercase transition-all bg-white hover:bg-black hover:text-white cursor-pointer font-bold"
+            className="w-full bg-[#001a54] text-white hover:bg-[#001545] py-3.5 px-6 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)]"
           >
             Back to Practice
           </button>
@@ -151,48 +157,97 @@ export default function ResultsPage() {
     );
   }
 
+  const getHeaderDetails = () => {
+    if (result.decision === "advance") {
+      if (result.topic_complete) {
+        return { title: "Topic Complete!", label: "ADVANCEMENT ARCHIVED", emoji: "🎉" };
+      }
+      return { title: "Concept Mastered", label: "MILESTONE ACHIEVED", emoji: "✓" };
+    }
+    return { title: "Keep Practicing", label: "REMEDIATION MODULE", emoji: "⚡" };
+  };
+
+  const headerInfo = getHeaderDetails();
+
+  const renderHeader = () => (
+    <header className="bg-[#001a54] rounded-2xl p-6 md:p-8 border border-white/10 shadow-[0_0_30px_rgba(0,26,84,0.4)] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+      <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#fdd400]/10 rounded-full blur-[50px] pointer-events-none" />
+      <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#fdd400]/5 rounded-full blur-[50px] pointer-events-none" />
+      
+      <div className="flex items-center justify-between mb-4 z-10">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400]" />
+          <span className="font-mono text-xs text-slate-300 font-bold tracking-[0.2em] uppercase">{headerInfo.label}</span>
+        </div>
+        <span className="font-mono text-[10px] text-slate-400 bg-black/30 px-3 py-1.5 rounded-xl border border-white/5 uppercase">GO1_EVAL</span>
+      </div>
+
+      <div className="z-10 flex justify-between items-end gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-['Hanken_Grotesk',_sans-serif]">
+            {headerInfo.title}
+          </h1>
+          <p className="font-mono text-[10px] text-slate-300 mt-2 tracking-wide uppercase">
+            Session ID: <span className="text-[#fdd400]">{sessionId}</span>
+          </p>
+        </div>
+        {headerInfo.emoji && (
+          <span className="text-3xl md:text-4xl bg-white/5 p-3 rounded-2xl border border-white/10">{headerInfo.emoji}</span>
+        )}
+      </div>
+    </header>
+  );
+
   if (result.decision === "advance" && result.topic_complete) {
     return (
-      <div className="min-h-screen bg-white text-black font-sans p-8 max-w-xl mx-auto">
-        <header className="border-b border-black pb-4 mb-8 text-center">
-          <h1 className="text-2xl font-mono font-bold uppercase">Topic Complete!</h1>
-          <p className="text-3xl mt-2">🎉</p>
-        </header>
-        <div className="border border-black p-6 text-center mb-8">
-          <p className="font-mono text-sm text-gray-600 uppercase mb-2">Mastery</p>
-          <p className="font-mono text-lg font-bold">{masteryLabel}</p>
+      <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
+        <div className="max-w-xl mx-auto space-y-6">
+          {renderHeader()}
+
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-6 text-center shadow-[0_4px_12px_rgba(0,26,84,0.02)]">
+            <p className="font-mono text-xs text-slate-400 uppercase tracking-widest mb-1">Session Mastery</p>
+            <p className="font-['Hanken_Grotesk',_sans-serif] text-2xl font-black text-[#001a54]">{masteryLabel}</p>
+            <p className="text-xs text-slate-500 font-medium mt-1">Topic path elements perfectly finished [1]</p>
+          </div>
+
+          <button
+            onClick={handleDashboard}
+            disabled={actionLoading}
+            className="w-full bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] disabled:opacity-50"
+          >
+            Back to Dashboard
+          </button>
         </div>
-        <button
-          onClick={handleDashboard}
-          disabled={actionLoading}
-          className="w-full border border-black py-4 text-base font-mono uppercase font-bold tracking-wider transition-all bg-white hover:bg-black hover:text-white cursor-pointer disabled:opacity-50"
-        >
-          Back to Dashboard
-        </button>
       </div>
     );
   }
 
   if (result.decision === "advance") {
     return (
-      <div className="min-h-screen bg-white text-black font-sans p-8 max-w-xl mx-auto">
-        <header className="border-b border-black pb-4 mb-8 text-center">
-          <h1 className="text-2xl font-mono font-bold uppercase">Mastered ✓</h1>
-        </header>
-        <div className="border border-black p-6 text-center mb-6">
-          <p className="font-mono text-sm text-gray-600 uppercase mb-2">Mastery</p>
-          <p className="font-mono text-lg font-bold">{masteryLabel}</p>
+      <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
+        <div className="max-w-xl mx-auto space-y-6">
+          {renderHeader()}
+
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-6 text-center shadow-[0_4px_12px_rgba(0,26,84,0.02)]">
+            <p className="font-mono text-xs text-slate-400 uppercase tracking-widest mb-1">Session Mastery</p>
+            <p className="font-['Hanken_Grotesk',_sans-serif] text-2xl font-black text-[#001a54]">{masteryLabel}</p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 text-center shadow-[0_4px_12px_rgba(0,26,84,0.02)] flex items-center justify-center gap-3">
+            <span className="h-2 w-2 rounded-full bg-[#fdd400] shadow-[0_0_6px_#fdd400]" />
+            <p className="font-mono text-xs text-slate-600 uppercase tracking-wider font-bold">
+              Next Track Segment: <span className="text-[#001a54] font-black">{result.next_node_label}</span>
+            </p>
+          </div>
+
+          <button
+            onClick={handleContinue}
+            disabled={actionLoading}
+            className="w-full bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] flex items-center justify-center gap-2"
+          >
+            Continue Pathway <span className="text-[#fdd400]">→</span>
+          </button>
         </div>
-        <p className="font-mono text-sm text-center mb-8 uppercase tracking-wide">
-          Next up: {result.next_node_label}
-        </p>
-        <button
-          onClick={handleContinue}
-          disabled={actionLoading}
-          className="w-full border border-black py-4 text-base font-mono uppercase font-bold tracking-wider transition-all bg-white hover:bg-black hover:text-white cursor-pointer disabled:opacity-50"
-        >
-          Continue
-        </button>
       </div>
     );
   }
@@ -201,69 +256,70 @@ export default function ResultsPage() {
   const hasMisconceptions = misconceptionNodes.length > 0;
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans p-8 max-w-xl mx-auto">
-      <header className="border-b border-black pb-4 mb-8 text-center">
-        <h1 className="text-2xl font-mono font-bold uppercase">Keep Practicing</h1>
-      </header>
+    <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
+      <div className="max-w-xl mx-auto space-y-6">
+        {renderHeader()}
 
-      <div className="border border-black p-6 text-center mb-8">
-        <p className="font-mono text-sm text-gray-600 uppercase mb-2">Mastery</p>
-        <p className="font-mono text-lg font-bold">{masteryLabel}</p>
-      </div>
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 text-center shadow-[0_4px_12px_rgba(0,26,84,0.02)]">
+          <p className="font-mono text-xs text-slate-400 uppercase tracking-widest mb-1">Session Mastery</p>
+          <p className="font-['Hanken_Grotesk',_sans-serif] text-2xl font-black text-[#001a54]">{masteryLabel}</p>
+        </div>
 
-      <div className="space-y-4">
-        <RemediateCard
-          title="Address a Specific Error"
-          subtitle={
-            hasMisconceptions
-              ? "Tap to choose a concept to review"
-              : "No specific errors identified"
-          }
-          disabled={!hasMisconceptions}
-          expanded={misconceptionsExpanded}
-          onToggle={() => hasMisconceptions && setMisconceptionsExpanded((v) => !v)}
-        >
-          {hasMisconceptions && (
-            <ul className="border-t border-black divide-y divide-black">
-              {misconceptionNodes.map((node: MisconceptionNode) => (
-                <li key={node.node_id}>
-                  <button
-                    type="button"
-                    onClick={() => handleNavigateToNode(node.node_id)}
-                    disabled={actionLoading}
-                    className="w-full text-left py-3 px-4 font-mono text-sm uppercase hover:bg-black hover:text-white transition-colors disabled:opacity-50"
-                  >
-                    {node.node_label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </RemediateCard>
-
-        {result.go_deeper_available && result.go_deeper_node && (
+        <div className="space-y-4">
           <RemediateCard
-            title="Go Deeper into Prerequisites"
-            subtitle={`Work on: ${result.go_deeper_node.node_label}`}
-            onAction={() => handleNavigateToNode(result.go_deeper_node!.node_id)}
+            title="Address a Specific Error"
+            subtitle={
+              hasMisconceptions
+                ? "Tap to choose a concept to review"
+                : "No specific errors identified"
+            }
+            disabled={!hasMisconceptions}
+            expanded={misconceptionsExpanded}
+            onToggle={() => hasMisconceptions && setMisconceptionsExpanded((v) => !v)}
+          >
+            {hasMisconceptions && (
+              <ul className="border-t border-slate-100 divide-y divide-slate-100 bg-slate-50/50">
+                {misconceptionNodes.map((node: MisconceptionNode) => (
+                  <li key={node.node_id}>
+                    <button
+                      type="button"
+                      onClick={() => handleNavigateToNode(node.node_id)}
+                      disabled={actionLoading}
+                      className="w-full text-left py-3.5 px-5 font-mono text-xs text-slate-600 hover:text-[#001a54] hover:bg-white transition-colors disabled:opacity-50 flex items-center justify-between"
+                    >
+                      <span>{node.node_label}</span>
+                      <span className="font-mono text-[9px] text-[#001a54] font-extrabold bg-[#fdd400]/20 border border-[#fdd400]/40 px-2.5 py-0.5 rounded uppercase">Remediate</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </RemediateCard>
+
+          {result.go_deeper_available && result.go_deeper_node && (
+            <RemediateCard
+              title="Go Deeper into Prerequisites"
+              subtitle={`Work on: ${result.go_deeper_node.node_label}`}
+              onAction={() => handleNavigateToNode(result.go_deeper_node!.node_id)}
+              actionLoading={actionLoading}
+            />
+          )}
+
+          <RemediateCard
+            title="Review This Topic"
+            subtitle="Re-read the lesson with a simpler explanation"
+            onAction={handleReviewSimplified}
             actionLoading={actionLoading}
           />
-        )}
 
-        <RemediateCard
-          title="Review This Topic"
-          subtitle="Re-read the lesson with a simpler explanation"
-          onAction={handleReviewSimplified}
-          actionLoading={actionLoading}
-        />
-
-        <RemediateCard
-          title="Quit"
-          subtitle="Your progress will be saved"
-          onAction={handleQuit}
-          actionLoading={actionLoading}
-          light
-        />
+          <RemediateCard
+            title="Quit"
+            subtitle="Your progress will be saved"
+            onAction={handleQuit}
+            actionLoading={actionLoading}
+            light
+          />
+        </div>
       </div>
     </div>
   );
@@ -290,10 +346,10 @@ function RemediateCard({
   light?: boolean;
   children?: ReactNode;
 }) {
-  const baseClass = light
-    ? "border border-gray-300 text-gray-700"
-    : "border border-black text-black";
-  const disabledClass = disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer";
+  const borderClass = light 
+    ? "border-slate-200 bg-white opacity-80" 
+    : "border-slate-200/80 bg-white hover:border-[#001a54]/30";
+  const disabledClass = disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer";
 
   const handleClick = () => {
     if (disabled) return;
@@ -305,19 +361,26 @@ function RemediateCard({
   };
 
   return (
-    <div className={`${baseClass} ${disabledClass}`}>
+    <div className={`border rounded-2xl transition-all duration-300 overflow-hidden shadow-[0_4px_12px_rgba(0,26,84,0.02)] hover:shadow-[0_12px_24px_rgba(0,26,84,0.04)] ${borderClass} ${disabledClass}`}>
       <button
         type="button"
         onClick={handleClick}
         disabled={disabled || actionLoading}
-        className="w-full text-left p-4 disabled:cursor-not-allowed"
+        className="w-full text-left p-5 disabled:cursor-not-allowed flex items-center justify-between gap-4 group"
       >
-        <p className="font-mono text-sm font-bold uppercase">{title}</p>
-        <p className="font-mono text-xs mt-1 text-gray-600">{subtitle}</p>
+        <div className="space-y-1">
+          <p className="font-['Hanken_Grotesk',_sans-serif] text-sm md:text-base font-extrabold text-[#001a54] group-hover:text-[#001a54]/80 transition-colors">{title}</p>
+          <p className="font-mono text-xs text-slate-500">{subtitle}</p>
+        </div>
         {onToggle && !disabled && (
-          <p className="font-mono text-xs mt-2 uppercase">
+          <span className="font-mono text-[10px] uppercase font-bold text-[#001a54] bg-[#fdd400]/25 px-2.5 py-1 rounded-md">
             {expanded ? "▲ Collapse" : "▼ Expand"}
-          </p>
+          </span>
+        )}
+        {onAction && !disabled && (
+          <span className="font-mono text-sm text-[#001a54] font-bold group-hover:translate-x-1 transition-transform">
+            →
+          </span>
         )}
       </button>
       {expanded && children}
