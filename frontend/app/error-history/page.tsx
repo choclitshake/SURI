@@ -6,10 +6,11 @@ import MainPage from "@/components/mainpage";
 import { 
   getMe, 
   getStudentProgress, 
-  createSession, // Imported to dynamically spin up review pathways
+  createSession, 
+  skipDiagnostic, // Imported to bypass diagnostics on newly created sessions
   MisconceptionHistoryItem 
 } from "../../lib/api";
-import { BookOpen, Calendar, Loader2, Sparkles, TrendingUp } from "lucide-react";
+import { BookOpen, Calendar, Loader2, Sparkles } from "lucide-react";
 
 // Student-friendly review tips mapped directly to active learning codes [1]
 const REVIEW_TIPS: Record<string, string> = {
@@ -41,10 +42,11 @@ function formatDate(iso: string): string {
 function ErrorHistoryContent() {
   const router = useRouter();
   const [misconceptions, setMisconceptions] = useState<MisconceptionHistoryItem[]>([]);
+  const [activeSessions, setActiveSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
-  // Track loading state for each specific target button to prevent double-clicks
+  // Tracking loading state for targeted launch buttons
   const [loadingNodeId, setLoadingNodeId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,6 +54,7 @@ function ErrorHistoryContent() {
       try {
         const me = await getMe();
         const progress = await getStudentProgress(me.student_id);
+        setActiveSessions(progress.active_sessions || []);
         setMisconceptions(progress.misconception_history || []);
       } catch (err: unknown) {
         const status =
@@ -72,15 +75,30 @@ function ErrorHistoryContent() {
     load();
   }, [router]);
 
-  // Creates a clean, targeted review session starting directly at this lesson node [1]
+  // Launches or resumes the targeted learning path [1]
   const handleReviewNode = async (nodeId: string) => {
     setLoadingNodeId(nodeId);
+    setErrorMsg(null);
     try {
-      const session = await createSession({ topic_entry_node: nodeId });
-      router.push(`/session/${session.id}/lesson`);
-    } catch {
-      // Fallback directly to the static topic configuration page if session initialization fails
-      router.push(`/topics/${nodeId}`);
+      // 1. Check if there is already an active session in progress for this topic node
+      const existingSession = activeSessions.find(
+        (s) => s.topic_entry_node === nodeId
+      );
+
+      if (existingSession) {
+        // If in progress, redirect straight to the lesson workspace [1]
+        router.push(`/session/${existingSession.id}/lesson`);
+        return;
+      }
+
+      // 2. If no session exists, create a new one
+      const newSession = await createSession({ topic_entry_node: nodeId });
+      
+      // 3. Immediately bypass the diagnostic phase [1]
+      await skipDiagnostic(newSession.id);
+      router.push(`/session/${newSession.id}/lesson`);
+    } catch (err: any) {
+      setErrorMsg("Could not load the lesson. Please try again.");
     } finally {
       setLoadingNodeId(null);
     }
@@ -90,37 +108,35 @@ function ErrorHistoryContent() {
     <MainPage>
       <div className="bg-slate-50 min-h-screen text-slate-800 py-4 px-4 md:px-6 space-y-4">
         <div className="max-w-5xl mx-auto space-y-4">
-          
-          {/* Bento Grid Header Block */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Main Display panel */}
-            <div className="lg:col-span-2 bg-[#001a54] rounded-2xl p-4 md:p-5 border border-white/10 shadow-[0_0_20px_rgba(0,26,84,0.3)] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
-              <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#fdd400]/10 rounded-full blur-[40px] pointer-events-none" />
-              <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-[#fdd400]/5 rounded-full blur-[40px] pointer-events-none" />
-              
-              <div className="flex items-center justify-between mb-4 z-10">
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_6px_#fdd400]" />
-                  <span className="font-mono text-xs text-slate-300 tracking-[0.2em] uppercase">STUDY RECOVERY HUB</span>
-                </div>
-                <span className="font-mono text-[9px] text-slate-400 bg-black/30 px-2.5 py-1 rounded-lg border border-white/5 uppercase">Focus_v1</span>
-              </div>
-              
-              <div className="z-10">
-                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white font-['Hanken_Grotesk',_sans-serif]">
-                  Conceptual <span className="text-[#fdd400]">Review Hub</span>
-                </h1>
-                <p className="font-mono text-[10px] text-slate-300 mt-1 tracking-wide uppercase">
-                  Targeted practice for past misunderstandings. Select any topic below to run a dedicated refresh session [1].
-                </p>
-              </div>
-            </div>
+
+         {/* Bento Grid Header Block */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      {/* Main Display panel */}
+      <div className="lg:col-span-2 bg-[#001a54] rounded-2xl p-6 md:p-8 border border-white/10 shadow-[0_0_30px_rgba(0,26,84,0.4)] relative overflow-hidden flex flex-col justify-between min-h-[180px]">
+        
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400]" />
+            <span className="font-mono text-xs text-slate-300 tracking-[0.2em] uppercase">SYSTEM LOG</span>
+          </div>
+          <span className="font-mono text-[10px] text-slate-400 bg-black/30 px-2 py-1 rounded border border-white/5">ENG_MODE</span>
+        </div>
+        
+        <div>
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white font-['Hanken_Grotesk',_sans-serif]">
+            Error <span className="text-[#fdd400]">History</span>
+          </h1>
+          <p className="font-mono text-xs text-slate-300 mt-2 tracking-wide">
+            ANALYZING CONCEPTUAL ANOMALIES AND REASONING DISCREPANCIES
+          </p>
+        </div>
+      </div>
 
             {/* Metric Bento block */}
             <div className="bg-white rounded-2xl p-4 md:p-5 border border-slate-200/80 shadow-[0_15px_30px_rgba(0,26,84,0.05)] flex flex-col justify-between relative overflow-hidden">
               <div className="flex justify-between items-start">
-                <span className="font-mono text-xs text-slate-500 uppercase tracking-widest font-bold">REINFORCEMENT TARGETS</span>
+                <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest font-bold">LOGGED ITEMS</span>
                 <span className="text-[9px] font-mono text-[#001a54] bg-[#fdd400] px-2.5 py-1 rounded-full font-extrabold tracking-wider">ACTIVE</span>
               </div>
               <div className="my-2">
@@ -129,7 +145,7 @@ function ErrorHistoryContent() {
                 </span>
               </div>
               <p className="font-mono text-[10px] text-slate-500 leading-relaxed">
-                Individual algebraic concepts logged for prioritized study review.
+                Total cognitive friction points recorded in this cycle.
               </p>
             </div>
           </div>
@@ -137,7 +153,7 @@ function ErrorHistoryContent() {
           {/* System Error Notification Banner */}
           {errorMsg && (
             <div className="bg-red-50/50 border border-red-200 rounded-2xl p-5 shadow-[0_10px_20px_rgba(239,68,68,0.03)] flex items-start gap-4">
-              <div className="w-2 h-2 rounded-full bg-red-600 mt-1.5 shrink-0 shadow-[0_0_8px_rgba(220,38,38,0.4)]" />
+              <div className="w-2 h-2 rounded-full bg-red-600 mt-1.5 shrink-0" />
               <div>
                 <span className="font-mono text-xs text-red-700 font-bold uppercase tracking-widest block mb-1">[WORKSPACE EXCEPTION]</span>
                 <p className="font-mono text-sm text-red-800">{errorMsg}</p>
@@ -150,9 +166,9 @@ function ErrorHistoryContent() {
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 rounded-full bg-[#fdd400] shadow-[0_0_6px_#fdd400]" />
-                <h2 className="font-['Hanken_Grotesk',_sans-serif] text-base font-bold text-[#001a54] tracking-tight">Focus Points</h2>
+                <h2 className="font-['Hanken_Grotesk',_sans-serif] text-base font-bold text-[#001a54] tracking-tight">Active Logs</h2>
               </div>
-              <span className="font-mono text-[9px] text-slate-400 uppercase tracking-widest">REGISTRY PATH</span>
+              <span className="font-mono text-[9px] text-slate-400 uppercase tracking-widest">STREAM // SECURE</span>
             </div>
 
             {loading ? (
@@ -161,15 +177,15 @@ function ErrorHistoryContent() {
                   <div className="absolute inset-0 border-4 border-slate-100 rounded-full" />
                   <div className="absolute inset-0 border-4 border-[#001a54] border-t-[#fdd400] rounded-full animate-spin" />
                 </div>
-                <p className="font-mono text-[10px] text-slate-500 tracking-widest uppercase animate-pulse">Initializing Hub data streams...</p>
+                <p className="font-mono text-[10px] text-slate-500 tracking-widest uppercase animate-pulse">Initializing Streams...</p>
               </div>
             ) : misconceptions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
                 <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-3 border border-green-100 shadow-sm">
                   <span className="text-green-600 font-bold">✓</span>
                 </div>
-                <p className="font-['Hanken_Grotesk',_sans-serif] text-base font-semibold text-[#001a54]">Concept Map Perfect!</p>
-                <p className="font-mono text-xs text-slate-500 mt-1">Excellent job! You currently have zero recorded conceptual errors.</p>
+                <p className="font-['Hanken_Grotesk',_sans-serif] text-base font-semibold text-[#001a54]">Log Clean & Clear</p>
+                <p className="font-mono text-xs text-slate-500 mt-1">No conceptual errors found in the registry.</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -183,7 +199,7 @@ function ErrorHistoryContent() {
                       className="bg-white border border-slate-200 rounded-2xl p-4 md:p-5 hover:border-[#001a54]/30 transition-all duration-300 shadow-[0_4px_12px_rgba(0,26,84,0.01)] hover:shadow-[0_15px_30px_rgba(0,26,84,0.05)] flex flex-col md:flex-row md:items-center justify-between gap-4 group"
                     >
                       <div className="flex items-start gap-3 flex-1">
-                        {/* Gold status marker line [1] */}
+                        {/* Gold status marker line */}
                         <div className="w-1 h-16 bg-[#fdd400] rounded-full self-center shrink-0 shadow-[0_0_6px_rgba(253,212,0,0.4)] transition-all group-hover:scale-y-110" />
                         
                         <div className="space-y-1">
@@ -204,7 +220,7 @@ function ErrorHistoryContent() {
                             Attempted Step: <span className="text-slate-600 font-medium italic">"{item.step_description}"</span>
                           </p>
 
-                          {/* Friendly Tutor Explainer Tip Block [1] */}
+                          {/* Friendly Tutor Explainer Tip Block */}
                           <div className="mt-2.5 bg-[#001a54]/5 rounded-xl p-3 border border-slate-100 text-slate-600">
                             <p className="text-[9px] font-mono uppercase tracking-widest font-extrabold text-[#001a54] mb-1 flex items-center gap-1">
                               <Sparkles size={8} /> SURI's Recovery Tip
@@ -223,7 +239,7 @@ function ErrorHistoryContent() {
                           <span>{formatDate(item.logged_at)}</span>
                         </div>
 
-                        {/* Interactive practice recovery launcher [1] */}
+                        {/* Interactive practice recovery launcher */}
                         <button
                           onClick={() => handleReviewNode(item.node_id)}
                           disabled={loadingNodeId !== null}
