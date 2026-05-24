@@ -13,12 +13,7 @@ import { BookOpen, Loader2 } from "lucide-react";
 function formatLessonMarkdown(text: string): string {
   if (!text) return "";
 
-  // 1. Convert computer asterisks (*) into beautiful mathematical dots (\cdot) [2]
-  let cleaned = text
-    .replace(/\s\*\s/g, " \\cdot ")
-    .replace(/\*/g, " \\cdot ");
-
-  // 2. Identify common step transitions and auto-inject clear step headings [1]
+  // Identify common step transitions and auto-inject clear step headings
   const stepRules = [
     { trigger: "Distribute the 2/3", heading: "### Step 1: Distribute Fractional Coefficients" },
     { trigger: "Simplify the multiplication", heading: "### Step 2: Simplify Term Calculations" },
@@ -29,12 +24,10 @@ function formatLessonMarkdown(text: string): string {
     { trigger: "The standard form usually", heading: "### Step 7: Standardize Leading Coefficients" }
   ];
 
+  let cleaned = text;
   stepRules.forEach(({ trigger, heading }) => {
     cleaned = cleaned.replace(trigger, `\n\n${heading}\n\n${trigger}`);
   });
-
-  // 3. Find equations containing "=" and convert them to centered block math ($$) for breathing room [2]
-  cleaned = cleaned.replace(/\$([^$]+=[^$]+)\$/g, "\n\n$$\n$1\n$$\n\n");
 
   return cleaned;
 }
@@ -147,7 +140,7 @@ function LessonVisualizer({ nodeId }: { nodeId: string }) {
     );
   }
 
-// Added dynamic visual check for Polynomial Equations, Polynomial Operations, and Polynomial Division [1]
+  // Added dynamic visual check for Polynomial Equations, Polynomial Operations, and Polynomial Division [1]
   if (id.includes("PE") || id.includes("PO") || id.includes("PD")) {
     return (
       <div className="w-full max-w-[200px] mx-auto py-2">
@@ -297,15 +290,27 @@ export default function LessonPage() {
   }
 
   // Pre-process raw lesson and math parameters into structured formatted markdown [2]
-  const lessonBody = formatLessonMarkdown(resolveLessonText(content));
-  const workedExample = formatLessonMarkdown(content.worked_example || "");
-  const guidedExplanation = formatLessonMarkdown(content.guided_explanation || "");
+  // Clean lesson math expressions: convert $$ to $ and strip stray asterisks
+const cleanLessonMath = (expr: string) => {
+  // Convert block math $$...$$ to inline $...$
+  const inline = expr.replace(/\$\$(.+?)\$\$/g, (_, inner) => `$${inner}$`);
+  // Remove multiplication asterisks in monomials (e.g., 6 * x → 6x)
+  return inline
+    .replace(/(\d)\s*\*\s*([a-zA-Z])/g, "$1$2")
+    .replace(/([a-zA-Z])\s*\*\s*([a-zA-Z])/g, "$1$2");
+};
+
+// Apply cleaning to lesson markdown
+const lessonBody = formatLessonMarkdown(cleanLessonMath(resolveLessonText(content)));
+const workedExample = formatLessonMarkdown(cleanLessonMath(content.worked_example || ""));
+const guidedExplanation = formatLessonMarkdown(cleanLessonMath(content.guided_explanation || ""));
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
-      
+
       {/* Dynamic style block to frame, center, and highlight math symbols inside lessons */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .markdown-content {
           line-height: 1.8;
         }
@@ -336,6 +341,21 @@ export default function LessonPage() {
           box-shadow: 0 4px 12px rgba(0, 26, 84, 0.01) !important;
           display: inline-block !important;
         }
+        /* Fix ordered and unordered list numbering/bullets */
+        .markdown-content ol {
+          list-style: decimal !important;
+          padding-left: 1.5rem !important;
+          margin-bottom: 1rem !important;
+        }
+        .markdown-content ul {
+          list-style: disc !important;
+          padding-left: 1.5rem !important;
+          margin-bottom: 1rem !important;
+        }
+        .markdown-content li {
+          margin-bottom: 0.35rem !important;
+          color: #334155;
+        }
       `}} />
 
       <div className="max-w-3xl mx-auto space-y-6">
@@ -344,7 +364,7 @@ export default function LessonPage() {
         <header className="bg-[#001a54] rounded-2xl p-6 md:p-8 border border-white/10 shadow-[0_0_30px_rgba(0,26,84,0.4)] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
           <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#fdd400]/10 rounded-full blur-[50px] pointer-events-none" />
           <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#fdd400]/5 rounded-full blur-[50px] pointer-events-none" />
-          
+
           <div className="flex items-center justify-between mb-4 z-10">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400]" />
@@ -370,19 +390,19 @@ export default function LessonPage() {
 
         {/* Content Modules Stack with Dynamic Graphical Visual Aids [1] */}
         <main className="space-y-6">
-          
+
           {/* Primary Lesson Segment with Split Visual Aid Bento Layout [1] */}
           <section className="bg-white rounded-2xl border border-slate-200/80 p-6 md:p-8 shadow-[0_4px_12px_rgba(0,26,84,0.02)]">
             <h2 className="text-xs font-mono font-bold text-[#001a54] uppercase tracking-widest mb-6 pb-2 border-b border-slate-100 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[#fdd400]" />
               Core Concept
             </h2>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
               {/* Left 2 Cols: Markdown Text [1] */}
               <div className="lg:col-span-2 font-sans text-sm md:text-base leading-relaxed space-y-4 text-slate-700 markdown-content">
-                <ReactMarkdown 
-                  remarkPlugins={[remarkMath]} 
+                <ReactMarkdown
+                  remarkPlugins={[remarkMath]}
                   rehypePlugins={[rehypeKatex]}
                   components={{
                     h3: ({ node, ...props }) => (
@@ -396,7 +416,7 @@ export default function LessonPage() {
                   {lessonBody}
                 </ReactMarkdown>
               </div>
-              
+
               {/* Right 1 Col: Dynamic Concept Visual Sandbox [1] */}
               <div className="lg:col-span-1 bg-slate-50 border border-slate-200/60 rounded-xl p-4 flex flex-col justify-between min-h-[220px] relative overflow-hidden group">
                 <span className="absolute top-0 right-0 bg-[#001a54] text-[#fdd400] text-[8px] font-mono uppercase font-bold tracking-widest px-2.5 py-1 rounded-bl-lg border-l border-b border-slate-200/10">
@@ -417,8 +437,8 @@ export default function LessonPage() {
               Worked Example
             </h2>
             <div className="font-sans text-sm md:text-base leading-relaxed space-y-4 text-slate-700 markdown-content">
-              <ReactMarkdown 
-                remarkPlugins={[remarkMath]} 
+              <ReactMarkdown
+                remarkPlugins={[remarkMath]}
                 rehypePlugins={[rehypeKatex]}
                 components={{
                   h3: ({ node, ...props }) => (
@@ -429,7 +449,7 @@ export default function LessonPage() {
                   )
                 }}
               >
-                {workedExample}
+                {workedExample.replace(/\\n/g, '\n')}
               </ReactMarkdown>
             </div>
           </section>
@@ -441,8 +461,8 @@ export default function LessonPage() {
               Guided Explanation
             </h2>
             <div className="font-sans text-sm md:text-base leading-relaxed space-y-4 text-slate-700 markdown-content">
-              <ReactMarkdown 
-                remarkPlugins={[remarkMath]} 
+              <ReactMarkdown
+                remarkPlugins={[remarkMath]}
                 rehypePlugins={[rehypeKatex]}
                 components={{
                   h3: ({ node, ...props }) => (
@@ -453,7 +473,7 @@ export default function LessonPage() {
                   )
                 }}
               >
-                {guidedExplanation}
+                {guidedExplanation.replace(/\\n/g, '\n')}
               </ReactMarkdown>
             </div>
           </section>

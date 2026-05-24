@@ -87,15 +87,15 @@ for node_id, node_data in GRAPH.items():
         continue
 
     # a. Query ChromaDB collection "suri_slm" for chunks WHERE node_id matches,
-    #    n_results=5, using sentence-transformers embedding of:
-    #    "{node_label} Grade {grade} mathematics explanation example"
-    query_text = f"{node_label} Grade {grade} mathematics explanation example"
+    #    n_results=15, using sentence-transformers embedding of:
+    #    "{node_label} Grade {grade} mathematics step-by-step operations and examples"
+    query_text = f"{node_label} Grade {grade} mathematics step-by-step operations and examples"
     query_vector = embed_model.encode(query_text).tolist()
 
     try:
         results = collection.query(
             query_embeddings=[query_vector],
-            n_results=5,
+            n_results=15,
             where={"node_id": node_id}
         )
     except Exception as e:
@@ -116,22 +116,25 @@ for node_id, node_data in GRAPH.items():
     context = "\n\n".join(documents[0])
 
     # c. Build this exact prompt and call gemini-3.1-flash-lite:
-    prompt = f"""You are a mathematics tutor writing lesson content for Philippine Junior 
-High School students. Use ONLY the retrieved DepEd SLM content provided 
-below. Do not add any information not present in the source.
+    prompt = f"""You are an expert mathematics educator writing an in-depth lesson for Philippine Junior High School students.
+    
+We are creating content for the competency: {node_label} (Grade {grade}).
 
-RETRIEVED DEPEDCONTENT:
+Use the provided DepEd SLM content below as your source material. You must focus STRICTLY on the competency "{node_label}". Do not write about other topics that happen to be in the text.
+
+RETRIEVED DEPED CONTENT:
 {context}
 
-COMPETENCY: {node_label} (Grade {grade})
+Write the following components to be engaging, educational, and thorough:
 
-Write the following. Use simple, clear Filipino-student-friendly English.
-No jargon. Short sentences.
+1. LESSON: A comprehensive, in-depth explanation (3 to 5 paragraphs). Teach the concept from scratch. Explain the 'why' and 'how'. Use formatting to make it readable.
+2. WORKED_EXAMPLE: One fully solved problem that directly applies to {node_label}. Number every step. Show all work clearly.
+3. GUIDED_EXPLANATION: A second different problem. After each step, add one sentence explaining exactly WHY that step is done.
 
-LESSON: 2 to 3 short paragraphs explaining the concept from scratch.
-WORKED_EXAMPLE: One fully solved problem. Number every step. Show all work.
-GUIDED_EXPLANATION: A second different problem. After each step, add one 
-sentence explaining WHY that step is done.
+IMPORTANT MATH FORMATTING RULES:
+- Inline Math: Wrap expressions in single dollar signs like $x^{{3/4}}$ or $a^2 + b^2 = c^2$.
+- Block/Display Math: Wrap expressions in double dollar signs like $$\\frac{{-b \\pm \\sqrt{{b^2-4ac}}}}{{2a}}$$.
+- Do not change the normal words, just surround EVERY mathematical equation, variable, or number expression with the appropriate dollar signs.
 
 Return a JSON object with exactly these keys:
 "lesson", "worked_example", "guided_explanation"
@@ -176,9 +179,13 @@ IMPORTANT: If you use mathematical equations or LaTeX-style formatting with back
                 raise ValueError(f"Missing key '{key}' in Gemini response.")
 
         # e. Store result in output dict keyed by node_id, including source_doc
-        #    from the first retrieved chunk's metadata.
-        first_meta = metadatas[0][0] if metadatas and metadatas[0] else {}
-        source_doc = first_meta.get("source_doc", "unknown")
+        #    We will gather all unique source documents retrieved by the query.
+        unique_docs = set()
+        if metadatas and metadatas[0]:
+            for meta in metadatas[0]:
+                if "source_doc" in meta:
+                    unique_docs.add(meta["source_doc"])
+        source_doc = ", ".join(sorted(unique_docs)) if unique_docs else "unknown"
 
         output_dict[node_id] = {
             "lesson": parsed_json["lesson"],
