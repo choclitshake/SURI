@@ -186,7 +186,12 @@ export default function PracticePage() {
   };
 
   const handleBackToTopics = () => {
-    router.push("/topics");
+    router.push(`/topics/${nodeId}`);
+  };
+
+  const cleanMathExpr = (expr: string) => {
+    // Replaces patterns like '6*x' with '6x'
+    return expr.replace(/(\d)\s*\*\s*([a-zA-Z])/g, '$1$2').replace(/([a-zA-Z])\s*\*\s*([a-zA-Z])/g, '$1$2');
   };
 
   if (loading) {
@@ -265,7 +270,7 @@ export default function PracticePage() {
               const allCorrect = res?.step_results.every(r => r.correct);
               return (
                 <div key={prob.id} className="flex justify-between items-center border-b border-slate-200/60 last:border-b-0 pb-2 last:pb-0">
-                  <span className="text-slate-600 font-semibold truncate max-w-[240px]">Problem {idx + 1}: {prob.problem_expr}</span>
+                  <span className="text-slate-600 font-semibold truncate max-w-[240px]">Problem {idx + 1}: {cleanMathExpr(prob.problem_expr)}</span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
                     allCorrect 
                       ? "bg-green-50 text-green-700 border border-green-200" 
@@ -297,6 +302,23 @@ export default function PracticePage() {
     const withoutLatex = val.replace(/\\[a-zA-Z]+/g, "");
     return /[a-zA-Z]{2,}/.test(withoutLatex) || withoutLatex.includes(",");
   };
+
+  const fixUnbalancedMath = (before: string, after: string) => {
+    // Determine if the blank splits a LaTeX block
+    const doubleDollarsBefore = (before.match(/\$\$/g) || []).length;
+    if (doubleDollarsBefore % 2 !== 0) {
+      return { fixedBefore: before + "$$", fixedAfter: "$$" + after };
+    }
+    
+    const singleBefore = before.replace(/\$\$/g, "");
+    const singleDollarsBefore = (singleBefore.match(/\$/g) || []).length;
+    if (singleDollarsBefore % 2 !== 0) {
+      return { fixedBefore: before + "$", fixedAfter: "$" + after };
+    }
+    
+    return { fixedBefore: before, fixedAfter: after };
+  };
+
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
@@ -352,7 +374,7 @@ export default function PracticePage() {
             <p className="text-[10px] text-slate-400 uppercase tracking-widest font-mono font-bold">Target Mathematical Expression</p>
             <div className="text-2xl md:text-3xl font-bold mt-2 text-[#001a54] flex justify-center markdown-content">
               <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                {problem.problem_expr.startsWith("$") ? problem.problem_expr : `$${problem.problem_expr}$`}
+                {cleanMathExpr(problem.problem_expr).startsWith("$") ? cleanMathExpr(problem.problem_expr) : `$${cleanMathExpr(problem.problem_expr)}$`}
               </ReactMarkdown>
             </div>
           </div>
@@ -371,9 +393,11 @@ export default function PracticePage() {
               const isCorrect = stepResult?.correct;
               const hasSubmitted = !!submissionResult;
 
-              const exprParts = step.blank_expression.split("___");
-              const beforeBlank = exprParts[0];
-              const afterBlank = exprParts[1] || "";
+              const cleanBlankExpr = cleanMathExpr(step.blank_expression);
+              const exprParts = cleanBlankExpr.split("___");
+              const rawBefore = exprParts[0];
+              const rawAfter = exprParts[1] || "";
+              const { fixedBefore: beforeBlank, fixedAfter: afterBlank } = fixUnbalancedMath(rawBefore, rawAfter);
 
               const isMisconceptionStep =
                 submissionResult?.misconception_found &&
@@ -507,7 +531,7 @@ export default function PracticePage() {
                             rehypePlugins={[rehypeKatex]}
                             components={{ p: ({ node, ...props }) => <span {...props} /> }}
                           >
-                            {formatMathValue(step.correct_value)}
+                            {formatMathValue(cleanMathExpr(step.correct_value))}
                           </ReactMarkdown>
                         </span>
                       </p>
@@ -518,7 +542,7 @@ export default function PracticePage() {
                         <p className="text-[9px] font-mono uppercase tracking-widest font-extrabold text-red-700 mb-1">
                           Tutor Feedback
                         </p>
-                        <div className="text-xs md:text-sm font-sans italic leading-relaxed markdown-content font-medium">
+                        <div className="text-sm font-medium leading-relaxed markdown-content">
                           <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                             {submissionResult.feedback_text}
                           </ReactMarkdown>
