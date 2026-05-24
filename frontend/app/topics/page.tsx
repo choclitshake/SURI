@@ -55,17 +55,13 @@ export default function TopicsPage() {
 
   return (
     <MainPage>
-      <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="space-y-6">
 
           {/* Bento Grid Header Block */}
 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
   
   {/* Main Branding Display Header Card */}
   <div className="lg:col-span-2 bg-[#001a54] rounded-2xl p-6 md:p-8 border border-white/10 shadow-[0_0_30px_rgba(0,26,84,0.4)] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
-    {/* Subtle ambient gold glow offsets */}
-    <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#fdd400]/10 rounded-full blur-[50px] pointer-events-none" />
-    <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#fdd400]/5 rounded-full blur-[50px] pointer-events-none" />
     
     <div className="flex items-center justify-between mb-4 z-10">
       <div className="flex items-center gap-2">
@@ -234,7 +230,6 @@ export default function TopicsPage() {
             </div>
           )}
 
-        </div>
       </div>
     </MainPage>
   );

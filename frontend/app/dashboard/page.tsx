@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import MainPage from "@/components/mainpage";
 import {
   getMe,
@@ -31,9 +31,31 @@ function formatDate(iso: string): string {
   });
 }
 
+function DashboardSkeleton() {
+  const box = "bg-gray-200 rounded-2xl animate-pulse";
+  return (
+    <>
+      <section className="flex justify-between items-start gap-8 mb-6 max-sm:flex-col max-sm:gap-4">
+        <div className="flex flex-col gap-1.5">
+          <div className="h-10 w-64 bg-gray-200 rounded-lg animate-pulse" />
+          <div className="h-5 w-96 bg-gray-200 rounded-lg animate-pulse mt-2" />
+        </div>
+        <div className="h-10 w-40 bg-gray-200 rounded-xl animate-pulse" />
+      </section>
+      <section className="grid grid-cols-12 gap-4 mb-5">
+        <div className="col-span-12 lg:col-span-8 bg-[#001a54]/40 rounded-2xl h-48 animate-pulse" />
+        <div className={`col-span-12 lg:col-span-4 ${box} h-48`} />
+      </section>
+      <section className="grid grid-cols-12 gap-4">
+        <div className={`col-span-12 lg:col-span-6 ${box} h-64`} />
+        <div className={`col-span-12 lg:col-span-6 ${box} h-64`} />
+      </section>
+    </>
+  );
+}
+
 function DashboardContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [activeSessions, setActiveSessions] = useState<ActiveSessionProgress[]>([]);
@@ -46,12 +68,13 @@ function DashboardContent() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    if (searchParams.get("saved") === "true") {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("saved") === "true") {
       setShowSaved(true);
       const t = setTimeout(() => setShowSaved(false), 3000);
       return () => clearTimeout(t);
     }
-  }, [searchParams]);
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -106,15 +129,11 @@ function DashboardContent() {
     : 0;
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-8">
-        <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
-    <MainPage>
+    <>
       {showSaved && (
         <div className="mb-6 border border-green-600 bg-green-50 text-green-800 p-4 text-center text-sm rounded-xl">
           Progress saved.
@@ -131,7 +150,7 @@ function DashboardContent() {
       <section className="flex justify-between items-start gap-8 mb-6 max-sm:flex-col max-sm:gap-4">
         <div className="flex flex-col gap-1.5">
           <h2 className="font-['Hanken_Grotesk',system-ui,sans-serif] text-[32px] font-extrabold m-0 leading-tight">
-            Welcome back, {name}! 👋
+            Welcome back, {name}!
           </h2>
           <p className="text-[#434656] text-base max-w-[520px] m-0">
             {activeSessions.length > 0
@@ -156,7 +175,7 @@ function DashboardContent() {
       {/* Grid Row 1 */}
       <section className="grid grid-cols-12 gap-4 mb-5">
         {/* Overall Mastery */}
-        <div className="col-span-12 lg:col-span-8 bg-[#001a54] text-white rounded-2xl p-5 shadow-[0_14px_32px_rgba(0,0,0,0.12)] border border-[rgba(195,197,217,0.25)] relative overflow-hidden flex flex-col justify-between">
+        <div className="col-span-12 lg:col-span-8 bg-[#001a54] text-white rounded-2xl p-5 border border-[#001a54] relative overflow-hidden flex flex-col justify-between">
           <div>
             <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full bg-white/20 uppercase tracking-[0.08em]">
               <TrendingUp className="w-[14px] h-[14px]" />
@@ -189,12 +208,10 @@ function DashboardContent() {
         </div>
 
         {/* Completed Topics - Enhanced Gold Bento Card */}
-        <div className="col-span-12 lg:col-span-4 bg-gradient-to-br from-[#ffe74c] via-[#fdd400] to-[#e0b900] rounded-2xl p-6 shadow-[0_15px_30px_rgba(253,212,0,0.15)] border border-[#e0b900] relative overflow-hidden flex flex-col justify-between min-h-[180px]">
-          {/* Subtle inner radial overlay for premium depth */}
+        <div className="col-span-12 lg:col-span-4 bg-gradient-to-br from-[#ffe74c] via-[#fdd400] to-[#e0b900] rounded-2xl p-6 border border-[#fdd400] relative overflow-hidden flex flex-col justify-between min-h-[180px]">
           <div className="absolute inset-0 bg-radial-gradient from-white/10 to-transparent pointer-events-none" />
           
           {completedSessions.length === 0 ? (
-            /* Retains the centered position empty state layout */
             <div className="flex flex-col items-center justify-center text-center flex-1 py-4 relative z-10">
               <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold px-3 py-1.5 rounded-full bg-[#001a54]/10 text-[#001a54] uppercase tracking-wider mb-4 border border-[#001a54]/5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]">
                 <Trophy className="w-3.5 h-3.5 text-[#001a54]" />
@@ -250,7 +267,7 @@ function DashboardContent() {
       {/* Grid Row 2 */}
       <section className="grid grid-cols-12 gap-4">
         {/* Recent Activity */}
-        <div className="col-span-12 lg:col-span-6 bg-[#f2f4f6] rounded-2xl p-7 shadow-[0_14px_32px_rgba(0,0,0,0.12)] border border-[rgba(195,197,217,0.25)]">
+        <div className="col-span-12 lg:col-span-6 bg-white rounded-2xl p-7 border border-[#c3c5d9]">
           <div className="flex items-center justify-between mb-6">
             <h3 className="flex items-center gap-2 font-['Hanken_Grotesk',system-ui,sans-serif] text-xl m-0">
               <CheckCircle2 className="w-[26px] h-[26px] text-[#001a54]" />
@@ -314,7 +331,7 @@ function DashboardContent() {
         </div>
 
         {/* Error History */}
-        <div className="col-span-12 lg:col-span-6 bg-white rounded-2xl p-7 shadow-[0_14px_32px_rgba(0,0,0,0.12)] border border-[rgba(195,197,217,0.25)]">
+        <div className="col-span-12 lg:col-span-6 bg-white rounded-2xl p-7 border border-[#c3c5d9]">
           <div className="flex items-center justify-between mb-6">
             <h3 className="flex items-center gap-2 font-['Hanken_Grotesk',system-ui,sans-serif] text-xl m-0">
               <Sparkles className="w-[26px] h-[26px] text-[#001a54]" />
@@ -355,20 +372,14 @@ function DashboardContent() {
           )}
         </div>
       </section>
-    </MainPage>
+    </>
   );
 }
 
 export default function DashboardPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" />
-        </div>
-      }
-    >
+    <MainPage>
       <DashboardContent />
-    </Suspense>
+    </MainPage>
   );
 }

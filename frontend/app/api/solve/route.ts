@@ -1,34 +1,37 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import mathsteps from "mathsteps";
 
-export async function POST(req: NextRequest) {
-  const { expression } = await req.json();
+// 1. Recursive helper to format steps and substeps into JSON-safe strings
+function formatStep(step: any): any {
+  return {
+    changeType: step.changeType,
+    oldNode: step.oldNode ? step.oldNode.toString() : null,
+    newNode: step.newNode ? step.newNode.toString() : null,
+    // Recursively format nested sub-steps if they exist
+    substeps: Array.isArray(step.substeps) 
+      ? step.substeps.map(formatStep) 
+      : Array.isArray(step.subSteps)
+        ? step.subSteps.map(formatStep)
+        : []
+  };
+}
 
-  if (!expression || typeof expression !== "string") {
-    return NextResponse.json({ error: "No expression provided" }, { status: 400 });
-  }
-
+// 2. In your POST API handler:
+export async function POST(req: Request) {
   try {
-    // Dynamically import so it only loads server-side
-    const mathsteps = require("mathsteps");
-
-    const rawSteps = mathsteps.simplifyExpression(expression);
-
-    if (!rawSteps || rawSteps.length === 0) {
-      return NextResponse.json({ expression, steps: [] });
+    const { expression } = await req.json();
+    if (!expression) {
+      return NextResponse.json({ error: "No expression provided" }, { status: 400 });
     }
 
-    const steps = rawSteps.map((step: any, index: number) => ({
-      step:       index + 1,
-      changeType: step.changeType,
-      oldNode:    step.oldNode ? step.oldNode.toString() : null,
-      newNode:    step.newNode ? step.newNode.toString() : null,
-    }));
+    // Solve expression using mathsteps
+    const steps = mathsteps.simplifyExpression(expression);
 
-    return NextResponse.json({ expression, steps });
+    // Format all steps (and substeps) recursively before returning
+    const formattedSteps = steps.map(formatStep);
+
+    return NextResponse.json({ steps: formattedSteps });
   } catch (err: any) {
-    return NextResponse.json(
-      { error: err?.message ?? "Failed to solve expression" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
