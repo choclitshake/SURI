@@ -49,6 +49,10 @@ export default function TopicIntroPage() {
     if (topicEntryNode) load();
   }, [topicEntryNode]);
 
+  const handleExit = () => {
+    router.push("/topics");
+  };
+
   const handleCreateSession = async (mode: "diagnostic" | "skip") => {
     setActionLoading(true);
     setError(null);
@@ -97,7 +101,14 @@ export default function TopicIntroPage() {
     <MainPage>
       <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
         <div className="max-w-7xl mx-auto space-y-6">
-
+  
+            <button
+              onClick={handleExit}
+              className="font-mono text-[10px] text-black bg-[#fdd400] hover:bg-black hover:text-white px-3 py-1.5 rounded-xl border border-white/5 transition-all cursor-pointer font-bold uppercase tracking-wider"
+            >
+              Back to Lessons
+            </button>
+    
           {/* Bento Grid Header Block */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             
@@ -114,6 +125,8 @@ export default function TopicIntroPage() {
                 </div>
                 <span className="font-mono text-[10px] text-slate-400 bg-black/30 px-2 py-1 rounded border border-white/5">{topicEntryNode}</span>
               </div>
+
+        
               
               <div className="z-10">
                 <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white font-['Hanken_Grotesk',_sans-serif]">
