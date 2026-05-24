@@ -147,6 +147,26 @@ function LessonVisualizer({ nodeId }: { nodeId: string }) {
     );
   }
 
+// Added dynamic visual check for Polynomial Equations, Polynomial Operations, and Polynomial Division [1]
+  if (id.includes("PE") || id.includes("PO") || id.includes("PD")) {
+    return (
+      <div className="w-full max-w-[200px] mx-auto py-2">
+        <svg viewBox="0 0 200 120" className="w-full h-auto">
+          <line x1="10" y1="60" x2="190" y2="60" stroke="#cbd5e1" strokeWidth="1" />
+          <line x1="100" y1="10" x2="100" y2="110" stroke="#cbd5e1" strokeWidth="1" />
+          {/* Cubic polynomial wave curve */}
+          <path d="M 30 110 C 60 10, 80 10, 100 60 C 120 110, 140 110, 170 10" fill="none" stroke="#001a54" strokeWidth="2.5" />
+          {/* Multiple Polynomial Roots */}
+          <circle cx="50" cy="60" r="3.5" fill="#fdd400" stroke="#001a54" strokeWidth="1.5" />
+          <circle cx="100" cy="60" r="3.5" fill="#fdd400" stroke="#001a54" strokeWidth="1.5" />
+          <circle cx="150" cy="60" r="3.5" fill="#fdd400" stroke="#001a54" strokeWidth="1.5" />
+          <text x="125" y="20" className="text-[8px] font-mono fill-slate-400">Degree n = 3</text>
+        </svg>
+        <p className="text-[9px] font-mono text-slate-400 text-center uppercase mt-1 tracking-wider">Multi-Root Polynomial [1]</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center justify-center h-full p-4">
       <BookOpen size={24} className="text-[#001a54]/40" />
