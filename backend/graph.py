@@ -113,7 +113,7 @@ GRAPH = {
     }
 }
 
-ENTRY_NODES = ["QE", "SLE", "RER", "PE"]
+ENTRY_NODES = ["SLE", "RER", "QE", "PE"]
 
 DEEPEST_NODES = [node_id for node_id, node in GRAPH.items() if node["prerequisite"] is None]
 

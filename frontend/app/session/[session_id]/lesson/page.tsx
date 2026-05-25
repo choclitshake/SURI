@@ -312,18 +312,19 @@ const guidedExplanation = formatLessonMarkdown(cleanLessonMath(content.guided_ex
       <style dangerouslySetInnerHTML={{
         __html: `
         .markdown-content {
-          line-height: 1.8;
+          line-height: 2.2;
         }
         .markdown-content p {
-          margin-bottom: 1rem;
+          margin-bottom: 1.25rem;
           color: #334155;
         }
         /* Beautiful inline math highlighting [2] */
         .markdown-content .katex {
+          font-weight: bold !important;
           font-size: 1.05em;
           color: #001a54 !important;
           background-color: rgba(253, 212, 0, 0.12) !important;
-          padding: 2px 6px !important;
+          padding: 4px 8px !important;
           border-radius: 6px !important;
           border: 1px solid rgba(253, 212, 0, 0.25) !important;
           font-family: inherit;

@@ -73,6 +73,8 @@ async def get_student_progress(
 
         for session_row in session_rows:
             topic_entry_node = session_row["topic_entry_node"]
+            if topic_entry_node not in ENTRY_NODES:
+                continue
             current_node = session_row["current_node"]
             chain = get_chain(topic_entry_node)
             total_in_chain = len(chain)

@@ -253,6 +253,7 @@ export interface SaveProgressResponse {
 
 export function register(body: {
   name: string;
+  email: string;
   grade_level: number;
   password: string;
 }): Promise<AuthResponse> {
@@ -263,7 +264,7 @@ export function register(body: {
 }
 
 export function login(body: {
-  name: string;
+  email: string;
   password: string;
 }): Promise<AuthResponse> {
   return request<AuthResponse>("/api/auth/login", {

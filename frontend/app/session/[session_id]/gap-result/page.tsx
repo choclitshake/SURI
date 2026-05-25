@@ -208,12 +208,21 @@ export default function GapResultPage() {
               })}
             </div>
 
-            <button
-              onClick={handleStartRemediation}
-              className="w-full bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] flex items-center justify-center gap-2"
-            >
-              Start Remediation Track <span className="text-[#fdd400]">→</span>
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 mt-6">
+              <button
+                onClick={handleStartRemediation}
+                className="flex-1 bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] flex items-center justify-center gap-2"
+              >
+                Start Remediation Track <span className="text-[#fdd400]">→</span>
+              </button>
+              
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="flex-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer"
+              >
+                Return to Dashboard
+              </button>
+            </div>
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">

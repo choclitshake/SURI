@@ -4,17 +4,37 @@ import Image from "next/image";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, GraduationCap, ChevronDown, Lock, Eye, EyeOff, Rocket } from "lucide-react";
+import { User, GraduationCap, ChevronDown, Lock, Eye, EyeOff, Rocket, Mail } from "lucide-react";
 import { register } from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [gradeLevel, setGradeLevel] = useState(6);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const getPasswordStrength = (pwd: string) => {
+    let score = 0;
+    if (!pwd) return 0;
+    if (pwd.length >= 8) score += 1;
+    if (/[A-Z]/.test(pwd)) score += 1;
+    if (/[a-z]/.test(pwd)) score += 1;
+    if (/[0-9]/.test(pwd)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+    return score;
+  };
+
+  const pwStrength = getPasswordStrength(password);
+  
+  const getStrengthColor = () => {
+    if (pwStrength <= 2) return "#dc2626";
+    if (pwStrength <= 4) return "#eab308";
+    return "#16a34a";
+  };
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -22,7 +42,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register({ name, grade_level: gradeLevel, password });
+      await register({ name, email, grade_level: gradeLevel, password });
       router.push("/dashboard");
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -171,6 +191,42 @@ export default function RegisterPage() {
                     lineHeight: "18px", color: "#0b1c30",
                     display: "block", marginBottom: "5px",
                   }}>
+                    Email
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <span
+                      style={{
+                        position: "absolute", left: "14px", top: "50%",
+                        transform: "translateY(-50%)", color: "#737686",
+                        display: "flex", pointerEvents: "none",
+                      }}
+                    >
+                      <Mail size={18} />
+                    </span>
+                    <input
+                      id="register-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      style={{
+                        width: "100%", padding: "11px 14px 11px 44px",
+                        background: "#fff", border: "1.5px solid #c3c6d7",
+                        borderRadius: "12px", fontSize: "14px",
+                        outline: "none", boxSizing: "border-box",
+                      }}
+                      className="focus:ring-2 focus:ring-[#004ac6] focus:border-transparent"
+                      placeholder="Your email"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{
+                    fontSize: "13px", fontWeight: 600,
+                    lineHeight: "18px", color: "#0b1c30",
+                    display: "block", marginBottom: "5px",
+                  }}>
                     Grade Level
                   </label>
                   <div style={{ position: "relative" }}>
@@ -266,12 +322,31 @@ export default function RegisterPage() {
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   </div>
+                  {password.length > 0 && (
+                    <>
+                      <div style={{ marginTop: "8px", display: "flex", gap: "4px" }}>
+                        {[1, 2, 3, 4, 5].map((level) => (
+                          <div
+                            key={level}
+                            style={{
+                              height: "4px", flex: 1, borderRadius: "2px",
+                              background: level <= pwStrength ? getStrengthColor() : "#e2e8f0",
+                              transition: "all 0.3s",
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <p style={{ fontSize: "11px", color: "#64748b", margin: "4px 0 0 0", lineHeight: "1.4" }}>
+                        Must contain at least 8 characters, uppercase, lowercase, number, and special character.
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 <button
                   id="register-submit"
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || pwStrength < 5}
                   style={{
                     width: "100%", padding: "13px 20px",
                     background: "#007e37", color: "#fff",
@@ -280,9 +355,9 @@ export default function RegisterPage() {
                     cursor: "pointer", display: "flex",
                     alignItems: "center", justifyContent: "center",
                     gap: "6px", boxShadow: "0 6px 18px rgba(0,126,55,0.2)",
-                    opacity: loading ? 0.6 : 1,
+                    opacity: (loading || pwStrength < 5) ? 0.6 : 1,
                   }}
-                  className="hover:bg-[#006229] active:scale-[0.98]"
+                  className={(loading || pwStrength < 5) ? "" : "hover:bg-[#006229] active:scale-[0.98]"}
                 >
                   {loading ? "Creating account\u2026" : "Create Account"}
                   <Rocket size={18} />

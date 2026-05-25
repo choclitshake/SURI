@@ -266,35 +266,7 @@ export default function ResultsPage() {
         </div>
 
         <div className="space-y-4">
-          <RemediateCard
-            title="Address a Specific Error"
-            subtitle={
-              hasMisconceptions
-                ? "Tap to choose a concept to review"
-                : "No specific errors identified"
-            }
-            disabled={!hasMisconceptions}
-            expanded={misconceptionsExpanded}
-            onToggle={() => hasMisconceptions && setMisconceptionsExpanded((v) => !v)}
-          >
-            {hasMisconceptions && (
-              <ul className="border-t border-slate-100 divide-y divide-slate-100 bg-slate-50/50">
-                {misconceptionNodes.map((node: MisconceptionNode) => (
-                  <li key={node.node_id}>
-                    <button
-                      type="button"
-                      onClick={() => handleNavigateToNode(node.node_id)}
-                      disabled={actionLoading}
-                      className="w-full text-left py-3.5 px-5 font-mono text-xs text-slate-600 hover:text-[#001a54] hover:bg-white transition-colors disabled:opacity-50 flex items-center justify-between"
-                    >
-                      <span>{node.node_label}</span>
-                      <span className="font-mono text-[9px] text-[#001a54] font-extrabold bg-[#fdd400]/20 border border-[#fdd400]/40 px-2.5 py-0.5 rounded uppercase">Remediate</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </RemediateCard>
+
 
           {result.go_deeper_available && result.go_deeper_node && (
             <RemediateCard
@@ -317,7 +289,6 @@ export default function ResultsPage() {
             subtitle="Your progress will be saved"
             onAction={handleQuit}
             actionLoading={actionLoading}
-            light
           />
         </div>
       </div>
