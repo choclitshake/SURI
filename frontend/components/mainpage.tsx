@@ -1,37 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import {
-  AlertTriangle,
-  BookOpen,
-  Calculator,
-  ChevronRight,
-  LayoutGrid,
-  LineChart,
-  LogOut,
-  PencilLine,
-} from "lucide-react";
-import { logout } from "@/lib/api";
+import { LogOut } from "lucide-react";
+import { getMe, logout } from "@/lib/api";
 
-const NAV_ITEMS: { label: string; icon: React.ComponentType<{ className?: string }>; href?: string }[] = [
-  { label: "Dashboard", icon: LayoutGrid, href: "/dashboard" },
-  { label: "Topics", icon: BookOpen, href: "/topics" },
-  { label: "Error History", icon: AlertTriangle, href: "/error-history" },
-  // { label: "Practice", icon: PencilLine },
-  { label: "Progress", icon: LineChart, href: "/progress" },
-  { label: "Calculator", icon: Calculator, href: "/calculator" },
+const NAV_ITEMS: { label: string; href: string }[] = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Topics", href: "/topics" },
+  { label: "Error History", href: "/error-history" },
+  { label: "Progress", href: "/progress" },
+  { label: "Calculator", href: "/calculator" },
 ];
 
-type MainPageProps = {
-  children: React.ReactNode;
-};
-
-export default function MainPage({ children }: MainPageProps) {
+export default function MainPage({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(true);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    getMe().then((me) => setUserName(me.name)).catch(() => {});
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -42,76 +32,54 @@ export default function MainPage({ children }: MainPageProps) {
     }
   };
 
-  const sidebarWidth = collapsed ? "w-20" : "w-48";
-
   return (
-    <div className="h-screen flex gap-5 p-4 bg-[radial-gradient(ellipse_at_top,#ffffff_0%,#f5f7ff_35%,#e4edff_55%,#9dc8ff_90%)]">
-      <div className="flex flex-col gap-3 h-full">
-        <aside className={`${sidebarWidth} bg-[#001a54] rounded-[18px] flex flex-col items-center py-4 shadow-[0_10px_28px_rgba(0,26,84,0.25)] transition-all duration-300`}>
-          <img alt="SURI" src="/SURI_white.png" className="w-12 h-12 object-contain" />
-        </aside>
-
-        <aside className={`${sidebarWidth} bg-[#001a54] rounded-[18px] flex flex-col py-3 shadow-[0_10px_28px_rgba(0,26,84,0.25)] transition-all duration-300 flex-1 ${collapsed ? "items-center justify-center" : "items-start justify-center"}`}>
-          <nav className={`flex flex-col gap-4 ${collapsed ? "items-center" : "items-start w-full px-3"}`}>
-            {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
-              const isActive = href ? pathname === href || (href !== "/" && pathname.startsWith(href)) : false;
-              return href ? (
-                <button
-                  key={label}
-                  onClick={() => router.push(href)}
-                  className={`flex items-center gap-3 rounded-[14px] transition-all duration-200 cursor-pointer ${
-                    isActive ? "bg-yellow-400 text-[#001a54]" : "text-white/60 hover:bg-yellow-400/20 hover:text-yellow-200"
-                  } ${collapsed ? "w-12 h-12 justify-center" : "w-full h-12 px-3"}`}
-                >
-                  <Icon className="w-6 h-6 shrink-0" />
-                  {!collapsed && <span className="text-sm font-medium whitespace-nowrap">{label}</span>}
-                </button>
-              ) : (
-                <span
-                  key={label}
-                  className={`flex items-center gap-3 rounded-[14px] text-white/60 transition-all duration-200 ${collapsed ? "w-12 h-12 justify-center" : "w-full h-12 px-3"}`}
-                >
-                  <Icon className="w-6 h-6 shrink-0" />
-                  {!collapsed && <span className="text-sm font-medium whitespace-nowrap">{label}</span>}
-                </span>
-              );
-            })}
-            <button
-              onClick={() => setCollapsed((v) => !v)}
-              className={`flex items-center gap-3 rounded-[14px] text-white/60 hover:text-white hover:bg-white/20 transition-all duration-200 ${collapsed ? "w-12 h-12 justify-center" : "w-full h-12 px-3"}`}
-            >
-              <ChevronRight className={`w-6 h-6 shrink-0 transition-transform duration-300 ${collapsed ? "" : "rotate-180"}`} />
-              {!collapsed && <span className="text-sm font-medium whitespace-nowrap">Collapse</span>}
-            </button>
-          </nav>
-        </aside>
-
-        <aside className={`${sidebarWidth} bg-[#001a54] rounded-[18px] flex flex-col items-center py-[14px] shadow-[0_10px_28px_rgba(0,26,84,0.25)] hover:bg-red-600 transition-all duration-300`}>
+    <div className="min-h-screen bg-[#DBD4C7] text-[#191c1e]">
+      {/* TopAppBar */}
+      <nav className="fixed top-4 left-0 right-0 h-16 bg-transparent z-50 flex items-center justify-between px-4 md:px-8 pointer-events-none">
+        <div className="flex items-center bg-white px-6 md:px-8 h-11 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
+          <img alt="SURI" src="/SURI.png" className="h-9 w-auto object-contain" />
+        </div>
+        <nav className="hidden md:flex items-center gap-8 bg-white px-8 h-11 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
+          {NAV_ITEMS.map(({ label, href }) => {
+            const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
+            return (
+              <button
+                key={label}
+                onClick={() => router.push(href)}
+                className={`font-['Manrope'] text-[12px] font-bold transition-colors cursor-pointer ${
+                  isActive ? "text-[#1F2720] border-b-2 border-[#1F2720]" : "text-[#434656] hover:text-[#1F2720]"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </nav>
+        <div className="flex items-center gap-3 pointer-events-auto">
+          <div className="bg-white px-5 h-11 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex items-center">
+            <span className="font-['Manrope'] text-[12px] font-bold text-[#191c1e]">{userName || "Student"}</span>
+          </div>
           <button
             onClick={() => setShowLogoutConfirm(true)}
-            title="Logout"
-            className={`flex items-center gap-3 rounded-[12px] text-white ${collapsed ? "w-12 h-12 justify-center" : "w-full h-12 px-3 justify-start"}`}
+            className="w-11 h-11 rounded-full bg-white border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex items-center justify-center text-[#434656] hover:text-red-600 hover:border-red-200 transition-all cursor-pointer"
           >
-            <LogOut className="w-6 h-6 shrink-0" />
-            {!collapsed && <span className="text-sm font-medium whitespace-nowrap">Logout</span>}
+            <LogOut className="w-5 h-5" />
           </button>
-        </aside>
-      </div>
-
-      <main className="flex-1 bg-white rounded-[22px] border border-[rgba(195,197,217,0.4)] shadow-[0_24px_48px_rgba(0,0,0,0.12)] flex flex-col relative overflow-hidden max-h-[calc(100vh-32px)]">
-        <div className="flex-1 p-8 overflow-y-auto">
-          {children}
         </div>
+      </nav>
+
+      <main className="pt-24 pb-12 px-4 md:px-8 max-w-[1440px] mx-auto">
+        {children}
       </main>
 
       {showLogoutConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 shadow-[0_10px_25px_rgba(0,0,0,0.1)] w-80 text-center">
-            <h3 className="text-lg font-bold text-[#001a54] mb-2">Log out</h3>
-            <p className="text-sm text-slate-500 mb-6">Are you sure you want to log out?</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 shadow-lg w-80 text-center">
+            <h3 className="font-['Hanken_Grotesk'] text-lg font-bold text-[#191c1e] mb-2">Log out</h3>
+            <p className="font-['Manrope'] text-sm text-[#434656] mb-6">Are you sure you want to log out?</p>
             <div className="flex gap-3">
-              <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50">Cancel</button>
-              <button onClick={handleLogout} className="flex-1 py-2 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700">Log out</button>
+              <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-2 rounded-xl border border-[#c3c5d9] text-[#434656] font-bold text-sm hover:bg-[#f2f4f6] cursor-pointer">Cancel</button>
+              <button onClick={handleLogout} className="flex-1 py-2 rounded-xl bg-[#ba1a1a] text-white font-bold text-sm hover:bg-red-700 cursor-pointer">Log out</button>
             </div>
           </div>
         </div>

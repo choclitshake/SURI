@@ -3,7 +3,7 @@ import "./globals.css";
 import "katex/dist/katex.min.css";
 
 export const metadata: Metadata = {
-  title: "SURI — Adaptive Math Learning",
+  title: "SURI | Grade 9-10 Algebra Mastery",
   description:
     "Adaptive mathematics learning application for Philippine Junior High School students",
   icons: {
@@ -18,7 +18,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-[#f5f7ff] text-black min-h-screen">
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+      </head>
+      <body className="bg-[#f7f9fb] text-[#191c1e] min-h-screen font-['Manrope']">
         {children}
       </body>
     </html>
