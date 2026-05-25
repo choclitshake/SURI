@@ -25,14 +25,14 @@ async def register(body: RegisterRequest):
     """Register a new student account."""
     conn = await get_db()
     try:
-        # Check if name already exists
+        # Check if email already exists
         existing = await conn.fetchrow(
-            "SELECT id FROM students WHERE name = $1", body.name
+            "SELECT id FROM students WHERE email = $1", body.email
         )
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="A student with that name already exists",
+                detail="A student with that email already exists",
             )
 
         student_id = str(uuid.uuid4())
@@ -40,8 +40,8 @@ async def register(body: RegisterRequest):
         created_at = datetime.now(timezone.utc).isoformat()
 
         await conn.execute(
-            "INSERT INTO students (id, name, grade_level, password_hash, created_at) VALUES ($1, $2, $3, $4, $5)",
-            student_id, body.name, body.grade_level, password_hash, created_at,
+            "INSERT INTO students (id, name, email, grade_level, password_hash, created_at) VALUES ($1, $2, $3, $4, $5, $6)",
+            student_id, body.name, body.email, body.grade_level, password_hash, created_at,
         )
 
         token = create_access_token(student_id, body.name)
@@ -64,24 +64,24 @@ async def register(body: RegisterRequest):
 
 @router.post("/login", response_model=AuthResponse)
 async def login(body: LoginRequest):
-    """Log in with name and password."""
+    """Log in with email and password."""
     conn = await get_db()
     try:
         student = await conn.fetchrow(
-            "SELECT * FROM students WHERE name = $1", body.name
+            "SELECT * FROM students WHERE email = $1", body.email
         )
 
         if not student:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid name or password",
+                detail="Invalid email or password",
             )
 
         student = dict(student)
         if not verify_password(body.password, student["password_hash"]):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid name or password",
+                detail="Invalid email or password",
             )
 
         token = create_access_token(student["id"], student["name"])
@@ -119,5 +119,5 @@ async def get_me(student=Depends(get_current_student)):
     return {
         "student_id": student["id"],
         "name": student["name"],
-        "email": None,
+        "email": student["email"],
     }

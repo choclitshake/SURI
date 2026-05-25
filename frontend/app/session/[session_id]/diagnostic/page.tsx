@@ -25,6 +25,8 @@ export default function DiagnosticPage() {
   const [skipping, setSkipping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ correct: boolean; nextAction: string } | null>(null);
+  const [totalQuestions, setTotalQuestions] = useState<number>(0);
+  const [answeredCount, setAnsweredCount] = useState<number>(0);
 
   const fetchNextProbe = async () => {
     setLoading(true);
@@ -47,6 +49,18 @@ export default function DiagnosticPage() {
   useEffect(() => {
     sessionStorage.removeItem("diagnostic_answers");
     sessionStorage.removeItem("diagnostic_submit_result");
+    
+    // Fetch total questions for UI
+    const initTotal = async () => {
+      try {
+        const session = await getSession(sessionId);
+        const { chain } = await getTopicChain(session.topic_entry_node);
+        setTotalQuestions(chain.length);
+      } catch (e) {
+        console.error("Failed to load chain length", e);
+      }
+    };
+    initTotal();
   }, [sessionId]);
 
   const finalizeDiagnostic = async () => {
@@ -106,6 +120,7 @@ export default function DiagnosticPage() {
       );
       currentAnswers[probe.node_id] = res.correct;
       sessionStorage.setItem("diagnostic_answers", JSON.stringify(currentAnswers));
+      setAnsweredCount(Object.keys(currentAnswers).length);
 
       setTimeout(async () => {
         try {
@@ -270,6 +285,11 @@ export default function DiagnosticPage() {
               <span className="bg-[#fdd400] text-[#001a54] font-mono text-[10px] font-bold uppercase px-2.5 py-1 rounded">
                 Assessing: {probe.node_id}
               </span>
+              {totalQuestions > 0 && (
+                <span className="font-mono text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                  Question {answeredCount + 1} of {totalQuestions}
+                </span>
+              )}
             </div>
 
             <h2 className="text-base md:text-lg font-['Hanken_Grotesk',_sans-serif] font-extrabold text-[#001a54] leading-snug mb-6">
@@ -308,7 +328,7 @@ export default function DiagnosticPage() {
                   ? "bg-green-50 text-green-700 border-green-200" 
                   : "bg-red-50 text-red-700 border-red-200"
               }`}>
-                {feedback.correct ? "✓ [CORRECT]" : "✗ [INCORRECT]"} Moving on to next node...
+                {feedback.correct ? "✓ [CORRECT]" : "✗ [INCORRECT]"} Moving on to next question...
               </div>
             )}
 

@@ -10,12 +10,13 @@ from typing import Optional
 
 class RegisterRequest(BaseModel):
     name: str
+    email: str
     grade_level: int
     password: str
 
 
 class LoginRequest(BaseModel):
-    name: str
+    email: str
     password: str
 
 

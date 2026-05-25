@@ -31,6 +31,7 @@ export default function MainPage({ children }: MainPageProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(true);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -87,7 +88,7 @@ export default function MainPage({ children }: MainPageProps) {
 
         <aside className={`${sidebarWidth} bg-[#001a54] rounded-[18px] flex flex-col items-center py-[14px] shadow-[0_10px_28px_rgba(0,26,84,0.25)] hover:bg-red-600 transition-all duration-300`}>
           <button
-            onClick={handleLogout}
+            onClick={() => setShowLogoutConfirm(true)}
             title="Logout"
             className={`flex items-center gap-3 rounded-[12px] text-white ${collapsed ? "w-12 h-12 justify-center" : "w-full h-12 px-3 justify-start"}`}
           >
@@ -102,6 +103,19 @@ export default function MainPage({ children }: MainPageProps) {
           {children}
         </div>
       </main>
+
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 shadow-[0_10px_25px_rgba(0,0,0,0.1)] w-80 text-center">
+            <h3 className="text-lg font-bold text-[#001a54] mb-2">Log out</h3>
+            <p className="text-sm text-slate-500 mb-6">Are you sure you want to log out?</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50">Cancel</button>
+              <button onClick={handleLogout} className="flex-1 py-2 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700">Log out</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

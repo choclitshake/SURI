@@ -4,12 +4,12 @@ import Image from "next/image";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { login } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login({ name, password });
+      await login({ email, password });
       router.push("/dashboard");
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -134,7 +134,7 @@ export default function LoginPage() {
                     lineHeight: "18px", color: "#0b1c30",
                     display: "block", marginBottom: "5px",
                   }}>
-                    Name
+                    Email
                   </label>
                   <div style={{ position: "relative" }}>
                     <span
@@ -144,13 +144,13 @@ export default function LoginPage() {
                         display: "flex", pointerEvents: "none",
                       }}
                     >
-                      <User size={18} />
+                      <Mail size={18} />
                     </span>
                     <input
-                      id="login-name"
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      id="login-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       required
                       style={{
                         width: "100%", padding: "11px 14px 11px 44px",
@@ -159,7 +159,7 @@ export default function LoginPage() {
                         outline: "none", boxSizing: "border-box",
                       }}
                       className="focus:ring-2 focus:ring-[#004ac6] focus:border-transparent"
-                      placeholder="Your name"
+                      placeholder="Your email"
                     />
                   </div>
                 </div>
