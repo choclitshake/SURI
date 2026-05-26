@@ -7,10 +7,22 @@ import {
   getMe, 
   getStudentProgress, 
   createSession, 
-  skipDiagnostic, // Imported to bypass diagnostics on newly created sessions
+  skipDiagnostic, 
   MisconceptionHistoryItem 
 } from "../../lib/api";
-import { BookOpen, Calendar, Loader2, Sparkles } from "lucide-react";
+import { 
+  BookOpen, 
+  Calendar, 
+  Loader2, 
+  Sparkles, 
+  Compass, 
+  Leaf, 
+  Flame, 
+  ShieldAlert, 
+  Sprout, 
+  ChevronRight, 
+  ArrowRight 
+} from "lucide-react";
 
 // Student-friendly review tips mapped directly to active learning codes [1]
 const REVIEW_TIPS: Record<string, string> = {
@@ -106,89 +118,148 @@ function ErrorHistoryContent() {
 
   return (
     <MainPage>
-      <div className="bg-slate-50 min-h-screen text-slate-800 py-4 px-4 md:px-6 space-y-4">
-        <div className="max-w-5xl mx-auto space-y-4">
+      {/* Inline styles for custom animations */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes floatFirefly {
+          0% { transform: translateY(110%) translateX(0); opacity: 0; }
+          20% { opacity: 0.8; }
+          80% { opacity: 0.8; }
+          100% { transform: translateY(-20px) translateX(30px); opacity: 0; }
+        }
+        @keyframes pulseGlow {
+          0%, 100% { transform: scale(1); opacity: 0.3; }
+          50% { transform: scale(1.15); opacity: 0.6; }
+        }
+        @keyframes leafSway {
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(8deg); }
+        }
+        @keyframes bounceJelly {
+          0%, 100% { transform: translateY(0) scale(1); }
+          30% { transform: translateY(-6px) scale(0.95, 1.05); }
+          50% { transform: translateY(0) scale(1.05, 0.95); }
+          70% { transform: translateY(-2px) scale(0.98, 1.02); }
+        }
+        .firefly {
+          position: absolute;
+          background: #fdd400;
+          border-radius: 50%;
+          filter: drop-shadow(0 0 5px #ffe170);
+          pointer-events: none;
+        }
+        .bramble-item:hover .bramble-leaf {
+          animation: leafSway 0.4s ease-in-out infinite;
+        }
+        .animate-jelly:hover {
+          animation: bounceJelly 0.8s ease-in-out infinite;
+        }
+      ` }} />
 
-         {/* Bento Grid Header Block */}
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
-      {/* Main Display panel */}
-      <div className="lg:col-span-2 bg-[#001a54] rounded-2xl p-6 md:p-8 border border-white/10 shadow-[0_0_30px_rgba(0,26,84,0.4)] relative overflow-hidden flex flex-col justify-between min-h-[180px]">
+      <div className=" min-h-screen text-[#1F2720] py-6 px-4 md:px-6 relative overflow-hidden flex flex-col items-center">
         
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400]" />
-            <span className="font-mono text-xs text-slate-300 tracking-[0.2em] uppercase">SYSTEM LOG</span>
-          </div>
-          <span className="font-mono text-[10px] text-slate-400 bg-black/30 px-2 py-1 rounded border border-white/5">ENG_MODE</span>
-        </div>
-        
-        <div>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white font-['Hanken_Grotesk',_sans-serif]">
-            Error <span className="text-[#fdd400]">History</span>
-          </h1>
-          <p className="font-mono text-xs text-slate-300 mt-2 tracking-wide">
-            ANALYZING CONCEPTUAL ANOMALIES AND REASONING DISCREPANCIES
-          </p>
-        </div>
-      </div>
+        {/* Magic Forest Background Overlay */}
+        <div className="absolute inset-0 opacity-15 bg-bottom mix-blend-overlay pointer-events-none" 
+/>
+        {/* Floating CSS Fireflies */}
+        <div className="firefly w-2 h-2" style={{ left: "10%", bottom: "8%", animation: "floatFirefly 6s ease-in-out infinite" }} />
+        <div className="firefly w-2.5 h-2.5" style={{ left: "25%", bottom: "5%", animation: "floatFirefly 9s ease-in-out infinite 1.5s" }} />
+        <div className="firefly w-1.5 h-1.5" style={{ left: "42%", bottom: "10%", animation: "floatFirefly 5s ease-in-out infinite 0.5s" }} />
+        <div className="firefly w-3 h-3" style={{ left: "75%", bottom: "12%", animation: "floatFirefly 8s ease-in-out infinite 2.5s" }} />
 
-            {/* Metric Bento block */}
-            <div className="bg-white rounded-2xl p-4 md:p-5 border border-slate-200/80 shadow-[0_15px_30px_rgba(0,26,84,0.05)] flex flex-col justify-between relative overflow-hidden">
-              <div className="flex justify-between items-start">
-                <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest font-bold">LOGGED ITEMS</span>
-                <span className="text-[9px] font-mono text-[#001a54] bg-[#fdd400] px-2.5 py-1 rounded-full font-extrabold tracking-wider">ACTIVE</span>
+        <div className="w-full max-w-5xl space-y-6 relative z-10">
+
+          {/* Gamified Header Bento Blocks */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Block: Main Title Panel */}
+            <div className="lg:col-span-8 bg-gradient-to-b from-[#1b261c] to-[#2e3e2d] rounded-[32px] p-6 md:p-8 border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] relative overflow-hidden flex flex-col justify-between min-h-[190px]">
+              
+              {/* Backing glow */}
+              <div className="absolute top-0 right-1/4 w-32 h-32 bg-yellow-400/25 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="flex items-center justify-between mb-4 border-b-4 border-[#1F2720]/30 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400] border border-[#1F2720]" />
+                  <span className="font-['Manrope'] text-[10px] text-emerald-300 tracking-widest uppercase font-black">RANGER EXPEDITION REPORTS</span>
+                </div>
+                <span className="text-[9px] font-black text-[#1F2720] bg-[#fdd400] px-2.5 py-1 rounded-md border-2 border-[#1F2720]">ERROR LOG</span>
               </div>
-              <div className="my-2">
-                <span className="font-mono text-5xl font-black text-[#001a54] tracking-tighter">
+              
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-auto">
+                <div className="flex items-center gap-4">
+                  <img 
+                    src="/suri-snake-sad.png" 
+                    alt="Suri" 
+                    className="h-20 w-auto object-contain select-none shrink-0 animate-jelly"
+                  />
+                  <div>
+                    <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white font-['Hanken_Grotesk'] drop-shadow-[2px_2px_0px_#1F2720]">
+                      Tangled <span className="text-[#fdd400]">Thorns</span>
+                    </h1>
+                    <p className="font-['Manrope'] text-xs text-emerald-200 mt-1.5 leading-relaxed font-bold">
+Clean up the tangled steps so the path is clear again and Suri can move safely through the Mathwood trails!                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Block: Live Score Indicator */}
+            <div className="lg:col-span-4 bg-[#faf8f5] rounded-[32px] p-6 border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] flex flex-col justify-between relative overflow-hidden hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[10px_10px_0px_0px_#1F2720] transition-all group">
+              <div className="flex justify-between items-start">
+                <span className="font-['Manrope'] text-[10px] text-slate-500 uppercase tracking-widest font-black">Active Obstructions</span>
+                <span className="text-[9px] font-black text-red-800 bg-red-100 border-[2px] border-[#1F2720] px-2.5 py-1 rounded-full font-extrabold tracking-wider uppercase">Active</span>
+              </div>
+              <div className="my-3 flex items-baseline gap-2">
+                <span className="font-['Hanken_Grotesk'] text-5xl font-black text-[#1F2720] tracking-tighter">
                   {loading ? "--" : String(misconceptions.length).padStart(2, '0')}
                 </span>
+                <span className="text-slate-400 font-extrabold text-sm">thorns logged</span>
               </div>
-              <p className="font-mono text-[10px] text-slate-500 leading-relaxed">
-                Total cognitive friction points recorded in this cycle.
+              <p className="font-['Manrope'] text-[10px] text-slate-500 leading-relaxed font-bold">
+                Clear these obstacles to unlock new areas and claim bonus <strong className="text-[#1F2720] bg-[#fdd400] px-1 py-0.5 rounded">+50 Forest Dewdrops</strong>.
               </p>
             </div>
           </div>
 
-          {/* System Error Notification Banner */}
+          {/* Error Notification Banner */}
           {errorMsg && (
-            <div className="bg-red-50/50 border border-red-200 rounded-2xl p-5 shadow-[0_10px_20px_rgba(239,68,68,0.03)] flex items-start gap-4">
-              <div className="w-2 h-2 rounded-full bg-red-600 mt-1.5 shrink-0" />
+            <div className="bg-red-100 border-[3.5px] border-[#1F2720] rounded-[24px] p-5 shadow-[4px_4px_0px_0px_#1F2720] flex items-start gap-4 animate-bounce">
+              <ShieldAlert className="w-6 h-6 text-red-600 shrink-0 mt-0.5" />
               <div>
-                <span className="font-mono text-xs text-red-700 font-bold uppercase tracking-widest block mb-1">[WORKSPACE EXCEPTION]</span>
-                <p className="font-mono text-sm text-red-800">{errorMsg}</p>
+                <span className="font-['Manrope'] text-[11px] text-red-900 font-black uppercase tracking-widest block mb-1">WORKSPACE EXCEPTION DETECTED</span>
+                <p className="font-['Manrope'] text-xs text-red-900 font-extrabold">{errorMsg}</p>
               </div>
             </div>
           )}
 
           {/* Primary Log Feed Container */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 md:p-6 shadow-[0_20px_40px_rgba(0,26,84,0.03)]">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-              <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-[#fdd400] shadow-[0_0_6px_#fdd400]" />
-                <h2 className="font-['Hanken_Grotesk',_sans-serif] text-base font-bold text-[#001a54] tracking-tight">Active Logs</h2>
+          <div className="bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] p-6 shadow-[8px_8px_0px_0px_#1F2720]">
+            
+            <div className="flex items-center justify-between pb-3.5 border-b-[4px] border-[#1F2720]/15 mb-5">
+              <div className="flex items-center gap-2">
+                <Leaf className="w-5 h-5 text-emerald-700 fill-emerald-700" />
+                <h2 className="font-['Hanken_Grotesk'] text-lg font-black text-[#1F2720] tracking-tight">Active Logs</h2>
               </div>
-              <span className="font-mono text-[9px] text-slate-400 uppercase tracking-widest">STREAM // SECURE</span>
+              <span className="font-['Manrope'] text-[10px] text-slate-400 uppercase tracking-wider font-black">SECURE DATA STREAM</span>
             </div>
 
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                <div className="relative w-12 h-12">
-                  <div className="absolute inset-0 border-4 border-slate-100 rounded-full" />
-                  <div className="absolute inset-0 border-4 border-[#001a54] border-t-[#fdd400] rounded-full animate-spin" />
-                </div>
-                <p className="font-mono text-[10px] text-slate-500 tracking-widest uppercase animate-pulse">Initializing Streams...</p>
+              <div className="flex flex-col items-center justify-center py-20 space-y-4 bg-white/50 rounded-2xl border-4 border-dashed border-[#1F2720]/20">
+                <Loader2 size={36} className="animate-spin text-[#1F2720]" />
+                <p className="font-['Manrope'] text-[11px] text-slate-500 tracking-widest uppercase font-black animate-pulse">Initializing Streams...</p>
               </div>
             ) : misconceptions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-3 border border-green-100 shadow-sm">
-                  <span className="text-green-600 font-bold">✓</span>
+              <div className="flex flex-col items-center justify-center py-16 text-center border-4 border-dashed border-[#1F2720]/20 rounded-2xl bg-white p-4">
+                <div className="w-14 h-14 rounded-full bg-[#79ff8f] flex items-center justify-center mb-3 border-[3px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
+                  <span className="text-emerald-900 font-black text-xl">✓</span>
                 </div>
-                <p className="font-['Hanken_Grotesk',_sans-serif] text-base font-semibold text-[#001a54]">Log Clean & Clear</p>
-                <p className="font-mono text-xs text-slate-500 mt-1">No conceptual errors found in the registry.</p>
+                <p className="font-['Hanken_Grotesk'] text-lg font-black text-[#1F2720]">Log Clean & Clear!</p>
+                <p className="font-['Manrope'] text-xs text-slate-500 font-bold max-w-sm mt-1 leading-normal">
+                  Suri is so proud! No conceptual brambles are currently obstructing your canopy path. Enjoy the sunshine!
+                </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {misconceptions.map((item, idx) => {
                   const isNodeLoading = loadingNodeId === item.node_id;
                   const reviewTip = REVIEW_TIPS[item.node_id] || "Review variables, factors, and coordinate signs related to this section.";
@@ -196,36 +267,42 @@ function ErrorHistoryContent() {
                   return (
                     <div
                       key={`${item.node_id}-${item.logged_at}-${idx}`}
-                      className="bg-white border border-slate-200 rounded-2xl p-4 md:p-5 hover:border-[#001a54]/30 transition-all duration-300 shadow-[0_4px_12px_rgba(0,26,84,0.01)] hover:shadow-[0_15px_30px_rgba(0,26,84,0.05)] flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                      className="bg-white border-[3.5px] border-[#1F2720] rounded-[24px] p-5 hover:border-emerald-600 transition-all duration-300 shadow-[4px_4px_0px_0px_#1F2720] hover:shadow-[8px_8px_0px_0px_#1F2720] hover:-translate-y-1 hover:-translate-x-1 active:translate-y-0 active:translate-x-0 active:shadow-[2px_2px_0px_0px_#1F2720] flex flex-col md:flex-row md:items-center justify-between gap-5 group bramble-item"
                     >
-                      <div className="flex items-start gap-3 flex-1">
-                        {/* Gold status marker line */}
-                        <div className="w-1 h-16 bg-[#fdd400] rounded-full self-center shrink-0 shadow-[0_0_6px_rgba(253,212,0,0.4)] transition-all group-hover:scale-y-110" />
+                      <div className="flex items-start gap-4 flex-1">
                         
-                        <div className="space-y-1">
+                        {/* Status Icon Wrapper */}
+                        <span className="w-11 h-11 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0 border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] mt-0.5">
+                          <Leaf className="w-5 h-5 fill-red-600 bramble-leaf" />
+                        </span>
+
+                        <div className="space-y-2 flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="font-mono text-[9px] text-[#001a54] font-extrabold bg-[#fdd400]/20 border border-[#fdd400]/40 px-2 py-0.5 rounded uppercase">
-                              ERROR RECORD #{String(idx + 1).padStart(2, '0')}
+                            <span className="font-['Manrope'] text-[9px] text-red-900 font-black bg-red-100 border-2 border-[#1F2720] px-2 py-0.5 rounded-md uppercase tracking-wider">
+                              RECORD #{String(idx + 1).padStart(2, '0')}
                             </span>
-                            <span className="font-mono text-[9px] text-slate-400 font-semibold">
-                              NODE: {item.node_id}
+                            <span className="font-['Manrope'] text-[9px] text-[#1F2720] font-black bg-slate-100 border-2 border-[#1F2720] px-2 py-0.5 rounded-md">
+                              NODE ID: {item.node_id}
                             </span>
                           </div>
                           
-                          <h3 className="font-['Hanken_Grotesk',_sans-serif] text-base font-extrabold text-[#001a54] tracking-tight leading-snug">
+                          <h3 className="font-['Hanken_Grotesk'] text-lg font-black text-[#1F2720] tracking-tight leading-snug truncate">
                             {item.node_label}
                           </h3>
                           
-                          <p className="font-mono text-xs text-slate-400 leading-normal">
-                            Attempted Step: <span className="text-slate-600 font-medium italic">"{item.step_description}"</span>
+                          <p className="font-['Manrope'] text-xs font-bold text-slate-500 leading-normal bg-slate-50 border-2 border-[#1F2720]/10 rounded-xl p-2.5 max-w-full inline-block">
+                            Logged Obstacle: <span className="text-[#1F2720] font-black">"{item.step_description}"</span>
                           </p>
 
                           {/* Friendly Tutor Explainer Tip Block */}
-                          <div className="mt-2.5 bg-[#001a54]/5 rounded-xl p-3 border border-slate-100 text-slate-600">
-                            <p className="text-[9px] font-mono uppercase tracking-widest font-extrabold text-[#001a54] mb-1 flex items-center gap-1">
-                              <Sparkles size={8} /> SURI's Recovery Tip
+                          <div className="mt-2.5 bg-[#ffe170]/15 rounded-2xl p-4 border-[3px] border-[#1F2720] text-slate-600 relative overflow-hidden shadow-[2px_2px_0px_0px_#1F2720]/5">
+                            <div className="absolute right-2 -bottom-2 opacity-5 pointer-events-none">
+                              <img src="/suri-snake-left.png" alt="watermark" className="w-16 h-auto" />
+                            </div>
+                            <p className="text-[10px] font-['Manrope'] uppercase tracking-widest font-black text-[#1F2720] mb-1.5 flex items-center gap-1">
+                              <Sparkles size={11} className="text-[#fdd400] fill-[#fdd400] stroke-[2.5px]" /> SURI'S RECOVERY DISPATCH
                             </p>
-                            <p className="text-xs font-medium leading-relaxed font-sans">
+                            <p className="text-xs font-bold leading-relaxed text-[#1F2720] font-sans">
                               {reviewTip}
                             </p>
                           </div>
@@ -233,24 +310,24 @@ function ErrorHistoryContent() {
                       </div>
                       
                       {/* Active Action Section */}
-                      <div className="flex md:flex-col items-center md:items-end justify-between md:justify-center shrink-0 gap-3 border-t border-slate-100 md:border-t-0 pt-3 md:pt-0">
-                        <div className="text-left md:text-right flex items-center md:items-end gap-1 font-mono text-[10px] text-slate-500">
-                          <Calendar size={10} className="text-slate-400" />
+                      <div className="flex md:flex-col items-center md:items-end justify-between md:justify-center shrink-0 gap-3 border-t-2 border-[#1F2720]/10 md:border-t-0 pt-3 md:pt-0">
+                        <div className="text-left md:text-right flex items-center md:items-end gap-1.5 font-['Manrope'] text-[10px] text-slate-500 font-black">
+                          <Calendar size={12} className="text-slate-400 stroke-[2.5px]" />
                           <span>{formatDate(item.logged_at)}</span>
                         </div>
 
-                        {/* Interactive practice recovery launcher */}
+                        {/* Interactive Practice Recovery Button */}
                         <button
                           onClick={() => handleReviewNode(item.node_id)}
                           disabled={loadingNodeId !== null}
-                          className="bg-[#001a54] text-white hover:bg-[#001545] py-2.5 px-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-sm flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                          className="bg-[#fdd400] text-[#1F2720] py-3.5 px-5 text-xs font-['Manrope'] font-black uppercase rounded-2xl tracking-wider transition-all cursor-pointer border-[3.5px] border-[#1F2720] shadow-[3.5px_3.5px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shrink-0"
                         >
                           {isNodeLoading ? (
-                            <Loader2 size={12} className="animate-spin" />
+                            <Loader2 size={13} className="animate-spin text-[#1F2720] stroke-[2.5px]" />
                           ) : (
-                            <BookOpen size={12} />
+                            <BookOpen size={13} className="stroke-[2.5px]" />
                           )}
-                          {isNodeLoading ? "Launching..." : "Review Lesson"}
+                          {isNodeLoading ? "Clearing..." : "Prune Trail"}
                         </button>
                       </div>
                     </div>
@@ -270,10 +347,10 @@ export default function ErrorHistoryPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="min-h-screen bg-[#1b261c] flex items-center justify-center">
           <div className="relative w-12 h-12">
-            <div className="absolute inset-0 border-4 border-slate-200 rounded-full" />
-            <div className="absolute inset-0 border-4 border-[#001a54] border-t-[#fdd400] rounded-full animate-spin" />
+            <div className="absolute inset-0 border-4 border-[#1F2720]/20 rounded-full" />
+            <div className="absolute inset-0 border-4 border-[#1F2720] border-t-[#fdd400] rounded-full animate-spin" />
           </div>
         </div>
       }
