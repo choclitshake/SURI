@@ -9,8 +9,20 @@ import {
   saveProgress,
   simplifyContent,
   ProgressionDecision,
-  MisconceptionNode,
 } from "../../../../lib/api";
+import confetti from "canvas-confetti";
+import { 
+  Compass, 
+  Leaf, 
+  Flame, 
+  ShieldAlert, 
+  Loader2, 
+  Sparkles, 
+  ArrowRight, 
+  Check, 
+  Trophy,
+  Sprout
+} from "lucide-react";
 
 export default function ResultsPage() {
   const router = useRouter();
@@ -23,7 +35,6 @@ export default function ResultsPage() {
   const [result, setResult] = useState<ProgressionDecision | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const [misconceptionsExpanded, setMisconceptionsExpanded] = useState(false);
   const [simplifying, setSimplifying] = useState(false);
   const [simplifyText, setSimplifyText] = useState("Getting a simpler explanation...");
   const [actionLoading, setActionLoading] = useState(false);
@@ -58,6 +69,13 @@ export default function ResultsPage() {
       loadResults();
     }
   }, [sessionId]);
+
+  // Launch celebratory confetti when user successfully advances past a module [2]
+  useEffect(() => {
+    if (result && result.decision === "advance") {
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+    }
+  }, [result]);
 
   const masteryLabel = result
     ? `${result.passed_count} out of 5 correct`
@@ -122,13 +140,13 @@ export default function ResultsPage() {
 
   if (loading || simplifying) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8">
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-sm w-full text-center shadow-[0_15px_30px_rgba(0,26,84,0.05)]">
+      <div className="min-h-screen bg-[#1b261c] flex flex-col items-center justify-center p-8">
+        <div className="bg-[#faf8f5] border-[4px] border-[#1F2720] rounded-[32px] p-8 max-w-sm w-full text-center shadow-[8px_8px_0px_0px_#1F2720]">
           <div className="relative w-12 h-12 mx-auto mb-4">
-            <div className="absolute inset-0 border-4 border-slate-100 rounded-full" />
-            <div className="absolute inset-0 border-4 border-[#001a54] border-t-[#fdd400] rounded-full animate-spin" />
+            <div className="absolute inset-0 border-4 border-[#e6e8ea] rounded-full" />
+            <div className="absolute inset-0 border-4 border-[#1F2720] border-t-[#fdd400] rounded-full animate-spin" />
           </div>
-          <p className="font-mono text-xs text-slate-500 animate-pulse uppercase tracking-wider">
+          <p className="font-['Manrope'] text-xs text-[#1F2720] font-black animate-pulse uppercase tracking-wider">
             {simplifying ? simplifyText : loadingText}
           </p>
         </div>
@@ -138,17 +156,16 @@ export default function ResultsPage() {
 
   if (errorMsg || !result) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 md:p-8 flex flex-col justify-center items-center">
-        <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl p-8 shadow-[0_15px_30px_rgba(0,26,84,0.05)] text-center relative overflow-hidden">
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#fdd400]/10 rounded-full blur-[40px] pointer-events-none" />
-          <span className="font-mono text-[9px] text-red-600 bg-red-50 border border-red-100 px-2.5 py-1 rounded-md font-bold uppercase tracking-wider">EVALUATION FAULT</span>
-          <h2 className="text-xl font-bold font-['Hanken_Grotesk',_sans-serif] text-[#001a54] mt-3 mb-2">Error</h2>
-          <p className="font-mono text-xs text-red-600 bg-red-50/50 border border-red-100 rounded-lg p-3 my-4 break-all text-left">
+      <div className="min-h-screen bg-[#1b261c] p-6 md:p-8 flex flex-col justify-center items-center font-['Manrope']">
+        <div className="w-full max-w-xl bg-[#faf8f5] border-[4px] border-[#1F2720] rounded-[32px] p-8 shadow-[8px_8px_0px_0px_#1F2720] text-center relative overflow-hidden">
+          <span className="font-black text-[10px] text-red-900 bg-red-100 border-2 border-[#1F2720] px-3 py-1.5 rounded-md uppercase tracking-wider">EVALUATION FAULT</span>
+          <h2 className="text-xl font-black text-[#1F2720] mt-4 mb-2">Error</h2>
+          <p className="font-black text-xs text-red-900 bg-red-50 border-2 border-[#1F2720] rounded-xl p-3 my-4 break-all text-left">
             [FAULT_LOG] {errorMsg || "No results available."}
           </p>
           <button
             onClick={() => router.push(`/session/${sessionId}/practice`)}
-            className="w-full bg-[#001a54] text-white hover:bg-[#001545] py-3.5 px-6 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)]"
+            className="w-full bg-[#fdd400] text-[#1F2720] border-[3.5px] border-[#1F2720] py-3.5 px-6 text-xs font-black uppercase rounded-2xl tracking-wider transition-all cursor-pointer shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5"
           >
             Back to Practice
           </button>
@@ -169,146 +186,153 @@ export default function ResultsPage() {
 
   const headerInfo = getHeaderDetails();
 
+  // Determine dynamic diagnostic result evaluations [1]
+  const isAdvanceDecision = result.decision === "advance";
+  const mascotSrc = isAdvanceDecision ? "/suri-snake-happy.png" : "/suri-snake-sad.png";
+  const suriQuote = isAdvanceDecision
+    ? "💬 \"Sss-ensational math skills! The trail path is clear and completely safe to pass!\""
+    : "💬 \"Oh sss-no! Tricky thorns are blocking our advance. Let'sss strengthen our foundation!\"";
+
   const renderHeader = () => (
-    <header className="bg-[#001a54] rounded-2xl p-6 md:p-8 border border-white/10 shadow-[0_0_30px_rgba(0,26,84,0.4)] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
-      <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#fdd400]/10 rounded-full blur-[50px] pointer-events-none" />
-      <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#fdd400]/5 rounded-full blur-[50px] pointer-events-none" />
+    <header className="bg-gradient-to-b from-[#1b261c] to-[#2e3e2d] rounded-[32px] p-6 md:p-8 border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+      <div className="absolute top-0 right-1/4 w-32 h-32 bg-yellow-400/20 rounded-full blur-3xl pointer-events-none" />
       
-      <div className="flex items-center justify-between mb-4 z-10">
+      <div className="flex items-center justify-between mb-4 z-10 border-b-4 border-[#1F2720]/30 pb-3">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400]" />
-          <span className="font-mono text-xs text-slate-300 font-bold tracking-[0.2em] uppercase">{headerInfo.label}</span>
+          <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400] border border-[#1F2720]" />
+          <span className="font-['Manrope'] text-[10px] text-emerald-300 tracking-[0.2em] uppercase font-black">{headerInfo.label}</span>
         </div>
-        <span className="font-mono text-[10px] text-slate-400 bg-black/30 px-3 py-1.5 rounded-xl border border-white/5 uppercase">GO1_EVAL</span>
+        <span className="font-['Manrope'] text-[9px] font-black text-[#1F2720] bg-[#fdd400] px-2.5 py-1 rounded-md border-2 border-[#1F2720] uppercase">GO1_EVAL</span>
       </div>
 
       <div className="z-10 flex justify-between items-end gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-['Hanken_Grotesk',_sans-serif]">
+          <h1 className="text-2xl sm:text-3xl font-black text-white font-['Hanken_Grotesk'] drop-shadow-[2.5px_2.5px_0px_#1F2720]">
             {headerInfo.title}
           </h1>
-          <p className="font-mono text-[10px] text-slate-300 mt-2 tracking-wide uppercase">
-            Session ID: <span className="text-[#fdd400]">{sessionId}</span>
+          <p className="font-['Manrope'] text-[10px] text-emerald-200 mt-1.5 font-bold uppercase tracking-wider">
+            Session ID: <span className="text-[#fdd400] font-black">{sessionId}</span>
           </p>
         </div>
         {headerInfo.emoji && (
-          <span className="text-3xl md:text-4xl bg-white/5 p-3 rounded-2xl border border-white/10">{headerInfo.emoji}</span>
+          <span className="text-3xl md:text-4xl bg-white/10 p-3 rounded-2xl border-2 border-white/20 select-none">{headerInfo.emoji}</span>
         )}
       </div>
     </header>
   );
 
-  if (result.decision === "advance" && result.topic_complete) {
-    return (
-      <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
-        <div className="max-w-xl mx-auto space-y-6">
-          {renderHeader()}
-
-          <div className="bg-white rounded-2xl border border-slate-200/80 p-6 text-center shadow-[0_4px_12px_rgba(0,26,84,0.02)]">
-            <p className="font-mono text-xs text-slate-400 uppercase tracking-widest mb-1">Session Mastery</p>
-            <p className="font-['Hanken_Grotesk',_sans-serif] text-2xl font-black text-[#001a54]">{masteryLabel}</p>
-            <p className="text-xs text-slate-500 font-medium mt-1">Topic path elements perfectly finished [1]</p>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => router.push("/progress")}
-              disabled={actionLoading}
-              className="w-full bg-[#fdd400] text-[#001a54] hover:bg-[#e6c100] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(253,212,0,0.2)] flex items-center justify-center gap-2"
-            >
-              Choose Next Topic <span className="text-[#001a54]">→</span>
-            </button>
-            <button
-              onClick={handleDashboard}
-              disabled={actionLoading}
-              className="w-full bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] disabled:opacity-50"
-            >
-              Back to Dashboard
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (result.decision === "advance") {
-    return (
-      <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
-        <div className="max-w-xl mx-auto space-y-6">
-          {renderHeader()}
-
-          <div className="bg-white rounded-2xl border border-slate-200/80 p-6 text-center shadow-[0_4px_12px_rgba(0,26,84,0.02)]">
-            <p className="font-mono text-xs text-slate-400 uppercase tracking-widest mb-1">Session Mastery</p>
-            <p className="font-['Hanken_Grotesk',_sans-serif] text-2xl font-black text-[#001a54]">{masteryLabel}</p>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 text-center shadow-[0_4px_12px_rgba(0,26,84,0.02)] flex items-center justify-center gap-3">
-            <span className="h-2 w-2 rounded-full bg-[#fdd400] shadow-[0_0_6px_#fdd400]" />
-            <p className="font-mono text-xs text-slate-600 uppercase tracking-wider font-bold">
-              Next Track Segment: <span className="text-[#001a54] font-black">{result.next_node_label}</span>
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={handleContinue}
-              disabled={actionLoading}
-              className="w-full bg-[#fdd400] text-[#001a54] hover:bg-[#e6c100] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(253,212,0,0.2)] flex items-center justify-center gap-2"
-            >
-              Continue Pathway <span className="text-[#001a54]">→</span>
-            </button>
-            <button
-              onClick={handleDashboard}
-              disabled={actionLoading}
-              className="w-full bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] disabled:opacity-50"
-            >
-              Back to Dashboard
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const misconceptionNodes = result.misconception_nodes ?? [];
-  const hasMisconceptions = misconceptionNodes.length > 0;
-
   return (
-    <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
-      <div className="max-w-xl mx-auto space-y-6">
+    <div className="bg-[#1b261c] min-h-screen text-[#1F2720] py-8 px-4 md:px-8 relative overflow-hidden font-['Manrope'] flex flex-col items-center">
+      
+      {/* Background Forest Silhouette */}
+      <div className="absolute inset-0 opacity-15 bg-cover bg-bottom mix-blend-overlay pointer-events-none" 
+           style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAEXma6INVd0pxsf2NimA83gxdCqv-1PqJrcWOioIbkPEtj3Z7oIxOvuUvLYNc4Dp9x3Y1BdR1CuvLCFJx5RSzJA9_Kk02IsPNQSy0DeGhX33fZvqV6ZTAci5gEWEnXt3d5H0IqVOBVrHAtZ0wRSpSPEhIZkwT8lWCqZo0inU40TzVsVWo-vjMqvT5w8nLCUkx-agKpKsnu_I62S8u6WesHawWnmWYTE_400YVkv8YcJ_L_q-lbQ4H0O-Ey3ld_l4PtBxxi-Kv7vQ8')" }} />
+
+      {/* Floating Glowing Fireflies */}
+      <div className="firefly w-2 h-2" style={{ left: "10%", bottom: "10%", animation: "floatFirefly 8s ease-in-out infinite" }} />
+      <div className="firefly w-2.5 h-2.5" style={{ left: "22%", bottom: "5%", animation: "floatFirefly 11s ease-in-out infinite 1.5s" }} />
+
+      <div className="max-w-xl w-full mx-auto space-y-6 relative z-10">
+        
         {renderHeader()}
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 text-center shadow-[0_4px_12px_rgba(0,26,84,0.02)]">
-          <p className="font-mono text-xs text-slate-400 uppercase tracking-widest mb-1">Session Mastery</p>
-          <p className="font-['Hanken_Grotesk',_sans-serif] text-2xl font-black text-[#001a54]">{masteryLabel}</p>
+        {/* Dynamic Speech Interaction Balloon [1] */}
+        <div className="relative bg-[#ffe170] text-[#1F2720] font-black text-xs md:text-sm p-5 rounded-3xl border-[4px] border-[#1F2720] shadow-[6px_6px_0px_0px_#1F2720] w-full transform hover:scale-[1.01] transition-transform flex items-center gap-4">
+          <img 
+            src={mascotSrc} 
+            alt="Suri" 
+            className="h-14 w-auto object-contain select-none shrink-0 animate-bounce" 
+            style={{ animationDuration: "2.5s" }} 
+          />
+          <span>{suriQuote}</span>
         </div>
 
-        <div className="space-y-4">
+        {/* Performance Score Display */}
+        <div className="bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] p-6 text-center shadow-[6px_6px_0px_0px_#1F2720]">
+          <p className="font-['Manrope'] text-xs text-slate-500 uppercase tracking-widest font-black mb-1">Session Mastery Results</p>
+          <p className="font-['Hanken_Grotesk'] text-3xl font-black text-[#1F2720]">{masteryLabel}</p>
+          <p className="text-xs text-slate-500 font-bold mt-1.5 leading-normal">Your solved formulas have been evaluated by SURI</p>
+        </div>
 
+        {/* ROUTE 1: ADVANCED AND COMPLETE */}
+        {result.decision === "advance" && result.topic_complete && (
+          <div className="flex flex-col gap-4">
+            <button
+              onClick={() => router.push("/topics")}
+              disabled={actionLoading}
+              className="w-full bg-[#fdd400] text-[#1F2720] border-[4px] border-[#1F2720] py-4 text-xs font-black uppercase rounded-2xl tracking-wider shadow-[4px_4px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              Choose Next Topic <ArrowRight className="w-5 h-5 stroke-[3px]" />
+            </button>
+            
+            <button
+              onClick={handleDashboard}
+              disabled={actionLoading}
+              className="w-full bg-white text-[#1F2720] border-[3.5px] border-[#1F2720] py-4 text-xs font-black uppercase rounded-2xl tracking-wider shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] transition-all cursor-pointer disabled:opacity-50"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        )}
 
-          {result.go_deeper_available && result.go_deeper_node && (
+        {/* ROUTE 2: ADVANCED TO NEXT NODE */}
+        {result.decision === "advance" && !result.topic_complete && (
+          <>
+            <div className="bg-[#faf8f5] rounded-3xl border-[4px] border-[#1F2720] p-5 text-center shadow-[4px_4px_0px_0px_#1F2720] flex items-center justify-center gap-3">
+              <span className="h-3 w-3 rounded-full bg-[#fdd400] border-2 border-[#1F2720]" />
+              <p className="font-['Manrope'] text-xs text-slate-700 uppercase tracking-wider font-black">
+                Next Path Step: <span className="text-[#1F2720] font-black">{result.next_node_label}</span>
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <button
+                onClick={handleContinue}
+                disabled={actionLoading}
+                className="w-full bg-[#fdd400] text-[#1F2720] border-[4px] border-[#1F2720] py-4 text-xs font-black uppercase rounded-2xl tracking-wider shadow-[4px_4px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                Continue Pathway <ArrowRight className="w-5 h-5 stroke-[3px]" />
+              </button>
+              
+              <button
+                onClick={handleDashboard}
+                disabled={actionLoading}
+                className="w-full bg-white text-[#1F2720] border-[3.5px] border-[#1F2720] py-4 text-xs font-black uppercase rounded-2xl tracking-wider shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] transition-all cursor-pointer disabled:opacity-50"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ROUTE 3: REMEDIATION BLOCK (Keep Practicing) */}
+        {result.decision !== "advance" && (
+          <div className="space-y-4.5">
+            {result.go_deeper_available && result.go_deeper_node && (
+              <RemediateCard
+                title="Go Deeper into Prerequisites"
+                subtitle={`Work on: ${result.go_deeper_node.node_label}`}
+                onAction={() => handleNavigateToNode(result.go_deeper_node!.node_id)}
+                actionLoading={actionLoading}
+              />
+            )}
+
             <RemediateCard
-              title="Go Deeper into Prerequisites"
-              subtitle={`Work on: ${result.go_deeper_node.node_label}`}
-              onAction={() => handleNavigateToNode(result.go_deeper_node!.node_id)}
+              title="Review This Topic"
+              subtitle="Re-read the lesson with a simpler explanation"
+              onAction={handleReviewSimplified}
               actionLoading={actionLoading}
             />
-          )}
 
-          <RemediateCard
-            title="Review This Topic"
-            subtitle="Re-read the lesson with a simpler explanation"
-            onAction={handleReviewSimplified}
-            actionLoading={actionLoading}
-          />
+            <RemediateCard
+              title="Quit"
+              subtitle="Your progress will be saved"
+              onAction={handleQuit}
+              actionLoading={actionLoading}
+            />
+          </div>
+        )}
 
-          <RemediateCard
-            title="Quit"
-            subtitle="Your progress will be saved"
-            onAction={handleQuit}
-            actionLoading={actionLoading}
-          />
-        </div>
       </div>
     </div>
   );
@@ -318,61 +342,37 @@ function RemediateCard({
   title,
   subtitle,
   disabled = false,
-  expanded = false,
-  onToggle,
   onAction,
   actionLoading = false,
-  light = false,
-  children,
 }: {
   title: string;
   subtitle: string;
   disabled?: boolean;
-  expanded?: boolean;
-  onToggle?: () => void;
   onAction?: () => void;
   actionLoading?: boolean;
-  light?: boolean;
-  children?: ReactNode;
 }) {
-  const borderClass = light 
-    ? "border-slate-200 bg-white opacity-80" 
-    : "border-slate-200/80 bg-white hover:border-[#001a54]/30";
-  const disabledClass = disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer";
-
-  const handleClick = () => {
-    if (disabled) return;
-    if (onToggle) {
-      onToggle();
-    } else if (onAction) {
-      onAction();
-    }
-  };
+  const disabledClass = disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer";
 
   return (
-    <div className={`border rounded-2xl transition-all duration-300 overflow-hidden shadow-[0_4px_12px_rgba(0,26,84,0.02)] hover:shadow-[0_12px_24px_rgba(0,26,84,0.04)] ${borderClass} ${disabledClass}`}>
+    <div className={`border-[3.5px] border-[#1F2720] rounded-[24px] transition-all duration-300 overflow-hidden bg-white shadow-[4px_4px_0px_0px_#1F2720] hover:shadow-[6px_6px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:-translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] ${disabledClass}`}>
       <button
         type="button"
-        onClick={handleClick}
+        onClick={onAction}
         disabled={disabled || actionLoading}
         className="w-full text-left p-5 disabled:cursor-not-allowed flex items-center justify-between gap-4 group"
       >
         <div className="space-y-1">
-          <p className="font-['Hanken_Grotesk',_sans-serif] text-sm md:text-base font-extrabold text-[#001a54] group-hover:text-[#001a54]/80 transition-colors">{title}</p>
-          <p className="font-mono text-xs text-slate-500">{subtitle}</p>
+          <p className="font-[#Hanken_Grotesk] text-base font-black text-[#1F2720] group-hover:text-emerald-800 transition-colors">
+            {title}
+          </p>
+          <p className="font-['Manrope'] text-xs font-bold text-slate-500">
+            {subtitle}
+          </p>
         </div>
-        {onToggle && !disabled && (
-          <span className="font-mono text-[10px] uppercase font-bold text-[#001a54] bg-[#fdd400]/25 px-2.5 py-1 rounded-md">
-            {expanded ? "▲ Collapse" : "▼ Expand"}
-          </span>
-        )}
-        {onAction && !disabled && (
-          <span className="font-mono text-sm text-[#001a54] font-bold group-hover:translate-x-1 transition-transform">
-            →
-          </span>
-        )}
+        <span className="font-['Manrope'] text-sm text-[#1F2720] font-black group-hover:translate-x-1 transition-transform">
+          <ArrowRight className="w-5 h-5 stroke-[3px]" />
+        </span>
       </button>
-      {expanded && children}
     </div>
   );
 }
