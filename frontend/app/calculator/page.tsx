@@ -385,7 +385,7 @@ export default function AlgebraCalculatorPage() {
                             {/* Tutor Mascot Container */}
                             <div className="shrink-0 w-12 h-12 bg-white rounded-full border border-[#1F2720]/20 flex items-center justify-center p-1 shadow-sm">
                               <img 
-                                src="/suri-snake-right.png" 
+                                src="/suri-snake-happy.png" 
                                 alt="Suri Tutor" 
                                 className="w-10 h-10 object-contain" 
                               />
