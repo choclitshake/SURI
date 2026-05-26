@@ -425,8 +425,10 @@ export default function PracticePage() {
                 }
               }
 
-              const formatMathValue = (val: string) =>
-                val.startsWith("$") || !val.match(/[x^+\-*\/=]/) ? val : `$${val}$`;
+              const formatMathValue = (val: string) => {
+                const trimmed = val.trim();
+                return trimmed.startsWith("$") ? trimmed : `$${trimmed}$`;
+              };
 
               return (
                 <div

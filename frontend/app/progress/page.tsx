@@ -19,7 +19,8 @@ import {
   TrendingUp, 
   Compass, 
   ArrowRight,
-  ChevronRight
+  ChevronRight,
+  Lock
 } from "lucide-react";
 
 // Standard Friendly Algebra Lookups
@@ -161,12 +162,15 @@ function ProgressContent() {
         return;
       }
 
-      // 2. Otherwise create a new session and immediately skip diagnostic to go straight to the lesson
       const newSession = await createSession({ topic_entry_node: nodeId });
       await skipDiagnostic(newSession.id);
       router.push(`/session/${newSession.id}/lesson`);
-    } catch {
-      setErrorMsg("Failed to launch lesson path. Please try again.");
+    } catch (err: any) {
+      if (err.status === 409 && err?.detail?.session_id) {
+        router.push(`/session/${err.detail.session_id}/lesson`);
+      } else {
+        setErrorMsg("Failed to launch lesson path. Please try again.");
+      }
     } finally {
       setLaunchingNodeId(null);
     }
@@ -229,10 +233,11 @@ function ProgressContent() {
           <div className="space-y-6">
             {topics.map((topic) => {
               const chain = topicChains[topic.node_id] || [];
+              const orderedChain = [...chain].reverse();
               
               // Calculate topic-specific track mastery percentage [1]
-              const trackTotal = chain.length;
-              const trackMastered = chain.filter((n) => nodeStatuses[n.node_id] === "mastered").length;
+              const trackTotal = orderedChain.length;
+              const trackMastered = orderedChain.filter((n) => nodeStatuses[n.node_id] === "mastered").length;
               const trackPct = trackTotal > 0 ? Math.round((trackMastered / trackTotal) * 100) : 0;
 
               return (
@@ -267,31 +272,40 @@ function ProgressContent() {
                   </div>
 
                   {/* Prerequisite Node Timeline Map [1] */}
-                  {chain.length > 0 ? (
+                  {orderedChain.length > 0 ? (
                     <div className="relative pl-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
                       <div className="space-y-4">
-                        {chain.map((node) => {
+                        {orderedChain.map((node, index) => {
                           const status = nodeStatuses[node.node_id];
                           const badge = getStatusBadge(status);
                           const isNodeLoading = launchingNodeId === node.node_id;
+                          
+                          const isAccessible = index === 0 || orderedChain.slice(0, index).every(n => nodeStatuses[n.node_id] === "mastered");
+                          const isTarget = index === orderedChain.length - 1;
 
                           return (
                             <div 
                               key={node.node_id} 
-                              className="relative flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all group"
+                              className={`relative flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl border transition-all group ${
+                                isTarget 
+                                  ? "bg-gradient-to-r from-amber-50 to-yellow-50/50 border-[#fdd400]/50 shadow-[0_0_15px_rgba(253,212,0,0.15)]" 
+                                  : "bg-slate-50/50 border-slate-100 hover:bg-white hover:border-slate-300"
+                              } ${!isAccessible ? "opacity-60 bg-slate-100/50" : ""}`}
                             >
                               {/* Glowing timeline dot indicator */}
                               <div className={`absolute -left-[22px] top-5 md:top-1/2 md:-translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-slate-300 bg-white group-hover:border-[#001a54] transition-colors duration-200 ${
                                 status === "mastered" ? "border-green-500 bg-green-500" : status === "in_progress" ? "border-[#fdd400] bg-[#fdd400]" : ""
-                              }`} />
+                              } ${isTarget ? "ring-4 ring-[#fdd400]/20" : ""}`} />
 
                               <div className="flex items-start gap-3">
                                 <div>
-                                  <h4 className="text-sm font-bold font-['Hanken_Grotesk',_sans-serif] text-[#001a54]">
+                                  <h4 className={`text-sm font-bold font-['Hanken_Grotesk',_sans-serif] ${isTarget ? 'text-[#001a54] text-base' : 'text-[#001a54]'}`}>
+                                    {isTarget && <Trophy size={14} className="inline-block mr-2 text-[#fdd400] mb-0.5" />}
                                     {node.node_label}
                                   </h4>
                                   <p className="font-mono text-[9px] text-slate-400 mt-0.5">
                                     Grade {node.grade} • NODE ID: {node.node_id}
+                                    {isTarget && " • TARGET TOPIC"}
                                   </p>
                                 </div>
                               </div>
@@ -304,16 +318,22 @@ function ProgressContent() {
                                 {/* Launch button to directly study this prerequisite */}
                                 {status !== "mastered" && (
                                   <button
-                                    onClick={() => handleStudyNode(node.node_id)}
-                                    disabled={launchingNodeId !== null}
-                                    className="bg-white hover:bg-slate-50 text-[#001a54] border border-slate-200 hover:border-[#001a54]/40 p-2 text-[9px] font-mono font-bold uppercase rounded-lg transition-all flex items-center gap-1 cursor-pointer disabled:opacity-40"
+                                    onClick={() => isAccessible && handleStudyNode(node.node_id)}
+                                    disabled={!isAccessible || launchingNodeId !== null}
+                                    className={`p-2 text-[9px] font-mono font-bold uppercase rounded-lg transition-all flex items-center gap-1 ${
+                                      !isAccessible 
+                                        ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed" 
+                                        : "bg-white hover:bg-slate-50 text-[#001a54] border border-slate-200 hover:border-[#001a54]/40 cursor-pointer"
+                                    }`}
                                   >
                                     {isNodeLoading ? (
                                       <Loader2 size={10} className="animate-spin" />
+                                    ) : !isAccessible ? (
+                                      <Lock size={10} />
                                     ) : (
                                       <BookOpen size={10} />
                                     )}
-                                    Study Node [1]
+                                    {isAccessible ? "Study Node [1]" : "Locked"}
                                   </button>
                                 )}
                               </div>
