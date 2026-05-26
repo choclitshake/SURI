@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import "mathlive";
 if (typeof customElements !== "undefined") {
   const MFE = customElements.get("math-field");
-  if (MFE) MFE.fontsDirectory = "https://cdn.jsdelivr.net/npm/mathlive@0.109.2/fonts";
+    if (MFE) (MFE as any).fontsDirectory = "https://cdn.jsdelivr.net/npm/mathlive@0.109.2/fonts";
 }
 import MainPage from "@/components/mainpage";
 import React from "react";
