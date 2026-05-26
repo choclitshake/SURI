@@ -35,18 +35,18 @@ export default function MainPage({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#DBD4C7] text-[#191c1e]">
       {/* TopAppBar */}
-      <nav className="fixed top-4 left-0 right-0 h-16 bg-transparent z-50 flex items-center justify-between px-4 md:px-8 pointer-events-none">
-        <div className="flex items-center bg-white px-6 md:px-8 h-11 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
-          <img alt="SURI" src="/SURI.png" className="h-9 w-auto object-contain" />
+      <nav className="fixed top-4 left-0 right-0 h-20 bg-transparent z-50 flex items-center justify-between px-4 md:px-8 pointer-events-none">
+        <div className="flex items-center bg-white px-7 md:px-10 h-14 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
+          <img alt="SURI" src="/SURI.png" className="h-11 w-auto object-contain" />
         </div>
-        <nav className="hidden md:flex items-center gap-8 bg-white px-8 h-11 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
+        <nav className="hidden md:flex items-center gap-10 bg-white px-10 h-14 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
           {NAV_ITEMS.map(({ label, href }) => {
             const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
             return (
               <button
                 key={label}
                 onClick={() => router.push(href)}
-                className={`font-['Manrope'] text-[12px] font-bold transition-colors cursor-pointer ${
+                className={`font-['Manrope'] text-[13px] font-bold transition-colors cursor-pointer ${
                   isActive ? "text-[#1F2720] border-b-2 border-[#1F2720]" : "text-[#434656] hover:text-[#1F2720]"
                 }`}
               >
@@ -56,19 +56,19 @@ export default function MainPage({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         <div className="flex items-center gap-3 pointer-events-auto">
-          <div className="bg-white px-5 h-11 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex items-center">
-            <span className="font-['Manrope'] text-[12px] font-bold text-[#191c1e]">{userName || "Student"}</span>
+          <div className="bg-white px-6 h-14 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex items-center">
+            <span className="font-['Manrope'] text-[13px] font-bold text-[#191c1e]">{userName || "Student"}</span>
           </div>
           <button
             onClick={() => setShowLogoutConfirm(true)}
-            className="w-11 h-11 rounded-full bg-white border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex items-center justify-center text-[#434656] hover:text-red-600 hover:border-red-200 transition-all cursor-pointer"
+            className="w-14 h-14 rounded-full bg-white border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex items-center justify-center text-[#434656] hover:text-red-600 hover:border-red-200 transition-all cursor-pointer"
           >
             <LogOut className="w-5 h-5" />
           </button>
         </div>
       </nav>
 
-      <main className="pt-24 pb-12 px-4 md:px-8 max-w-[1440px] mx-auto">
+      <main className="pt-28 pb-12 px-4 md:px-8 max-w-[1440px] mx-auto">
         {children}
       </main>
 
