@@ -204,3 +204,107 @@ class StudentProgressResponse(BaseModel):
     student_id: str
     competencies: list[dict]
     sessions: list[dict]
+
+
+# ─── Quiz Mode ────────────────────────────────────────
+
+class QuizStartRequest(BaseModel):
+    session_id: str
+    node_id: str
+
+
+class QuizStepWithChoices(BaseModel):
+    step_index: int
+    step_type: str
+    instruction: str
+    blank_expression: str
+    operation_description: str
+    mapped_node_id: str
+    choices: list[str]   # 4 items: correct + 3 distractors, shuffled
+    timer_ms: int        # 20000 for variable_identification, 30000 for algebra
+
+
+class QuizProblem(BaseModel):
+    id: str
+    node_id: str
+    problem_expr: str
+    word_problem_text: Optional[str] = None
+    steps: list[QuizStepWithChoices]
+
+
+class QuizStartResponse(BaseModel):
+    quiz_session_id: str
+    problems: list[QuizProblem]
+
+
+class QuizSubmitStepRequest(BaseModel):
+    quiz_session_id: str
+    problem_id: str
+    step_index: int
+    submitted_value: Optional[str] = None  # None = timeout
+    time_remaining_ms: int
+
+
+class QuizSubmitStepResponse(BaseModel):
+    correct: bool
+    correct_value: str
+    points_earned: int
+    total_points: int
+
+
+class QuizSkipStepRequest(BaseModel):
+    quiz_session_id: str
+    problem_id: str
+    step_index: int
+
+
+class QuizSkipStepResponse(BaseModel):
+    correct_value: str
+
+
+class QuizUseHintRequest(BaseModel):
+    quiz_session_id: str
+    problem_id: str
+    step_index: int
+    hint_type: str = "hint"   # "hint" | "equation"
+
+
+class QuizUseHintResponse(BaseModel):
+    hint_text: str
+    points_deducted: int
+    total_points: int
+
+
+class QuizStepError(BaseModel):
+    problem_id: str
+    step_index: int
+    step_type: str
+    operation_description: str
+    submitted_value: str
+    correct_value: str
+
+
+class QuizProgressionResult(BaseModel):
+    decision: str
+    mastery_score: float
+    passed_count: int
+    topic_complete: Optional[bool] = None
+    next_node_id: Optional[str] = None
+    next_node_label: Optional[str] = None
+    go_deeper_available: Optional[bool] = None
+    go_deeper_node: Optional[dict] = None
+    misconception_nodes: Optional[list] = None
+
+
+class QuizFinishRequest(BaseModel):
+    quiz_session_id: str
+
+
+class QuizFinishResponse(BaseModel):
+    total_points: int
+    total_correct: int
+    total_steps: int
+    passed_count: int
+    step_errors: list[QuizStepError]
+    feedback_text: str
+    progression: QuizProgressionResult

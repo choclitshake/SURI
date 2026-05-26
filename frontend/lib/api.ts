@@ -465,3 +465,121 @@ export function getStudentProgress(
 ): Promise<StudentProgress> {
   return request<StudentProgress>(`/api/students/${studentId}/progress`);
 }
+
+// ─── Quiz Mode ─────────────────────────────────────────
+
+export interface QuizStepWithChoices {
+  step_index: number;
+  step_type: string;
+  instruction: string;
+  blank_expression: string;
+  operation_description: string;
+  mapped_node_id: string;
+  choices: string[];
+  timer_ms: number;
+}
+
+export interface QuizProblem {
+  id: string;
+  node_id: string;
+  problem_expr: string;
+  word_problem_text: string | null;
+  steps: QuizStepWithChoices[];
+}
+
+export interface QuizStartResponse {
+  quiz_session_id: string;
+  problems: QuizProblem[];
+}
+
+export interface QuizSubmitStepResponse {
+  correct: boolean;
+  correct_value: string;
+  points_earned: number;
+  total_points: number;
+}
+
+export interface QuizSkipStepResponse {
+  correct_value: string;
+}
+
+export interface QuizUseHintResponse {
+  hint_text: string;
+  points_deducted: number;
+  total_points: number;
+}
+
+export interface QuizStepError {
+  problem_id: string;
+  step_index: number;
+  step_type: string;
+  operation_description: string;
+  submitted_value: string;
+  correct_value: string;
+}
+
+export interface QuizFinishResponse {
+  total_points: number;
+  total_correct: number;
+  total_steps: number;
+  passed_count: number;
+  step_errors: QuizStepError[];
+  feedback_text: string;
+  progression: ProgressionDecision;
+}
+
+export function startQuiz(body: {
+  session_id: string;
+  node_id: string;
+}): Promise<QuizStartResponse> {
+  return request<QuizStartResponse>("/api/quiz/start", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function submitQuizStep(body: {
+  quiz_session_id: string;
+  problem_id: string;
+  step_index: number;
+  submitted_value: string | null;
+  time_remaining_ms: number;
+}): Promise<QuizSubmitStepResponse> {
+  return request<QuizSubmitStepResponse>("/api/quiz/submit-step", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function skipQuizStep(body: {
+  quiz_session_id: string;
+  problem_id: string;
+  step_index: number;
+}): Promise<QuizSkipStepResponse> {
+  return request<QuizSkipStepResponse>("/api/quiz/skip-step", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function useQuizHint(body: {
+  quiz_session_id: string;
+  problem_id: string;
+  step_index: number;
+  hint_type: string;
+}): Promise<QuizUseHintResponse> {
+  return request<QuizUseHintResponse>("/api/quiz/use-hint", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function finishQuiz(body: {
+  quiz_session_id: string;
+}): Promise<QuizFinishResponse> {
+  return request<QuizFinishResponse>("/api/quiz/finish", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+

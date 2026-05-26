@@ -19,6 +19,7 @@ from backend.routes.practice_routes import router as practice_router
 from backend.routes.progression_routes import router as progression_router
 from backend.routes.student_routes import router as student_router
 from backend.routes.graph_routes import router as graph_router
+from backend.routes.quiz_routes import router as quiz_router
 
 
 @asynccontextmanager
@@ -54,6 +55,7 @@ app.include_router(practice_router)
 app.include_router(progression_router)
 app.include_router(student_router)
 app.include_router(graph_router)
+app.include_router(quiz_router)
 
 
 @app.get("/")

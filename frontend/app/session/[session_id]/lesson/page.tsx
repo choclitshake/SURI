@@ -219,6 +219,10 @@ export default function LessonPage() {
     router.push(`/session/${sessionId}/practice`);
   };
 
+  const handleStartQuiz = () => {
+    router.push(`/session/${sessionId}/quiz`);
+  };
+
   const handleExit = () => {
     router.push("/topics");
   };
@@ -483,12 +487,20 @@ const guidedExplanation = formatLessonMarkdown(cleanLessonMath(content.guided_ex
 
         {/* Footer Navigation Section */}
         <footer className="mt-8 pt-6 border-t border-slate-200">
-          <button
-            onClick={handleStartPractice}
-            className="w-full bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-sm font-mono uppercase font-bold tracking-wider transition-all rounded-2xl shadow-[0_4px_20px_rgba(0,26,84,0.12)] hover:shadow-[0_0_25px_rgba(253,212,0,0.15)] cursor-pointer flex items-center justify-center gap-2"
-          >
-            Start Practice Track <span className="text-[#fdd400]">→</span>
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button
+              onClick={handleStartPractice}
+              className="flex-1 bg-white text-[#001a54] hover:bg-slate-50 border-2 border-[#001a54] py-4 text-sm font-mono uppercase font-bold tracking-wider transition-all rounded-2xl shadow-sm cursor-pointer flex items-center justify-center gap-2"
+            >
+              Classic Practice
+            </button>
+            <button
+              onClick={handleStartQuiz}
+              className="flex-1 bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-sm font-mono uppercase font-bold tracking-wider transition-all rounded-2xl shadow-[0_4px_20px_rgba(0,26,84,0.12)] hover:shadow-[0_0_25px_rgba(253,212,0,0.15)] cursor-pointer flex items-center justify-center gap-2"
+            >
+              Quiz Mode <span className="text-[#fdd400]">⚡</span>
+            </button>
+          </div>
         </footer>
 
       </div>
