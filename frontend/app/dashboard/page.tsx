@@ -323,8 +323,13 @@ function DashboardContent() {
             </div>
 
             {/* Path Winding Map Area */}
-            <div className="relative w-full aspect-[21/10] md:aspect-[2/1] rounded-[28px] bg-[#223324] border-[4px] border-[#1F2720] flex items-center justify-center overflow-hidden">
-              
+<div
+  className="relative w-full aspect-[21/10] md:aspect-[2/1] rounded-[28px] border-[4px] border-[#1F2720] flex items-center justify-center overflow-hidden bg-cover bg-center"
+  style={{
+    backgroundImage:
+      "url('/bg.png')",
+  }}
+>              
               {/* SVG Winding Path Trail */}
               <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
                 {/* Thick Comic Trail base */}
