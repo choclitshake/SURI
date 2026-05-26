@@ -61,7 +61,7 @@ export default function MainPage({ children }: { children: React.ReactNode }) {
           </div>
           <button
             onClick={() => setShowLogoutConfirm(true)}
-            className="w-14 h-14 rounded-full bg-white border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex items-center justify-center text-[#434656] hover:text-red-600 hover:border-red-200 transition-all cursor-pointer"
+            className="w-14 h-14 rounded-full bg-white border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex items-center justify-center text-[#434656] hover:text-white hover:bg-[#ba1a1a] hover:border-[#ba1a1a] transition-all cursor-pointer"
           >
             <LogOut className="w-5 h-5" />
           </button>
