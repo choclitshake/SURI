@@ -294,21 +294,31 @@ function DashboardContent() {
             <div className="firefly w-3 h-3" style={{ left: "60%", bottom: "12%", animation: "floatFirefly 8s ease-in-out infinite 2.5s" }} />
             <div className="firefly w-2 h-2" style={{ left: "78%", bottom: "6%", animation: "floatFirefly 7s ease-in-out infinite 3.5s" }} />
 
-            {/* Map Header Overlay */}
+            {/* Map Header Overlay with Mascot integration */}
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 pb-3 border-b-4 border-[#1F2720]">
-              <div>
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-black tracking-widest text-[#1F2720] bg-[#fdd400] uppercase border-[3px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
-                  <Compass className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: "10s" }} /> Expedition Map
-                </span>
-                <h2 className="font-['Hanken_Grotesk'] text-2xl text-white font-black tracking-tight mt-2 drop-shadow-[2px_2px_0px_#1F2720]">
-                  Welcome Back, {name}!
-                </h2>
+              <div className="flex items-center gap-3">
+                <img 
+                  alt="Suri the Snake Ranger Guide" 
+                  src="/suri-snake-right.png" 
+                  className="h-21 w-auto object-contain select-none shrink-0" 
+                  style={{ animationDuration: "3s" }}
+                />
+                <div>
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-black tracking-widest text-[#1F2720] bg-[#fdd400] uppercase border-[3px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
+                    <Compass className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: "10s" }} /> Mascot Guide
+                  </span>
+                  <h2 className="font-['Hanken_Grotesk'] text-2xl text-white font-black tracking-tight mt-1.5 drop-shadow-[2px_2px_0px_#1F2720]">
+                    Welcome Back, {name}!
+                  </h2>
+                </div>
               </div>
-              <div className="flex items-center gap-2 bg-[#fdd400] px-4 py-2.5 rounded-2xl border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] self-start md:self-auto">
-                <span className="text-[11px] font-black text-[#1F2720] font-['Manrope']">Quest Goal:</span>
-                <span className="text-xs font-black text-[#1F2720] bg-white px-2 py-0.5 rounded-lg border-2 border-[#1F2720]">
-                  {activeSessions.length > 0 ? activeSessions[0].topic_label : "Embark on a Quest!"}
-                </span>
+              
+              {/* Speech Bubble */}
+              <div className="relative bg-[#ffe170] text-[#1F2720] font-['Manrope'] font-black text-[11px] p-3 rounded-2xl border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] max-w-[250px] self-start md:self-auto flex items-center">
+                <span>💬 "Let's explore the Mathwood! Sss-implifying algebra trails is my favorite hobby!"</span>
+                {/* bubble speech triangles */}
+                <div className="absolute top-1/2 -left-[10px] -translate-y-1/2 w-0 h-0 border-t-[8px] border-t-transparent border-r-[10px] border-r-[#1F2720] border-b-[8px] border-b-transparent hidden md:block" />
+                <div className="absolute top-1/2 -left-[6px] -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-r-[8px] border-r-[#ffe170] border-b-[6px] border-b-transparent hidden md:block" />
               </div>
             </div>
 
@@ -545,8 +555,8 @@ function DashboardContent() {
               )}
             </section>
 
-            {/* Tangled Brambles (Error History / Remediations) */}
-            <section className="bg-[#faf8f5] rounded-[32px] p-6 border-4 border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[12px_12px_0px_0px_#1F2720] transition-all flex flex-col">
+            {/* Tangled Brambles (Error History / Mascot Remediations) */}
+            <section className="bg-[#faf8f5] rounded-[32px] p-6 border-4 border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[12px_12px_0px_0px_#1F2720] transition-all flex flex-col group">
               <div className="flex items-center justify-between mb-5 border-b-4 border-[#1F2720] pb-3">
                 <h3 className="flex items-center gap-2 font-['Hanken_Grotesk'] text-xl text-[#1F2720] font-black">
                   <ShieldAlert className="w-6 h-6 text-[#ba1a1a]" />
@@ -567,23 +577,42 @@ function DashboardContent() {
 
               <div className="flex-1 flex flex-col justify-between">
                 {!showErrors ? (
-                  <div className="text-center py-6 flex flex-col items-center justify-center flex-1 bg-red-100/40 rounded-2xl border-4 border-dashed border-red-300 shadow-inner">
-                    <Activity className="w-12 h-12 text-red-700/40 mb-2 animate-pulse" />
+                  <div className="text-center py-6 flex flex-col items-center justify-center flex-1 bg-red-100/40 rounded-2xl border-4 border-dashed border-red-300 shadow-inner p-4 relative overflow-hidden">
+                    <img 
+                      alt="Suri worried mascot" 
+                      src="/suri-snake-sad.png" 
+                      className="h-16 w-auto object-contain select-none mb-2 animate-pulse hover:scale-110 transition-transform duration-200" 
+                    />
                     <p className="text-sm font-black text-[#1F2720] mt-1">
                       {misconceptions.length} active brambles blocking your path.
                     </p>
                     <p className="text-[10px] text-slate-500 font-bold max-w-[220px] mt-1 leading-normal">
-                      Clear overgrown misconceptions to restore trail safety and earn <strong className="text-[#1F2720] bg-[#fdd400] px-1 rounded">+50 dewdrops</strong>!
+                      Suri is ss-sad! Prune these thorny misconceptions to restore canopy light and get <strong className="text-[#1F2720] bg-[#fdd400] px-1.5 py-0.5 rounded border border-[#1F2720] shadow-[1.5px_1.5px_0px_0px_#1F2720] font-black">+50 dewdrops</strong>!
                     </p>
                   </div>
                 ) : misconceptions.length === 0 ? (
-                  <div className="text-center py-8 flex flex-col items-center justify-center flex-1 bg-green-100 rounded-2xl border-4 border-dashed border-green-300 shadow-inner">
-                    <Sun className="w-12 h-12 text-green-600/40 mb-2 animate-spin" style={{ animationDuration: "12s" }} />
-                    <p className="text-sm font-black text-green-800">Clear Sunshine!</p>
-                    <p className="text-[10px] text-green-700 font-bold max-w-[220px] mt-1">Paths are safe and glowing! No thorns found!</p>
+                  <div className="text-center py-8 flex flex-col items-center justify-center flex-1 bg-green-100 rounded-2xl border-4 border-dashed border-green-300 shadow-inner p-4 relative overflow-hidden">
+                    <img 
+                      alt="Suri happy mascot" 
+                      src="/suri-snake-happy.png" 
+                      className="h-16 w-auto object-contain select-none mb-2 animate-bounce"
+                      style={{ animationDuration: "2.5s" }}
+                    />
+                    <p className="text-sm font-black text-green-800">Clear Canopy!</p>
+                    <p className="text-[10px] text-green-700 font-bold max-w-[220px] mt-1">
+                      Suri is ss-so proud! The mathwood is blooming and completely safe!
+                    </p>
                   </div>
                 ) : (
-                  <div className="divide-y-4 divide-[#1F2720]/15 max-h-[220px] overflow-y-auto pr-1">
+                  <div className="divide-y-4 divide-[#1F2720]/15 max-h-[220px] overflow-y-auto pr-1 relative">
+                    {/* Peeking Mascot inside errors list */}
+                    <div className="sticky top-0 float-right z-10 pointer-events-none opacity-20 group-hover:opacity-100 transition-opacity duration-300">
+                      <img 
+                        alt="Suri peeking" 
+                        src="/suri-snake-left.png" 
+                        className="h-12 w-auto object-contain" 
+                      />
+                    </div>
                     {misconceptions.slice(0, 5).map((item, idx) => (
                       <div
                         key={`${item.node_id}-${item.logged_at}-${idx}`}
@@ -622,8 +651,15 @@ function DashboardContent() {
           <section className="bg-[#faf8f5] p-6 md:p-8 rounded-[32px] border-4 border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[12px_12px_0px_0px_#1F2720] transition-all h-full flex flex-col">
             
             {/* Header / Ranger License */}
-            <div className="flex justify-between items-center mb-6 pb-2 border-b-4 border-[#1F2720]">
-              <h2 className="font-['Hanken_Grotesk'] text-xl text-[#1F2720] font-black">Ranger Badge</h2>
+            <div className="flex justify-between items-center mb-6 pb-2 border-b-4 border-[#1F2720] relative">
+              <div className="flex items-center gap-1.5">
+                <img 
+                  alt="Suri badge mascot icon" 
+                  src="/suri-snake-left.png" 
+                  className="h-10 w-auto object-contain select-none shrink-0" 
+                />
+                <h2 className="font-['Hanken_Grotesk'] text-xl text-[#1F2720] font-black">Ranger Badge</h2>
+              </div>
               <span className="text-[10px] font-black uppercase text-[#1F2720] bg-[#fdd400] px-3 py-1 rounded-md border-[2.5px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">Lv. {level}</span>
             </div>
 
