@@ -104,94 +104,93 @@ export default function TopicIntroPage() {
   
             <button
               onClick={handleExit}
-              className="font-mono text-[10px] text-black bg-[#fdd400] hover:bg-black hover:text-white px-3 py-1.5 rounded-xl border border-white/5 transition-all cursor-pointer font-bold uppercase tracking-wider"
+              className="font-['Manrope'] text-[11px] text-[#1F2720] bg-[#fdd400] hover:bg-[#ffe170] px-4 py-2 rounded-full border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] transition-all cursor-pointer font-black uppercase tracking-wider inline-flex items-center gap-1.5"
             >
-              Back to Lessons
+              ← Back to Trails
             </button>
     
           {/* Bento Grid Header Block */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-4">
             
             {/* Main Branding Display Header Card */}
-            <div className="lg:col-span-3 bg-[#001a54] rounded-2xl p-6 md:p-8 border border-white/10 shadow-[0_0_30px_rgba(0,26,84,0.4)] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
-              {/* Ambient gold glow offsets */}
-              <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#fdd400]/10 rounded-full blur-[50px] pointer-events-none" />
-              <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#fdd400]/5 rounded-full blur-[50px] pointer-events-none" />
+            <div className="lg:col-span-3 bg-[#223324] rounded-[32px] p-6 md:p-8 border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+              
+              <div className="absolute top-0 right-0 opacity-50 z-0">
+                <img src="/suri-snake-right.png" alt="Suri Mascot" className="w-48 h-auto object-contain translate-x-4 translate-y-4 pointer-events-none" />
+              </div>
               
               <div className="flex items-center justify-between mb-4 z-10">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400]" />
-                  <span className="font-mono text-xs text-slate-300 font-bold tracking-[0.2em] uppercase">TOPIC INTRO</span>
+                <div className="flex items-center gap-2 bg-[#1b261c] px-3 py-1.5 rounded-full border-[2px] border-[#1F2720]">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse border border-[#1F2720]" />
+                  <span className="font-['Manrope'] text-xs text-[#fdd400] font-black tracking-[0.2em] uppercase">TRAIL HEAD</span>
                 </div>
-                <span className="font-mono text-[10px] text-slate-400 bg-black/30 px-2 py-1 rounded border border-white/5">{topicEntryNode}</span>
+                <span className="font-['Manrope'] text-[10px] text-[#1F2720] font-black bg-[#fdd400] px-3 py-1 rounded-md border-2 border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">{topicEntryNode}</span>
               </div>
 
-        
-              
-              <div className="z-10">
-                <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white font-['Hanken_Grotesk',_sans-serif]">
+              <div className="z-10 mt-6">
+                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white font-['Hanken_Grotesk'] drop-shadow-[2px_2px_0px_#1F2720]">
                   {label}
                 </h1>
-                <p className="font-mono text-xs text-slate-300 mt-2 tracking-wide uppercase">
-                  Grade {grade} • Diagnostics & Pathways
+                <p className="font-['Manrope'] text-sm text-[#ffe170] mt-2 font-bold uppercase drop-shadow-[1px_1px_0px_#1F2720]">
+                  Grade {grade} • Trail Diagnostics
                 </p>
               </div>
             </div>
 
             {/* Side Metric Panel */}
-            <div className="bg-[#001a54] rounded-2xl p-6 border border-white/10 shadow-[0_0_30px_rgba(0,26,84,0.4)] flex flex-col justify-between relative overflow-hidden">
+            <div className="bg-[#faf8f5] rounded-[32px] p-6 border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_#1F2720] transition-all">
               <div className="flex justify-between items-start">
-                <span className="font-mono text-xs text-slate-300 uppercase tracking-wider">CHAIN LENGTH</span>
-                <span className="text-[10px] font-mono text-[#001a54] bg-[#fdd400] px-2.5 py-0.5 rounded-full font-bold">STEPS</span>
+                <span className="font-['Manrope'] text-xs text-[#1F2720] font-black uppercase tracking-wider">TRAIL LENGTH</span>
+                <span className="text-[10px] font-black font-['Manrope'] text-[#1F2720] bg-[#e6e8ea] px-2.5 py-0.5 rounded-md border-2 border-[#1F2720]">STEPS</span>
               </div>
               <div className="my-3">
-                <span className="font-mono text-5xl font-bold text-[#fdd400] tracking-tighter">
+                <span className="font-['Hanken_Grotesk'] text-5xl font-black text-[#1F2720] tracking-tighter drop-shadow-[2px_2px_0px_#e6e8ea] group-hover:text-[#005b21] transition-colors">
                   {loading ? "--" : String(chain.length).padStart(2, '0')}
                 </span>
               </div>
-              <p className="font-mono text-xs text-slate-300">
-                Total prerequisites calculated for this pathway sequence.
+              <p className="font-['Manrope'] text-xs text-slate-500 font-bold">
+                Total prerequisites to clear this pathway.
               </p>
             </div>
           </div>
 
           {/* System Error Notification Banner */}
           {error && (
-            <div className="bg-red-50/50 border border-red-200 rounded-2xl p-5 shadow-[0_10px_20px_rgba(239,68,68,0.03)] flex items-start gap-4">
-              <div className="w-2 h-2 rounded-full bg-red-600 mt-1.5 shrink-0 shadow-[0_0_8px_rgba(220,38,38,0.4)]" />
+            <div className="bg-red-100 border-[3px] border-[#1F2720] rounded-[24px] p-5 shadow-[4px_4px_0px_0px_#1F2720] flex items-start gap-4 mt-6">
+              <img src="/suri-snake-sad.png" alt="Sad Suri" className="w-10 h-10 object-contain shrink-0" />
               <div>
-                <span className="font-mono text-xs text-red-700 font-bold uppercase tracking-widest block mb-1">[SYSTEM ANOMALY]</span>
-                <p className="font-mono text-sm text-red-800">{error}</p>
+                <span className="font-['Manrope'] text-xs text-red-800 font-black uppercase tracking-widest block mb-1">Oh no! A thorny problem!</span>
+                <p className="font-['Manrope'] text-sm text-red-900 font-bold">{error}</p>
               </div>
             </div>
           )}
 
           {/* Topic Description Card */}
-          <section className="bg-white rounded-2xl border border-slate-200/80 p-6 md:p-8 shadow-[0_4px_12px_rgba(0,26,84,0.02)]">
-            <h2 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest mb-3">Track Overview</h2>
-            <p className="font-['Hanken_Grotesk',_sans-serif] text-lg text-[#001a54] leading-relaxed font-semibold">
+          <section className="bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] p-6 md:p-8 mt-6">
+            <h2 className="text-xs font-['Manrope'] font-black text-slate-500 uppercase tracking-widest mb-3">Track Overview</h2>
+            <p className="font-['Hanken_Grotesk'] text-xl text-[#1F2720] leading-relaxed font-bold">
               {description}
             </p>
           </section>
 
           {/* Prerequisite Chain Card */}
-          <section className="bg-white rounded-2xl border border-slate-200/80 p-6 md:p-8 shadow-[0_4px_12px_rgba(0,26,84,0.02)]">
-            <h2 className="text-sm font-mono font-bold text-[#001a54] uppercase tracking-widest mb-6 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#fdd400] shadow-[0_0_6px_#fdd400]" />
-              Prerequisite Flow
+          <section className="bg-white rounded-[32px] border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] p-6 md:p-8 mt-6">
+            <h2 className="text-sm font-['Manrope'] font-black text-[#1F2720] uppercase tracking-widest mb-6 flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-[#fdd400] border-2 border-[#1F2720]" />
+              Trail Prerequisites
             </h2>
             
-            <div className="relative pl-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+            <div className="relative pl-6 before:absolute before:left-2 before:top-4 before:bottom-4 before:w-1.5 before:bg-[#e6e8ea] before:rounded-full">
               <div className="space-y-4">
                 {chain.map((node, idx) => (
                   <div key={node.node_id} className="relative flex items-start gap-4 group">
                     {/* Flow point dot */}
-                    <div className="absolute -left-[22px] top-4 w-2.5 h-2.5 rounded-full border-2 border-slate-300 bg-white group-hover:border-[#001a54] group-hover:bg-[#fdd400] transition-colors duration-200" />
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 w-full max-w-2xl transition-all duration-300 hover:border-[#001a54]/30 hover:bg-white hover:shadow-[0_8px_20px_rgba(0,26,84,0.03)]">
-                      <p className="font-['Hanken_Grotesk',_sans-serif] text-sm md:text-base font-bold text-[#001a54]">
+                    <div className="absolute -left-[27px] top-5 w-4 h-4 rounded-full border-[3px] border-[#1F2720] bg-white group-hover:bg-[#fdd400] transition-colors duration-200 z-10" />
+                    <div className="bg-[#faf8f5] border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] group-hover:-translate-y-0.5 group-hover:-translate-x-0.5 group-hover:shadow-[5px_5px_0px_0px_#1F2720] rounded-[24px] px-5 py-4 w-full max-w-2xl transition-all duration-300">
+                      <p className="font-['Hanken_Grotesk'] text-base md:text-lg font-black text-[#1F2720]">
                         {node.node_label}
                       </p>
-                      <p className="font-mono text-[10px] text-slate-500 mt-1">
+                      <p className="font-['Manrope'] text-xs text-slate-500 font-bold mt-1">
                         Grade {node.grade} • ID: {node.node_id}
                       </p>
                     </div>
@@ -202,22 +201,22 @@ export default function TopicIntroPage() {
           </section>
 
           {/* Action Call Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
             <button
               onClick={() => handleCreateSession("diagnostic")}
               disabled={actionLoading}
-              className="group flex flex-col justify-between items-start text-left bg-white border border-slate-200 hover:border-[#001a54]/30 p-6 rounded-2xl transition-all duration-300 shadow-[0_4px_12px_rgba(0,26,84,0.02)] hover:shadow-[0_15px_30px_rgba(0,26,84,0.06)] disabled:opacity-50 cursor-pointer min-h-[160px]"
+              className="group flex flex-col justify-between items-start text-left bg-[#fdd400] border-[4px] border-[#1F2720] hover:-translate-y-1 hover:-translate-x-1 shadow-[8px_8px_0px_0px_#1F2720] hover:shadow-[12px_12px_0px_0px_#1F2720] active:translate-y-0.5 active:translate-x-0.5 active:shadow-[2px_2px_0px_0px_#1F2720] p-6 rounded-[32px] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer min-h-[160px]"
             >
               <div>
-                <span className="font-mono text-[9px] text-[#001a54] bg-[#fdd400] px-2.5 py-1 rounded font-extrabold uppercase tracking-wider">RECOMMENDED</span>
-                <h3 className="font-['Hanken_Grotesk',_sans-serif] font-extrabold text-[#001a54] text-lg mt-4 group-hover:text-[#001a54]/80 transition-colors">
+                <span className="font-['Manrope'] text-[10px] text-white bg-[#1F2720] px-3 py-1.5 rounded-md font-black uppercase tracking-wider border-2 border-[#1F2720]">RECOMMENDED</span>
+                <h3 className="font-['Hanken_Grotesk'] font-black text-[#1F2720] text-2xl mt-4 group-hover:text-[#005b21] transition-colors drop-shadow-[1px_1px_0px_rgba(31,39,32,0.1)]">
                   Diagnostic Assessment
                 </h3>
-                <p className="font-mono text-xs text-slate-500 mt-2">
+                <p className="font-['Manrope'] text-sm font-bold text-[#1F2720]/80 mt-2">
                   Diagnose prerequisite knowledge blocks to adapt and skip sections you already understand.
                 </p>
               </div>
-              <span className="font-mono text-xs text-[#001a54] font-bold mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+              <span className="font-['Manrope'] text-sm text-[#1F2720] font-black mt-4 flex items-center gap-2 group-hover:translate-x-1 transition-transform bg-white px-4 py-2 rounded-full border-2 border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
                 START ASSESSMENT →
               </span>
             </button>
@@ -225,18 +224,18 @@ export default function TopicIntroPage() {
             <button
               onClick={() => handleCreateSession("skip")}
               disabled={actionLoading}
-              className="group flex flex-col justify-between items-start text-left bg-[#001a54] border border-white/10 hover:border-[#fdd400]/40 p-6 rounded-2xl transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_0_25px_rgba(253,212,0,0.1)] disabled:opacity-50 cursor-pointer min-h-[160px]"
+              className="group flex flex-col justify-between items-start text-left bg-white border-[4px] border-[#1F2720] hover:-translate-y-1 hover:-translate-x-1 shadow-[8px_8px_0px_0px_#1F2720] hover:shadow-[12px_12px_0px_0px_#1F2720] active:translate-y-0.5 active:translate-x-0.5 active:shadow-[2px_2px_0px_0px_#1F2720] p-6 rounded-[32px] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer min-h-[160px]"
             >
               <div>
-                <span className="font-mono text-[9px] text-[#fdd400] bg-[#fdd400]/10 px-2.5 py-1 rounded border border-[#fdd400]/20 font-bold uppercase tracking-wider">FAST TRACK</span>
-                <h3 className="font-['Hanken_Grotesk',_sans-serif] font-extrabold text-white text-lg mt-4 group-hover:text-[#fdd400] transition-colors">
+                <span className="font-['Manrope'] text-[10px] text-[#1F2720] bg-[#e6e8ea] px-3 py-1.5 rounded-md border-2 border-[#1F2720] font-black uppercase tracking-wider">FAST TRACK</span>
+                <h3 className="font-['Hanken_Grotesk'] font-black text-[#1F2720] text-2xl mt-4 group-hover:text-[#005b21] transition-colors">
                   Skip to Lessons
                 </h3>
-                <p className="font-mono text-xs text-slate-300 mt-2">
+                <p className="font-['Manrope'] text-sm font-bold text-slate-500 mt-2">
                   Bypass the baseline diagnostic structure and jump directly to the first standard track node lessons.
                 </p>
               </div>
-              <span className="font-mono text-xs text-[#fdd400] font-bold mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+              <span className="font-['Manrope'] text-sm text-[#1F2720] font-black mt-4 flex items-center gap-2 group-hover:translate-x-1 transition-transform bg-[#fdd400] px-4 py-2 rounded-full border-2 border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
                 GO TO LESSONS →
               </span>
             </button>
