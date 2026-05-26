@@ -106,3 +106,30 @@ body {
 .island-node:hover {
   transform: scale(1.1);
 }
+
+/* Brush stroke for active nav item */
+.nav-brush {
+  position: relative;
+  z-index: 1;
+}
+.nav-brush::after {
+  content: '';
+  position: absolute;
+  top: 2%;
+  bottom: -5%;
+  left: -16px;
+  right: -16px;
+  background: #fdd400;
+  border-radius: 40% 60% 30% 70% / 60% 40% 70% 30%;
+  transform: rotate(-0.8deg);
+  z-index: -1;
+}
+
+/* Hide scrollbar but keep scroll functionality */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}

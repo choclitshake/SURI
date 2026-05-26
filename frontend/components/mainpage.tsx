@@ -47,7 +47,7 @@ export default function MainPage({ children }: { children: React.ReactNode }) {
                 key={label}
                 onClick={() => router.push(href)}
                 className={`font-['Manrope'] text-[13px] font-bold transition-colors cursor-pointer ${
-                  isActive ? "text-[#1F2720] border-b-2 border-[#1F2720]" : "text-[#434656] hover:text-[#1F2720]"
+                  isActive ? "text-[#1F2720] nav-brush" : "text-[#434656] hover:text-[#1F2720]"
                 }`}
               >
                 {label}
