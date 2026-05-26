@@ -140,8 +140,6 @@ export default function TopicsPage() {
             </div>
           ) : (
             <div className="relative pl-10 md:pl-0">
-              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1 md:-translate-x-1/2 bg-[#1F2720] rounded-full" />
-
               <div className="space-y-6">
               {topics.map((topic, index) => {
                 const isActive = topic.node_id in activeTopics;

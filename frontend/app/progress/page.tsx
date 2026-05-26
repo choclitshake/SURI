@@ -207,7 +207,7 @@ function ProgressContent() {
       default:
         return {
           text: "Not Attempted",
-          bg: "bg-slate-100 text-slate-400 border-slate-200",
+          bg: "bg-neutral-100 text-neutral-500 border-neutral-300",
         };
     }
   };
@@ -305,10 +305,10 @@ function ProgressContent() {
               return (
                 <div
                   key={topic.node_id}
-                  className="bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] p-6"
+                  className="bg-[#faf8f5] rounded-[28px] border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] p-4 md:p-5"
                 >
                   {/* Topic Header */}
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b-4 border-[#1F2720]">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b-4 border-[#1F2720]">
 
                     <div className="space-y-2">
                       <span className="font-['Manrope'] text-[10px] text-[#1F2720] font-black bg-[#e6e8ea] border-2 border-[#1F2720] px-2 py-1 rounded-md uppercase tracking-wider inline-block">
@@ -316,13 +316,13 @@ function ProgressContent() {
                         {topic.node_id}
                       </span>
 
-                      <h3 className="font-['Hanken_Grotesk'] text-2xl font-black text-[#1F2720]">
+                      <h3 className="font-['Hanken_Grotesk'] text-xl md:text-2xl font-black text-[#1F2720]">
                         {topic.label}
                       </h3>
                     </div>
 
                     {/* Progress */}
-                    <div className="w-full lg:w-72 space-y-2 bg-white p-3 rounded-2xl border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720]">
+                    <div className="w-full lg:w-72 space-y-2 bg-white p-2.5 rounded-2xl border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720]">
 
                       <div className="flex justify-between text-[11px] font-black uppercase">
                         <span>Track Mastery</span>
@@ -346,84 +346,133 @@ function ProgressContent() {
 
                   {/* Prerequisite Node Timeline Map [1] */}
                   {orderedChain.length > 0 ? (
-                    <div className="relative pl-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-                      <div className="space-y-4">
+                    <div className="relative pt-10 pb-3 md:pt-12 md:pb-4">
+                      <div className="absolute left-3 top-6 bottom-3 w-[5px] bg-slate-300 z-0 md:left-1/2 md:-translate-x-1/2" />
+                      <div className="absolute left-3 top-2 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-[#1F2720] bg-white z-10 md:left-1/2" />
+                      <div className="absolute left-3 bottom-1 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-[#1F2720] bg-[#fdd400] z-10 md:left-1/2" />
+
+                      <div className="space-y-2.5 md:space-y-3">
                         {orderedChain.map((node, index) => {
                           const status = nodeStatuses[node.node_id];
                           const badge = getStatusBadge(status);
                           const isNodeLoading = launchingNodeId === node.node_id;
-                          
-                          const isAccessible = index === 0 || orderedChain.slice(0, index).every(n => nodeStatuses[n.node_id] === "mastered");
+                          const isLeft = index % 2 === 0;
+                          const isAccessible =
+                            index === 0 ||
+                            orderedChain
+                              .slice(0, index)
+                              .every((n) => nodeStatuses[n.node_id] === "mastered");
                           const isTarget = index === orderedChain.length - 1;
 
                           return (
-                            <div 
-                              key={node.node_id} 
-                              className={`relative flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl border transition-all group ${
-                                isTarget 
-                                  ? "bg-gradient-to-r from-amber-50 to-yellow-50/50 border-[#fdd400]/50 shadow-[0_0_15px_rgba(253,212,0,0.15)]" 
-                                  : "bg-slate-50/50 border-slate-100 hover:bg-white hover:border-slate-300"
-                              } ${!isAccessible ? "opacity-60 bg-slate-100/50" : ""}`}
+                            <div
+                              key={node.node_id}
+                              className="relative grid grid-cols-1 items-center md:grid-cols-2 md:gap-6"
                             >
-                              {/* Glowing timeline dot indicator */}
-                              <div className={`absolute -left-[22px] top-5 md:top-1/2 md:-translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-slate-300 bg-white group-hover:border-[#001a54] transition-colors duration-200 ${
-                                status === "mastered" ? "border-green-500 bg-green-500" : status === "in_progress" ? "border-[#fdd400] bg-[#fdd400]" : ""
-                              } ${isTarget ? "ring-4 ring-[#fdd400]/20" : ""}`} />
+                              <div
+                                className={`absolute left-3 top-1/2 h-1 w-8 -translate-y-1/2 bg-slate-300 z-0 md:w-16 ${
+                                  isLeft
+                                    ? "md:left-auto md:right-1/2 md:mr-1"
+                                    : "md:left-1/2 md:ml-1"
+                                }`}
+                              />
 
-                              <div className="flex items-start gap-3">
-                                <div>
-                                  <h4 className={`text-sm font-bold font-['Hanken_Grotesk',_sans-serif] ${isTarget ? 'text-[#001a54] text-base' : 'text-[#001a54]'}`}>
-                                    {isTarget && <Trophy size={14} className="inline-block mr-2 text-[#fdd400] mb-0.5" />}
-                                    {node.node_label}
-                                  </h4>
-                                  <p className="font-mono text-[9px] text-slate-400 mt-0.5">
-                                    Grade {node.grade} • NODE ID: {node.node_id}
-                                    {isTarget && " • TARGET TOPIC"}
-                                  </p>
+                              <div
+                                className={`relative z-20 w-full md:max-w-[540px] pl-7 md:pl-0 ${
+                                  isLeft
+                                    ? "md:col-start-1 md:justify-self-end md:pr-5"
+                                    : "md:col-start-2 md:justify-self-start md:pl-5"
+                                }`}
+                              >
+                                <div
+                                  className={`p-3 rounded-[16px] border-[3px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] w-full transition-all min-h-[108px] ${
+                                    !isAccessible
+                                      ? "bg-neutral-100"
+                                      : isTarget
+                                      ? "bg-gradient-to-r from-amber-50 to-yellow-50/50"
+                                      : "bg-white"
+                                  }`}
+                                >
+                                  <div
+                                    className={`flex flex-col gap-3 sm:items-center ${
+                                      isLeft ? "sm:flex-row" : "sm:flex-row-reverse"
+                                    }`}
+                                  >
+                                    <div className="min-w-0 flex-1 text-left flex flex-col justify-center gap-2 self-center">
+                                      <h4 className="text-[19px] font-black text-[#1F2720] leading-tight truncate">
+                                        {isTarget && (
+                                          <Trophy
+                                            size={14}
+                                            className="inline-block mr-2 text-[#fdd400] mb-0.5"
+                                          />
+                                        )}
+                                        {node.node_label}
+                                      </h4>
+
+                                      <p className="text-[12px] text-slate-600 font-bold uppercase">
+                                        Grade {node.grade} • ID: {node.node_id}
+                                      </p>
+                                    </div>
+
+                                    <div className="flex flex-col items-start justify-center gap-2 shrink-0 sm:w-[170px] self-center">
+                                      <div className="flex flex-col items-start gap-2 w-full">
+                                        <span
+                                          className={`inline-flex w-full min-h-[34px] items-center justify-center text-center border-[2px] text-[10px] uppercase px-2 py-2 rounded-lg font-black tracking-wider ${badge.bg}`}
+                                        >
+                                          {badge.text}
+                                        </span>
+                                        {isTarget && (
+                                          <p className="text-[10px] text-amber-900 font-bold uppercase bg-amber-100 px-2 py-1 rounded-md inline-block border border-amber-300">
+                                            Target
+                                          </p>
+                                        )}
+                                      </div>
+
+                                      {status !== "mastered" && (
+                                        <button
+                                          onClick={() =>
+                                            isAccessible && handleStudyNode(node.node_id)
+                                          }
+                                          disabled={
+                                            !isAccessible || launchingNodeId !== null
+                                          }
+                                          className={`px-2 py-2 text-[10px] font-mono font-bold uppercase rounded-lg transition-all flex items-center justify-center gap-1 w-full ${
+                                            !isAccessible
+                                              ? "bg-neutral-100 text-neutral-500 border border-neutral-300 cursor-not-allowed"
+                                              : "bg-white hover:bg-slate-50 text-[#001a54] border border-slate-200 hover:border-[#001a54]/40 cursor-pointer"
+                                          }`}
+                                        >
+                                          {isNodeLoading ? (
+                                            <Loader2
+                                              size={10}
+                                              className="animate-spin"
+                                            />
+                                          ) : !isAccessible ? (
+                                            <Lock size={10} />
+                                          ) : (
+                                            <BookOpen
+                                              size={14}
+                                              className="stroke-[3px]"
+                                            />
+                                          )}
+                                          {isAccessible ? "Study Node [1]" : "Locked"}
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
 
-                              {/* Card */}
-                              <div className="bg-white p-4 rounded-[20px] border-[3px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] w-full text-center">
-
-                                <span
-                                  className={`inline-block border-[2px] border-[#1F2720] text-[9px] uppercase px-2 py-1 rounded-md font-black tracking-wider mb-2 ${badge.bg}`}
-                                >
-                                  {badge.text}
-                                </span>
-
-                                <h4 className="text-sm font-black text-[#1F2720] leading-tight mb-2">
-                                  {node.node_label}
-                                </h4>
-
-                                <p className="text-[10px] text-slate-500 font-bold mb-4 uppercase bg-slate-100 px-2 py-1 rounded-md inline-block">
-                                  Grade {node.grade}
-                                </p>
-
-                                {status !== "mastered" && (
-                                  <button
-                                    onClick={() => isAccessible && handleStudyNode(node.node_id)}
-                                    disabled={!isAccessible || launchingNodeId !== null}
-                                    className={`p-2 text-[9px] font-mono font-bold uppercase rounded-lg transition-all flex items-center gap-1 ${
-                                      !isAccessible 
-                                        ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed" 
-                                        : "bg-white hover:bg-slate-50 text-[#001a54] border border-slate-200 hover:border-[#001a54]/40 cursor-pointer"
-                                    }`}
-                                  >
-                                    {isNodeLoading ? (
-                                      <Loader2 size={10} className="animate-spin" />
-                                    ) : !isAccessible ? (
-                                      <Lock size={10} />
-                                    ) : (
-                                      <BookOpen
-                                        size={14}
-                                        className="stroke-[3px]"
-                                      />
-                                    )}
-                                    {isAccessible ? "Study Node [1]" : "Locked"}
-                                  </button>
-                                )}
-                              </div>
+                              <div className="absolute left-3 top-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[radial-gradient(circle,_rgba(34,197,94,0.3)_0%,_rgba(34,197,94,0)_70%)] z-10 md:left-1/2" />
+                              <div
+                                className={`absolute left-3 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full border-2 border-slate-300 bg-white z-20 md:left-1/2 ${
+                                  status === "mastered"
+                                    ? "border-green-500 bg-green-500"
+                                    : status === "in_progress"
+                                    ? "border-[#fdd400] bg-[#fdd400]"
+                                    : ""
+                                } ${isTarget ? "ring-4 ring-[#fdd400]/20" : ""}`}
+                              />
                             </div>
                           );
                         })}
