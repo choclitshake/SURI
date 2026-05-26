@@ -305,7 +305,7 @@ function DashboardContent() {
                 />
                 <div>
                   <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-black tracking-widest text-[#1F2720] bg-[#fdd400] uppercase border-[3px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
-                    <Compass className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: "10s" }} /> Mascot Guide
+                    <Compass className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: "10s" }} /> Suri Snake
                   </span>
                   <h2 className="font-['Hanken_Grotesk'] text-2xl text-white font-black tracking-tight mt-1.5 drop-shadow-[2px_2px_0px_#1F2720]">
                     Welcome Back, {name}!
