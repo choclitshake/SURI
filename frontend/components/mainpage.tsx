@@ -35,11 +35,13 @@ export default function MainPage({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#DBD4C7] text-[#191c1e]">
       {/* TopAppBar */}
-      <nav className="fixed top-4 left-0 right-0 h-20 bg-transparent z-50 flex items-center justify-between px-4 md:px-8 pointer-events-none">
-        <div className="flex items-center bg-white px-7 md:px-10 h-14 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
-          <img alt="SURI" src="/SURI.png" className="h-11 w-auto object-contain" />
-        </div>
-        <nav className="hidden md:flex items-center gap-10 bg-white px-10 h-14 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
+      <nav className="fixed top-0 left-0 right-0 z-50">
+        <div className="absolute inset-0" style={{ background: "rgba(219,212,199,0.85)", backdropFilter: "blur(12px)", maskImage: "linear-gradient(to bottom, black 0%, black 60%, transparent 100%)", WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 60%, transparent 100%)" }} />
+        <div className="relative flex items-center h-24 px-4 md:px-8">
+          <div className="flex items-center bg-white px-7 md:px-10 h-14 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+            <img alt="SURI" src="/SURI.png" className="h-11 w-auto object-contain" />
+          </div>
+          <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-10 bg-white px-10 h-14 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
           {NAV_ITEMS.map(({ label, href }) => {
             const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
             return (
@@ -55,7 +57,7 @@ export default function MainPage({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="flex items-center gap-3 pointer-events-auto">
+        <div className="flex items-center gap-3 absolute right-4 md:right-8 top-1/2 -translate-y-1/2 pointer-events-auto">
           <div className="bg-white px-6 h-14 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex items-center">
             <span className="font-['Manrope'] text-[13px] font-bold text-[#191c1e]">{userName || "Student"}</span>
           </div>
@@ -65,6 +67,7 @@ export default function MainPage({ children }: { children: React.ReactNode }) {
           >
             <LogOut className="w-5 h-5" />
           </button>
+        </div>
         </div>
       </nav>
 
