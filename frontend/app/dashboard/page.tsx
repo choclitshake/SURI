@@ -505,9 +505,22 @@ function DashboardContent() {
                   <p className="text-[#1F2720] text-sm font-black mb-4">No active quests logged.</p>
                   <button
                     type="button"
-                    onClick={() => router.push("/topics")}
-                    className="bg-[#fdd400] text-[#1F2720] hover:bg-[#ffe170] px-6 py-3.5 rounded-full font-['Manrope'] text-[12px] font-black border-[3.5px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] hover:-translate-y-0.5 active:translate-y-0.5 cursor-pointer transition-all"
-                  >
+onClick={() => {
+  const hasCompletedPrerequisite = completedSessions.length > 0;
+
+  if (!hasCompletedPrerequisite) {
+    setErrorMsg("You must first complete the prerequisite trail before embarking on a new quest.");
+    return;
+  }
+
+  router.push("/topics");
+}}
+className={`px-6 py-3.5 rounded-full font-['Manrope'] text-[12px] font-black border-[3.5px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] transition-all
+${
+  completedSessions.length > 0
+    ? "bg-[#fdd400] text-[#1F2720] hover:bg-[#ffe170] cursor-pointer"
+    : "bg-gray-300 text-gray-500 cursor-not-allowed opacity-70"
+}`}                  >
                     Embark on a Quest
                   </button>
                 </div>

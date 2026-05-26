@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import {
-  getSession,
+import Image from "next/image";
+import { toast } from "react-hot-toast";
+import confetti from "canvas-confetti";
+
+import { getSession,
   getTopicChain,
   getDiagnosticProbe,
   submitDiagnosticAnswer,
@@ -12,7 +15,10 @@ import {
   DiagnosticProbe,
 } from "../../../../lib/api";
 
+
+
 export default function DiagnosticPage() {
+
   const router = useRouter();
   const params = useParams();
   const sessionId = params.session_id as string;
@@ -25,6 +31,16 @@ export default function DiagnosticPage() {
   const [skipping, setSkipping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ correct: boolean; nextAction: string } | null>(null);
+
+  // Show toast and confetti on feedback change
+  useEffect(() => {
+    if (feedback) {
+      toast.success(feedback.correct ? "✅ Correct!" : "❌ Incorrect");
+      if (feedback.correct) {
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      }
+    }
+  }, [feedback]);
   const [totalQuestions, setTotalQuestions] = useState<number>(0);
   const [answeredCount, setAnsweredCount] = useState<number>(0);
 
@@ -332,6 +348,11 @@ export default function DiagnosticPage() {
               </div>
             )}
 
+            {feedback && feedback.correct && (
+              <div className="flex justify-center mt-4">
+                <Image src="/suri-snake-happy.png" alt="Suri Happy" width={96} height={96} className="animate-bounce" />
+              </div>
+            )}
             <button
               type="submit"
               disabled={selectedIdx === null || submitting || feedback !== null}
