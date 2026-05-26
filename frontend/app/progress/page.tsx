@@ -3,7 +3,6 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import MainPage from "@/components/mainpage";
-
 import {
   getMe,
   getTopics,
@@ -17,8 +16,13 @@ import {
   BookOpen,
   CheckCircle2,
   Loader2,
-  Flame,
+  Trophy,
+  TrendingUp,
+  Compass,
+  ArrowRight,
+  ChevronRight,
   Lock,
+  Flame,
   AlertTriangle,
 } from "lucide-react";
 
@@ -163,17 +167,16 @@ function ProgressContent() {
         return;
       }
 
-      const newSession = await createSession({
-        topic_entry_node: nodeId,
-      });
-
+      const newSession = await createSession({ topic_entry_node: nodeId });
       await skipDiagnostic(newSession.id);
 
       router.push(`/session/${newSession.id}/lesson`);
-    } catch {
-      setErrorMsg(
-        "Failed to launch lesson path. Please try again."
-      );
+    } catch (err: any) {
+      if (err.status === 409 && err?.detail?.session_id) {
+        router.push(`/session/${err.detail.session_id}/lesson`);
+      } else {
+        setErrorMsg("Failed to launch lesson path. Please try again.");
+      }
     } finally {
       setLaunchingNodeId(null);
     }
@@ -291,22 +294,13 @@ function ProgressContent() {
           {/* Topics */}
           <div className="space-y-6">
             {topics.map((topic) => {
-              const chain =
-                topicChains[topic.node_id] || [];
-
-              const trackTotal = chain.length;
-
-              const trackMastered = chain.filter(
-                (n) =>
-                  nodeStatuses[n.node_id] === "mastered"
-              ).length;
-
-              const trackPct =
-                trackTotal > 0
-                  ? Math.round(
-                      (trackMastered / trackTotal) * 100
-                    )
-                  : 0;
+              const chain = topicChains[topic.node_id] || [];
+              const orderedChain = [...chain].reverse();
+              
+              // Calculate topic-specific track mastery percentage [1]
+              const trackTotal = orderedChain.length;
+              const trackMastered = orderedChain.filter((n) => nodeStatuses[n.node_id] === "mastered").length;
+              const trackPct = trackTotal > 0 ? Math.round((trackMastered / trackTotal) * 100) : 0;
 
               return (
                 <div
@@ -350,60 +344,43 @@ function ProgressContent() {
                     </div>
                   </div>
 
-                  {/* Scrollable Chain */}
-                  {chain.length > 0 ? (
-                    <div className="relative mt-8 bg-[#223324] rounded-[24px] border-[4px] border-[#1F2720] overflow-x-auto overflow-y-hidden p-6">
-
-                      <div
-                        className="flex items-center gap-12 min-w-max pb-4 pt-2 px-6"
-                        style={{
-                          scrollbarWidth: "thin",
-                          msOverflowStyle: "auto",
-                        }}
-                      >
-                        {[...chain].reverse().map((node) => {
-                            const status: NodeStatus =
-                            nodeStatuses[node.node_id] || "not_attempted";
-
-                          const badge =
-                            getStatusBadge(status);
-
-                          const isNodeLoading =
-                            launchingNodeId ===
-                            node.node_id;
+                  {/* Prerequisite Node Timeline Map [1] */}
+                  {orderedChain.length > 0 ? (
+                    <div className="relative pl-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                      <div className="space-y-4">
+                        {orderedChain.map((node, index) => {
+                          const status = nodeStatuses[node.node_id];
+                          const badge = getStatusBadge(status);
+                          const isNodeLoading = launchingNodeId === node.node_id;
+                          
+                          const isAccessible = index === 0 || orderedChain.slice(0, index).every(n => nodeStatuses[n.node_id] === "mastered");
+                          const isTarget = index === orderedChain.length - 1;
 
                           return (
-                            <div
-                              key={node.node_id}
-                              className="flex flex-col items-center gap-3 min-w-[220px]"
+                            <div 
+                              key={node.node_id} 
+                              className={`relative flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl border transition-all group ${
+                                isTarget 
+                                  ? "bg-gradient-to-r from-amber-50 to-yellow-50/50 border-[#fdd400]/50 shadow-[0_0_15px_rgba(253,212,0,0.15)]" 
+                                  : "bg-slate-50/50 border-slate-100 hover:bg-white hover:border-slate-300"
+                              } ${!isAccessible ? "opacity-60 bg-slate-100/50" : ""}`}
                             >
-                              {/* Status Circle */}
-                              <div
-                                className={`w-16 h-16 rounded-full border-[4px] border-[#1F2720] flex items-center justify-center shadow-[4px_4px_0px_0px_#1F2720]
-                                ${
-                                  status === "mastered"
-                                    ? "bg-[#79ff8f] text-[#1b4320]"
-                                    : status ===
-                                      "in_progress"
-                                    ? "bg-[#fdd400] text-[#221b00]"
-                                    : "bg-[#ccd3cd] text-[#525f54]"
-                                }`}
-                              >
-                               {status === "mastered" && (
-                                      <CheckCircle2 className="w-8 h-8 stroke-[3px]" />
-                                    )}
+                              {/* Glowing timeline dot indicator */}
+                              <div className={`absolute -left-[22px] top-5 md:top-1/2 md:-translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-slate-300 bg-white group-hover:border-[#001a54] transition-colors duration-200 ${
+                                status === "mastered" ? "border-green-500 bg-green-500" : status === "in_progress" ? "border-[#fdd400] bg-[#fdd400]" : ""
+                              } ${isTarget ? "ring-4 ring-[#fdd400]/20" : ""}`} />
 
-                                    {status === "in_progress" && (
-                                      <Flame className="w-8 h-8 fill-[#221b00]" />
-                                    )}
-
-                                    {status === "unresolved" && (
-                                      <AlertTriangle className="w-7 h-7 fill-yellow-200" />
-                                    )}
-
-                                    {status === "not_attempted" && (
-                                      <Lock className="w-7 h-7" />
-                                    )}
+                              <div className="flex items-start gap-3">
+                                <div>
+                                  <h4 className={`text-sm font-bold font-['Hanken_Grotesk',_sans-serif] ${isTarget ? 'text-[#001a54] text-base' : 'text-[#001a54]'}`}>
+                                    {isTarget && <Trophy size={14} className="inline-block mr-2 text-[#fdd400] mb-0.5" />}
+                                    {node.node_label}
+                                  </h4>
+                                  <p className="font-mono text-[9px] text-slate-400 mt-0.5">
+                                    Grade {node.grade} • NODE ID: {node.node_id}
+                                    {isTarget && " • TARGET TOPIC"}
+                                  </p>
+                                </div>
                               </div>
 
                               {/* Card */}
@@ -425,30 +402,25 @@ function ProgressContent() {
 
                                 {status !== "mastered" && (
                                   <button
-                                    onClick={() =>
-                                      handleStudyNode(
-                                        node.node_id
-                                      )
-                                    }
-                                    disabled={
-                                      launchingNodeId !==
-                                      null
-                                    }
-                                    className="w-full justify-center bg-[#fdd400] hover:bg-[#ffe170] text-[#1F2720] border-[2.5px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720] px-3 py-2 text-[11px] font-black uppercase rounded-xl transition-all flex items-center gap-2 cursor-pointer disabled:opacity-40"
+                                    onClick={() => isAccessible && handleStudyNode(node.node_id)}
+                                    disabled={!isAccessible || launchingNodeId !== null}
+                                    className={`p-2 text-[9px] font-mono font-bold uppercase rounded-lg transition-all flex items-center gap-1 ${
+                                      !isAccessible 
+                                        ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed" 
+                                        : "bg-white hover:bg-slate-50 text-[#001a54] border border-slate-200 hover:border-[#001a54]/40 cursor-pointer"
+                                    }`}
                                   >
                                     {isNodeLoading ? (
-                                      <Loader2
-                                        size={14}
-                                        className="animate-spin"
-                                      />
+                                      <Loader2 size={10} className="animate-spin" />
+                                    ) : !isAccessible ? (
+                                      <Lock size={10} />
                                     ) : (
                                       <BookOpen
                                         size={14}
                                         className="stroke-[3px]"
                                       />
                                     )}
-
-                                    Embark
+                                    {isAccessible ? "Study Node [1]" : "Locked"}
                                   </button>
                                 )}
                               </div>

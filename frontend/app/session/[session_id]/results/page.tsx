@@ -210,13 +210,22 @@ export default function ResultsPage() {
             <p className="text-xs text-slate-500 font-medium mt-1">Topic path elements perfectly finished [1]</p>
           </div>
 
-          <button
-            onClick={handleDashboard}
-            disabled={actionLoading}
-            className="w-full bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] disabled:opacity-50"
-          >
-            Back to Dashboard
-          </button>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => router.push("/progress")}
+              disabled={actionLoading}
+              className="w-full bg-[#fdd400] text-[#001a54] hover:bg-[#e6c100] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(253,212,0,0.2)] flex items-center justify-center gap-2"
+            >
+              Choose Next Topic <span className="text-[#001a54]">→</span>
+            </button>
+            <button
+              onClick={handleDashboard}
+              disabled={actionLoading}
+              className="w-full bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] disabled:opacity-50"
+            >
+              Back to Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -240,13 +249,22 @@ export default function ResultsPage() {
             </p>
           </div>
 
-          <button
-            onClick={handleContinue}
-            disabled={actionLoading}
-            className="w-full bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] flex items-center justify-center gap-2"
-          >
-            Continue Pathway <span className="text-[#fdd400]">→</span>
-          </button>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleContinue}
+              disabled={actionLoading}
+              className="w-full bg-[#fdd400] text-[#001a54] hover:bg-[#e6c100] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(253,212,0,0.2)] flex items-center justify-center gap-2"
+            >
+              Continue Pathway <span className="text-[#001a54]">→</span>
+            </button>
+            <button
+              onClick={handleDashboard}
+              disabled={actionLoading}
+              className="w-full bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-4 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] disabled:opacity-50"
+            >
+              Back to Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );
