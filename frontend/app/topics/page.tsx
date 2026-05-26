@@ -55,7 +55,8 @@ export default function TopicsPage() {
 
   return (
     <MainPage>
-      <div className="space-y-6">
+      <div className="min-h-screen text-[#1F2720] py-4 px-2 md:px-4">
+        <div className="w-full max-w-[1800px] mx-auto space-y-6">
 
           {/* Bento Grid Header Block */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -128,7 +129,7 @@ export default function TopicsPage() {
             </div>
           )}
 
-          {/* Grid Layout of Tracks */}
+          {/* Timeline Layout of Tracks */}
           {loading ? (
             <div className="bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] p-12 shadow-[8px_8px_0px_0px_#1F2720] flex flex-col items-center justify-center space-y-4">
               <div className="relative w-12 h-12">
@@ -138,92 +139,133 @@ export default function TopicsPage() {
               <p className="font-['Manrope'] text-xs text-[#1F2720] font-black tracking-widest uppercase animate-pulse">Mapping Forest Trails...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {topics.map((topic) => {
+            <div className="relative pl-10 md:pl-0">
+              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1 md:-translate-x-1/2 bg-[#1F2720] rounded-full" />
+
+              <div className="space-y-6">
+              {topics.map((topic, index) => {
                 const isActive = topic.node_id in activeTopics;
                 const isCompleted = completedTopics.has(topic.node_id);
+                const isLeft = index % 2 === 0;
+                const trackPct = isCompleted ? 100 : isActive ? 50 : 0;
+                const statusText = isCompleted ? "Mastered" : isActive ? "In Progress" : "Not Attempted";
+                const statusClass = isCompleted
+                  ? "bg-emerald-600 text-white"
+                  : isActive
+                  ? "bg-[#fdd400] text-[#1F2720]"
+                  : "bg-slate-100 text-slate-600";
 
                 return (
-                  <div 
-                    key={topic.node_id} 
-                    className={`bg-white rounded-[24px] p-6 flex flex-col justify-between transition-all duration-300 relative group overflow-hidden border-[4px] border-[#1F2720] ${
-                      !isActive && !isCompleted 
-                        ? 'shadow-[6px_6px_0px_0px_#1F2720] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0px_0px_#1F2720] active:translate-y-0.5 active:translate-x-0.5 active:shadow-[2px_2px_0px_0px_#1F2720] cursor-pointer' 
-                        : 'shadow-[6px_6px_0px_0px_#1F2720]'
-                    }`}
-                    onClick={() => {
-                      if (!isActive && !isCompleted) handleStartTopic(topic.node_id);
-                    }}
-                  >
-                    <div className="pl-2">
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="font-['Manrope'] text-[9px] text-[#1F2720] font-black uppercase tracking-widest bg-[#e6e8ea] px-2 py-1 rounded-md border-2 border-[#1F2720]">
-                          TRAIL: {topic.node_id}
-                        </span>
-                        {isActive && (
-                          <span className="font-['Manrope'] text-[9px] text-[#1F2720] font-black bg-[#fdd400] px-2.5 py-1 rounded-md uppercase border-2 border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720] animate-pulse">
-                            ACTIVE QUEST
-                          </span>
-                        )}
-                        {isCompleted && (
-                          <span className="font-['Manrope'] text-[9px] text-white font-black bg-emerald-600 px-2.5 py-1 rounded-md uppercase border-2 border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
-                            CLEARED ✓
-                          </span>
-                        )}
-                      </div>
+                  <div key={topic.node_id} className="relative grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-stretch">
+                    <div className={`${isLeft ? "md:order-1" : "md:order-2"}`}>
+                      <div className="bg-white rounded-[24px] p-6 flex flex-col justify-between transition-all duration-300 relative group overflow-hidden border-[4px] border-[#1F2720] shadow-[6px_6px_0px_0px_#1F2720] min-h-[220px]">
+                        <div className="pl-2">
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <span className="font-['Manrope'] text-[9px] text-[#1F2720] font-black uppercase tracking-widest bg-[#e6e8ea] px-2 py-1 rounded-md border-2 border-[#1F2720]">
+                              TRAIL: {topic.node_id}
+                            </span>
+                          </div>
 
-                      <h2 className="text-2xl font-black font-['Hanken_Grotesk'] text-[#1F2720] tracking-tight group-hover:text-[#005b21] transition-colors mt-3">
-                        {topic.label}
-                      </h2>
-                      
-                      <p className="text-xs font-['Manrope'] font-bold text-slate-500 mt-2">
-                        Grade {topic.grade}
-                      </p>
+                          <h2 className="text-2xl font-black font-['Hanken_Grotesk'] text-[#1F2720] tracking-tight mt-3">
+                            {topic.label}
+                          </h2>
+
+                          <p className="text-xs font-['Manrope'] font-bold text-slate-500 mt-2">
+                            Grade {topic.grade}
+                          </p>
+                        </div>
+
+                        <div className="mt-8 pl-2 flex flex-col sm:flex-row gap-3">
+                          {isActive && (
+                            <button
+                              onClick={() => {
+                                handleResume(activeTopics[topic.node_id]);
+                              }}
+                              className="flex-1 bg-[#fdd400] text-[#1F2720] hover:bg-[#ffe170] py-3 px-4 text-xs font-['Manrope'] font-black uppercase rounded-[16px] tracking-wider text-center transition-all cursor-pointer border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720]"
+                            >
+                              Resume Quest
+                            </button>
+                          )}
+
+                          {isCompleted && (
+                            <button
+                              onClick={() => {
+                                handleReviewAgain(topic.node_id);
+                              }}
+                              className="flex-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] py-3 px-4 text-xs font-['Manrope'] font-black uppercase rounded-[16px] tracking-wider text-center transition-all cursor-pointer"
+                            >
+                              Review Again
+                            </button>
+                          )}
+
+                          {!isActive && !isCompleted && (
+                            <button
+                              onClick={() => {
+                                handleStartTopic(topic.node_id);
+                              }}
+                              className="flex-1 bg-white hover:bg-slate-50 text-[#1F2720] border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] py-3 px-4 text-xs font-['Manrope'] font-black uppercase rounded-[16px] tracking-wider text-center transition-all cursor-pointer"
+                            >
+                              Embark
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="mt-8 pl-2 flex flex-col sm:flex-row gap-3">
-                      {isActive && (
-                        <button
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            handleResume(activeTopics[topic.node_id]); 
-                          }}
-                          className="flex-1 bg-[#fdd400] text-[#1F2720] hover:bg-[#ffe170] py-3 px-4 text-xs font-['Manrope'] font-black uppercase rounded-[16px] tracking-wider text-center transition-all cursor-pointer border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720]"
-                        >
-                          Resume Quest
-                        </button>
-                      )}
-                      
-                      {isCompleted && (
-                        <button
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            handleReviewAgain(topic.node_id); 
-                          }}
-                          className="flex-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] py-3 px-4 text-xs font-['Manrope'] font-black uppercase rounded-[16px] tracking-wider text-center transition-all cursor-pointer"
-                        >
-                          Review Again
-                        </button>
-                      )}
-                      
-                      {!isActive && !isCompleted && (
-                        <button
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            handleStartTopic(topic.node_id); 
-                          }}
-                          className="flex-1 bg-white hover:bg-slate-50 text-[#1F2720] border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] py-3 px-4 text-xs font-['Manrope'] font-black uppercase rounded-[16px] tracking-wider text-center transition-all cursor-pointer"
-                        >
-                          Embark
-                        </button>
-                      )}
+                    <div className={`${isLeft ? "md:order-2" : "md:order-1"}`}>
+                      <div className="bg-[#faf8f5] rounded-[24px] p-6 border-[4px] border-[#1F2720] shadow-[6px_6px_0px_0px_#1F2720] min-h-[220px] flex flex-col justify-between">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-['Manrope'] text-[10px] text-[#1F2720] font-black uppercase tracking-widest bg-[#e6e8ea] px-2 py-1 rounded-md border-2 border-[#1F2720]">
+                            Progress Log
+                          </span>
+                          <span className={`font-['Manrope'] text-[10px] font-black uppercase px-2.5 py-1 rounded-md border-2 border-[#1F2720] ${statusClass}`}>
+                            {statusText}
+                          </span>
+                        </div>
+
+                        <div className="mt-5 space-y-3">
+                          <div className="flex items-end justify-between">
+                            <span className="font-['Manrope'] text-xs font-black uppercase text-slate-500">Completion</span>
+                            <span className="font-['Hanken_Grotesk'] text-4xl font-black leading-none tabular-nums text-[#1F2720]">
+                              {String(trackPct).padStart(2, "0")}%
+                            </span>
+                          </div>
+
+                          <div className="h-4 bg-[#e6e8ea] rounded-full overflow-hidden border-[3px] border-[#1F2720] p-0.5">
+                            <div
+                              className={`h-full rounded-full transition-all duration-300 ${
+                                isCompleted
+                                  ? "bg-gradient-to-r from-emerald-500 to-green-400"
+                                  : isActive
+                                  ? "bg-gradient-to-r from-[#f4c400] to-[#fdd400]"
+                                  : "bg-slate-300"
+                              }`}
+                              style={{ width: `${trackPct}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        <p className="font-['Manrope'] text-xs text-slate-500 font-bold mt-4">
+                          {isCompleted
+                            ? "Trail fully cleared. Review anytime."
+                            : isActive
+                            ? "You have an active quest in this trail."
+                            : "No attempts yet. Ready to begin this trail."}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex absolute left-4 md:left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-[#fdd400] border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] items-center justify-center">
+                      <span className="font-['Manrope'] text-[10px] font-black text-[#1F2720]">{index + 1}</span>
                     </div>
                   </div>
                 );
               })}
+              </div>
             </div>
           )}
 
+        </div>
       </div>
     </MainPage>
   );
