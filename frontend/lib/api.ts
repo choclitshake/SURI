@@ -79,8 +79,11 @@ export interface SessionResponse {
 
 export interface DiagnosticProbe {
   node_id: string;
+  node_label?: string;
   question_text: string;
   options: string[];
+  questions_answered?: number;
+  questions_total?: number;
 }
 
 export interface DiagnosticAnswer {
@@ -89,6 +92,11 @@ export interface DiagnosticAnswer {
   next_node_id: string | null;
   identified_node_id: string | null;
   prerequisite_path: string[] | null;
+  node_complete?: boolean;
+  node_passed?: boolean;
+  correct_count?: number;
+  questions_answered?: number;
+  questions_total?: number;
 }
 
 export interface CompetencyStatus {

@@ -1,5 +1,8 @@
 import uuid
+import json
 import random
+import hashlib
+from pathlib import Path
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from backend.auth import get_current_student
@@ -15,220 +18,40 @@ from backend.progress_utils import compute_and_save_session_progress
 
 router = APIRouter(prefix="/api/diagnostic", tags=["diagnostic"])
 
-# Probe definitions: At least 2 multiple choice questions per node for all 15 nodes.
-PROBES = {
-    "FD": [
-        {
-            "node_id": "FD",
-            "question_text": "What is 3/4 + 1/4?",
-            "options": ["1/2", "1", "4/8", "3/8"],
-            "correct_option_index": 1
-        },
-        {
-            "node_id": "FD",
-            "question_text": "What is 0.5 * 0.2?",
-            "options": ["0.1", "0.01", "1.0", "0.25"],
-            "correct_option_index": 0
-        }
-    ],
-    "OI": [
-        {
-            "node_id": "OI",
-            "question_text": "What is the value of -5 + 8?",
-            "options": ["-13", "3", "-3", "13"],
-            "correct_option_index": 1
-        },
-        {
-            "node_id": "OI",
-            "question_text": "What is the product of -3 and -4?",
-            "options": ["-12", "7", "-7", "12"],
-            "correct_option_index": 3
-        }
-    ],
-    "LE": [
-        {
-            "node_id": "LE",
-            "question_text": "Simplify using laws of exponents: (x^3) * (x^4)",
-            "options": ["x^7", "x^12", "2x^7", "x^1"],
-            "correct_option_index": 0
-        },
-        {
-            "node_id": "LE",
-            "question_text": "What is the value of 5^0?",
-            "options": ["0", "5", "1", "50"],
-            "correct_option_index": 2
-        }
-    ],
-    "SP": [
-        {
-            "node_id": "SP",
-            "question_text": "Expand: (x + 3)^2",
-            "options": ["x^2 + 9", "x^2 + 6x + 9", "x^2 + 3x + 9", "x^2 + 6"],
-            "correct_option_index": 1
-        },
-        {
-            "node_id": "SP",
-            "question_text": "Multiply the binomials: (x + 2)(x - 2)",
-            "options": ["x^2 - 4", "x^2 + 4", "x^2 - 4x - 4", "x^2 - 2"],
-            "correct_option_index": 0
-        }
-    ],
-    "FP": [
-        {
-            "node_id": "FP",
-            "question_text": "Factor completely: x^2 - 9",
-            "options": ["(x - 3)^2", "(x - 9)(x + 1)", "(x - 3)(x + 3)", "x(x - 9)"],
-            "correct_option_index": 2
-        },
-        {
-            "node_id": "FP",
-            "question_text": "What is the Greatest Common Factor (GCF) of 12x^2 and 18x?",
-            "options": ["6x", "6x^2", "3x", "2x"],
-            "correct_option_index": 0
-        }
-    ],
-    "RPP": [
-        {
-            "node_id": "RPP",
-            "question_text": "If 2 cups of rice require 3 cups of water, how many cups of water are needed for 6 cups of rice?",
-            "options": ["6", "9", "5", "12"],
-            "correct_option_index": 1
-        },
-        {
-            "node_id": "RPP",
-            "question_text": "What is 15% of 200?",
-            "options": ["15", "30", "45", "20"],
-            "correct_option_index": 1
-        }
-    ],
-    "AE": [
-        {
-            "node_id": "AE",
-            "question_text": "Evaluate the algebraic expression 3x - 5 when x = 4.",
-            "options": ["7", "12", "9", "17"],
-            "correct_option_index": 0
-        },
-        {
-            "node_id": "AE",
-            "question_text": "Evaluate 2a^2 + 3b when a = 3 and b = -1.",
-            "options": ["15", "21", "12", "18"],
-            "correct_option_index": 0
-        }
-    ],
-    "L1V": [
-        {
-            "node_id": "L1V",
-            "question_text": "Solve for x: 2x + 7 = 15",
-            "options": ["x = 11", "x = 4", "x = 8", "x = 2"],
-            "correct_option_index": 1
-        },
-        {
-            "node_id": "L1V",
-            "question_text": "Solve for y: 3y - 4 = 2y + 5",
-            "options": ["y = 9", "y = 1", "y = -9", "y = 5"],
-            "correct_option_index": 0
-        }
-    ],
-    "L2V": [
-        {
-            "node_id": "L2V",
-            "question_text": "Find the slope of the line passing through points (1, 2) and (3, 6).",
-            "options": ["2", "4", "1/2", "-2"],
-            "correct_option_index": 0
-        },
-        {
-            "node_id": "L2V",
-            "question_text": "What is the y-intercept of the line y = -3x + 5?",
-            "options": ["-3", "5", "5/3", "0"],
-            "correct_option_index": 1
-        }
-    ],
-    "SLE": [
-        {
-            "node_id": "SLE",
-            "question_text": "Solve the system of equations: x + y = 6 and x - y = 2.",
-            "options": ["(4, 2)", "(3, 3)", "(5, 1)", "(2, 4)"],
-            "correct_option_index": 0
-        },
-        {
-            "node_id": "SLE",
-            "question_text": "Which algebraic method is best suited to solve: x = 2y - 1 and 3x + y = 11?",
-            "options": ["Substitution", "Elimination", "Graphing", "Determinants"],
-            "correct_option_index": 0
-        }
-    ],
-    "RER": [
-        {
-            "node_id": "RER",
-            "question_text": "Simplify the radical expression: sqrt(50)",
-            "options": ["25 * sqrt(2)", "5 * sqrt(2)", "2 * sqrt(5)", "10 * sqrt(5)"],
-            "correct_option_index": 1
-        },
-        {
-            "node_id": "RER",
-            "question_text": "Write the expression x^(2/3) in radical form.",
-            "options": ["square root of x cubed", "cube root of x squared", "cube root of x", "square root of x"],
-            "correct_option_index": 1
-        }
-    ],
-    "PO": [
-        {
-            "node_id": "PO",
-            "question_text": "Simplify: (3x^2 + 5x - 2) + (x^2 - 2x + 4)",
-            "options": ["4x^2 + 3x + 2", "4x^2 + 7x + 2", "2x^2 + 3x + 6", "4x^2 - 3x - 6"],
-            "correct_option_index": 0
-        },
-        {
-            "node_id": "PO",
-            "question_text": "Subtract (2x - 3) from (5x + 1).",
-            "options": ["3x + 4", "3x - 2", "7x - 2", "-3x - 4"],
-            "correct_option_index": 0
-        }
-    ],
-    "PD": [
-        {
-            "node_id": "PD",
-            "question_text": "Divide the polynomial (x^2 + 5x + 6) by (x + 2).",
-            "options": ["x + 3", "x - 3", "x + 2", "x + 5"],
-            "correct_option_index": 0
-        },
-        {
-            "node_id": "PD",
-            "question_text": "What is the remainder when x^3 - 2x^2 + 3x - 4 is divided by (x - 1)?",
-            "options": ["-2", "2", "-1", "-4"],
-            "correct_option_index": 0
-        }
-    ],
-    "QE": [
-        {
-            "node_id": "QE",
-            "question_text": "Find the roots of the quadratic equation: x^2 - 5x + 6 = 0.",
-            "options": ["x = 2, 3", "x = -2, -3", "x = 1, 6", "x = -1, -6"],
-            "correct_option_index": 0
-        },
-        {
-            "node_id": "QE",
-            "question_text": "What is the value of the discriminant for x^2 + 4x + 4 = 0?",
-            "options": ["16", "8", "0", "-16"],
-            "correct_option_index": 2
-        }
-    ],
-    "PE": [
-        {
-            "node_id": "PE",
-            "question_text": "Find the rational roots of the polynomial equation: x^3 - 6x^2 + 11x - 6 = 0.",
-            "options": ["x = 1, 2, 3", "x = -1, -2, -3", "x = 0, 1, 6", "x = 1, 3, 5"],
-            "correct_option_index": 0
-        },
-        {
-            "node_id": "PE",
-            "question_text": "According to the Rational Root Theorem, which of the following is a possible rational root of 2x^3 + x^2 - 3 = 0?",
-            "options": ["2", "1.5", "1/2", "3/2"],
-            "correct_option_index": 3
-        }
-    ]
-}
+# ---------------------------------------------------------------------------
+# Load probe bank from JSON (generated offline, 16 questions per node)
+# ---------------------------------------------------------------------------
+_PROBES_PATH = Path(__file__).parent.parent / "data" / "diagnostic_probes.json"
 
+def _load_probes() -> dict:
+    try:
+        with open(_PROBES_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        raise RuntimeError(f"Failed to load diagnostic_probes.json: {e}")
+
+PROBES: dict = _load_probes()
+
+QUESTIONS_PER_NODE = 8
+PASS_THRESHOLD = 6  # >= 6/8 (75%) = mastered
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _probe_order(session_id: str, node_id: str, n: int) -> list[int]:
+    """Return a deterministic, session-specific shuffled order of probe indices."""
+    seed = int(hashlib.md5(f"{session_id}:{node_id}".encode()).hexdigest(), 16)
+    rng = random.Random(seed)
+    indices = list(range(n))
+    rng.shuffle(indices)
+    return indices
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
 
 @router.post("/skip")
 async def skip_diagnostic(
@@ -289,7 +112,7 @@ async def submit_diagnostic(
     body: DiagnosticSubmitRequest,
     student=Depends(get_current_student),
 ):
-    """Finalize diagnostic: write per-node competency statuses and route."""
+    """Finalize diagnostic: compute per-node mastery from logs and route student."""
     conn = await get_db()
     try:
         session_row = await conn.fetchrow(
@@ -310,48 +133,62 @@ async def submit_diagnostic(
         student_id = session_row["student_id"]
         chain = get_chain(topic_entry_node)
 
-        async with conn.transaction():
-            for answer in body.answers:
-                if answer.node_id not in GRAPH:
-                    continue
-                if answer.correct:
-                    await upsert_status(conn, student_id, answer.node_id, "mastered", "diagnostic")
-                else:
-                    await upsert_status(conn, student_id, answer.node_id, "unresolved", "diagnostic")
+        # Pull per-node correct counts from diagnostic_logs
+        log_rows = await conn.fetch(
+            """
+            SELECT node_id, COUNT(*) as total, SUM(probe_result) as correct
+            FROM diagnostic_logs
+            WHERE session_id = $1
+            GROUP BY node_id
+            """,
+            session_id,
+        )
+        node_scores: dict[str, dict] = {
+            row["node_id"]: {"total": row["total"], "correct": int(row["correct"] or 0)}
+            for row in log_rows
+        }
 
+        async with conn.transaction():
+            for node_id in chain:
+                if node_id not in GRAPH:
+                    continue
+                scores = node_scores.get(node_id, {"total": 0, "correct": 0})
+                # Only nodes that have been assessed at all get a definitive status
+                if scores["total"] > 0:
+                    passed = scores["correct"] >= PASS_THRESHOLD
+                    new_status = "mastered" if passed else "unresolved"
+                    await upsert_status(conn, student_id, node_id, new_status, "diagnostic")
+                else:
+                    # Node was never assessed (e.g. student got all correct before reaching it)
+                    await upsert_status(conn, student_id, node_id, "unresolved", "diagnostic")
+
+            # Find the deepest unresolved node as the learning gap
             gap_node = None
             for node_id in reversed(chain):
-                status_record = await get_status(conn, student_id, node_id)
-                if status_record and status_record["status"] == "unresolved":
+                row = await get_status(conn, student_id, node_id)
+                if row and row["status"] == "unresolved":
                     gap_node = node_id
                     break
 
             node_statuses = []
-            for node_id in chain:
-                row = await get_status(conn, student_id, node_id)
-                node_statuses.append({
-                    "node_id": node_id,
-                    "node_label": GRAPH[node_id]["label"],
-                    "status": row["status"] if row else None,
-                    "source": row["source"] if row else None
-                })
-
-            now_iso = datetime.now(timezone.utc).isoformat()
             mastered_nodes = []
             unresolved_nodes = []
             for node_id in chain:
                 row = await get_status(conn, student_id, node_id)
-                if row and row["status"] == "mastered":
-                    mastered_nodes.append({
-                        "node_id": node_id,
-                        "node_label": GRAPH[node_id]["label"],
-                        "source": row["source"],
-                    })
-                elif row and row["status"] == "unresolved":
-                    unresolved_nodes.append({
-                        "node_id": node_id,
-                        "node_label": GRAPH[node_id]["label"],
-                    })
+                s = row["status"] if row else None
+                src = row["source"] if row else None
+                node_statuses.append({
+                    "node_id": node_id,
+                    "node_label": GRAPH[node_id]["label"],
+                    "status": s,
+                    "source": src,
+                })
+                if s == "mastered":
+                    mastered_nodes.append({"node_id": node_id, "node_label": GRAPH[node_id]["label"], "source": src})
+                elif s == "unresolved":
+                    unresolved_nodes.append({"node_id": node_id, "node_label": GRAPH[node_id]["label"]})
+
+            now_iso = datetime.now(timezone.utc).isoformat()
 
             if gap_node is None:
                 await conn.execute(
@@ -396,7 +233,7 @@ async def submit_diagnostic(
 
 @router.get("/{session_id}/probe")
 async def get_diagnostic_probe(session_id: str, student=Depends(get_current_student)):
-    """Get the next diagnostic probe question."""
+    """Get the next diagnostic probe for the current node, avoiding repeats."""
     conn = await get_db()
     try:
         session_row = await conn.fetchrow(
@@ -404,16 +241,10 @@ async def get_diagnostic_probe(session_id: str, student=Depends(get_current_stud
             session_id, student["id"],
         )
         if not session_row:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Session not found",
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
 
         if session_row["completed"]:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Diagnostic session is already completed",
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Diagnostic session is already completed")
 
         current_node = session_row["current_node"]
         if current_node not in PROBES:
@@ -423,7 +254,17 @@ async def get_diagnostic_probe(session_id: str, student=Depends(get_current_stud
             )
 
         probes_list = PROBES[current_node]
-        probe_idx = random.randint(0, len(probes_list) - 1)
+
+        # Count how many questions already answered for this node in this session
+        answered_count_row = await conn.fetchrow(
+            "SELECT COUNT(*) as cnt FROM diagnostic_logs WHERE session_id = $1 AND node_id = $2",
+            session_id, current_node,
+        )
+        answered_count = answered_count_row["cnt"] if answered_count_row else 0
+
+        # Use a session-seeded deterministic order to avoid repeating probes
+        order = _probe_order(session_id, current_node, len(probes_list))
+        probe_idx = order[answered_count % len(probes_list)]
         selected_probe = probes_list[probe_idx]
 
         await conn.execute(
@@ -433,8 +274,11 @@ async def get_diagnostic_probe(session_id: str, student=Depends(get_current_stud
 
         return {
             "node_id": current_node,
+            "node_label": GRAPH[current_node]["label"],
             "question_text": selected_probe["question_text"],
             "options": selected_probe["options"],
+            "questions_answered": answered_count,
+            "questions_total": QUESTIONS_PER_NODE,
         }
     finally:
         await release_db(conn)
@@ -446,7 +290,7 @@ async def submit_diagnostic_answer(
     body: DiagnosticAnswerRequest,
     student=Depends(get_current_student),
 ):
-    """Submit an answer to a diagnostic probe."""
+    """Submit an answer; track 8 questions per node, require 6/8 for mastery."""
     conn = await get_db()
     try:
         session_row = await conn.fetchrow(
@@ -454,25 +298,16 @@ async def submit_diagnostic_answer(
             session_id, student["id"],
         )
         if not session_row:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Session not found",
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
 
         if session_row["completed"]:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Diagnostic session is already completed",
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Diagnostic session is already completed")
 
         current_node = session_row["current_node"]
         probe_idx = session_row["current_probe_index"]
 
         if probe_idx is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No active probe found for this session. Fetch a probe first.",
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No active probe found. Fetch a probe first.")
 
         if body.node_id != current_node:
             raise HTTPException(
@@ -496,9 +331,37 @@ async def submit_diagnostic_answer(
                 log_id, session_id, current_node, 1 if is_correct else 0, now_iso,
             )
 
+            # Count how many questions now answered for this node
+            count_row = await conn.fetchrow(
+                "SELECT COUNT(*) as cnt, SUM(probe_result) as correct FROM diagnostic_logs WHERE session_id = $1 AND node_id = $2",
+                session_id, current_node,
+            )
+            answered_count = count_row["cnt"]
+            correct_count = int(count_row["correct"] or 0)
+
+            if answered_count < QUESTIONS_PER_NODE:
+                # Not done with this node yet — ask another question
+                await conn.execute(
+                    "UPDATE sessions SET current_probe_index = NULL, last_active_at = $1 WHERE id = $2",
+                    now_iso, session_id,
+                )
+                return {
+                    "correct": is_correct,
+                    "next_action": "next_probe",
+                    "node_complete": False,
+                    "questions_answered": answered_count,
+                    "questions_total": QUESTIONS_PER_NODE,
+                    "next_node_id": current_node,
+                    "identified_node_id": None,
+                    "prerequisite_path": None,
+                }
+
+            # ── Node complete: 8 questions answered ──────────────────────────
+            node_passed = correct_count >= PASS_THRESHOLD
             prereq = GRAPH[current_node]["prerequisite"]
 
             if prereq:
+                # Move to prerequisite node
                 await conn.execute(
                     "UPDATE sessions SET current_node = $1, current_probe_index = NULL, last_active_at = $2 WHERE id = $3",
                     prereq, now_iso, session_id,
@@ -506,27 +369,32 @@ async def submit_diagnostic_answer(
                 return {
                     "correct": is_correct,
                     "next_action": "next_probe",
+                    "node_complete": True,
+                    "node_passed": node_passed,
+                    "correct_count": correct_count,
+                    "questions_answered": QUESTIONS_PER_NODE,
+                    "questions_total": QUESTIONS_PER_NODE,
                     "next_node_id": prereq,
                     "identified_node_id": None,
                     "prerequisite_path": None,
                 }
             else:
-                identified_weak_node = current_node
-                prereq_path = get_prerequisite_path(
-                    identified_weak_node, session_row["topic_entry_node"]
-                )
+                # All nodes assessed — finalize
+                prereq_path = get_prerequisite_path(current_node, session_row["topic_entry_node"])
                 await conn.execute(
-                    """
-                    UPDATE sessions SET last_active_at = $1, current_probe_index = NULL
-                    WHERE id = $2
-                    """,
+                    "UPDATE sessions SET last_active_at = $1, current_probe_index = NULL WHERE id = $2",
                     now_iso, session_id,
                 )
                 return {
                     "correct": is_correct,
                     "next_action": "complete",
+                    "node_complete": True,
+                    "node_passed": node_passed,
+                    "correct_count": correct_count,
+                    "questions_answered": QUESTIONS_PER_NODE,
+                    "questions_total": QUESTIONS_PER_NODE,
                     "next_node_id": None,
-                    "identified_node_id": identified_weak_node,
+                    "identified_node_id": current_node,
                     "prerequisite_path": prereq_path,
                 }
     finally:

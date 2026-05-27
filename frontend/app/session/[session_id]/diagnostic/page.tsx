@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import confetti from "canvas-confetti";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 import { 
   getSession,
@@ -24,6 +28,12 @@ import {
   ArrowRight 
 } from "lucide-react";
 
+const RenderMath = ({ text }: { text: string }) => (
+  <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+    {text}
+  </ReactMarkdown>
+);
+
 export default function DiagnosticPage() {
   const router = useRouter();
   const params = useParams();
@@ -38,6 +48,11 @@ export default function DiagnosticPage() {
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ correct: boolean; nextAction: string } | null>(null);
   const [topicEntryNode, setTopicEntryNode] = useState<string>("");
+
+  // Per-node question progress
+  const [nodeQuestionCount, setNodeQuestionCount] = useState(0);  // questions answered for current node
+  const [nodeQuestionTotal, setNodeQuestionTotal] = useState(8);  // always 8
+  const [currentNodeLabel, setCurrentNodeLabel] = useState("");
 
   // Show toast and confetti on feedback change
   useEffect(() => {
@@ -61,6 +76,10 @@ export default function DiagnosticPage() {
       const data = await getDiagnosticProbe(sessionId);
       setProbe(data);
       setPhase("probes");
+      // Update per-node progress from the response
+      if (data.questions_answered !== undefined) setNodeQuestionCount(data.questions_answered);
+      if (data.questions_total !== undefined) setNodeQuestionTotal(data.questions_total);
+      if (data.node_label) setCurrentNodeLabel(data.node_label);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to load diagnostic question.";
@@ -140,12 +159,20 @@ export default function DiagnosticPage() {
 
       setFeedback({ correct: res.correct, nextAction: res.next_action });
 
-      const currentAnswers = JSON.parse(
-        sessionStorage.getItem("diagnostic_answers") || "{}"
-      );
-      currentAnswers[probe.node_id] = res.correct;
-      sessionStorage.setItem("diagnostic_answers", JSON.stringify(currentAnswers));
-      setAnsweredCount(Object.keys(currentAnswers).length);
+      // If node is complete, store the pass/fail result per node
+      if (res.node_complete) {
+        const currentAnswers = JSON.parse(
+          sessionStorage.getItem("diagnostic_answers") || "{}"
+        );
+        currentAnswers[probe.node_id] = res.node_passed ?? res.correct;
+        sessionStorage.setItem("diagnostic_answers", JSON.stringify(currentAnswers));
+        setAnsweredCount(Object.keys(currentAnswers).length);
+        // Reset per-node counter for the next node
+        setNodeQuestionCount(0);
+      } else {
+        // Update question counter within the current node
+        if (res.questions_answered !== undefined) setNodeQuestionCount(res.questions_answered);
+      }
 
       setTimeout(async () => {
         try {
@@ -332,21 +359,28 @@ export default function DiagnosticPage() {
                 className="bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] p-6 md:p-8 shadow-[8px_8px_0px_0px_#1F2720] space-y-6"
               >
                 {/* Probe Header Details */}
-                <div className="flex items-center justify-between pb-3.5 border-b-[4px] border-[#1F2720]/15 mb-6">
-                  <span className="bg-[#fdd400] text-[#1F2720] font-['Manrope'] text-[10px] font-black uppercase px-2.5 py-1.5 rounded-md border-2 border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
-                    Assessing: {probe.node_id}
-                  </span>
-                  {totalQuestions > 0 && (
-                    <span className="font-['Manrope'] text-[11px] font-black text-slate-500 uppercase tracking-widest">
-                      Question {answeredCount + 1} of {totalQuestions}
+                <div className="flex flex-col gap-3 pb-3.5 border-b-[4px] border-[#1F2720]/15 mb-6">
+                  <div className="flex items-center justify-between">
+                    <span className="bg-[#fdd400] text-[#1F2720] font-['Manrope'] text-[10px] font-black uppercase px-2.5 py-1.5 rounded-md border-2 border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
+                      {currentNodeLabel || probe.node_id}
                     </span>
-                  )}
+                    <span className="font-['Manrope'] text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                      Question {nodeQuestionCount + 1} of {nodeQuestionTotal}
+                    </span>
+                  </div>
+                  {/* Per-node progress bar */}
+                  <div className="w-full h-2 bg-slate-200 rounded-full border border-[#1F2720]/20 overflow-hidden">
+                    <div
+                      className="h-full bg-[#fdd400] rounded-full transition-all duration-500"
+                      style={{ width: `${((nodeQuestionCount) / nodeQuestionTotal) * 100}%` }}
+                    />
+                  </div>
                 </div>
 
                 {/* Question Body */}
-                <h2 className="text-base md:text-lg font-['Hanken_Grotesk'] font-black text-[#1F2720] leading-snug mb-6">
-                  {probe.question_text}
-                </h2>
+                <div className="text-base md:text-lg font-['Hanken_Grotesk'] font-black text-[#1F2720] leading-snug mb-6 markdown-content">
+                  <RenderMath text={probe.question_text} />
+                </div>
 
                 {/* Multi Choice Radio Blocks */}
                 <div className="space-y-4 mb-8">
@@ -367,10 +401,10 @@ export default function DiagnosticPage() {
                         disabled={submitting || feedback !== null}
                         className="sr-only"
                       />
-                      <span className={`font-['Manrope'] text-sm mr-3 font-black ${selectedIdx === idx ? "text-[#1F2720]" : "text-emerald-700"}`}>
+                      <span className={`font-['Manrope'] text-sm mr-3 font-black shrink-0 ${selectedIdx === idx ? "text-[#1F2720]" : "text-emerald-700"}`}>
                         {String.fromCharCode(65 + idx)}.
                       </span>
-                      <span className="font-['Manrope'] text-sm">{option}</span>
+                      <span className="font-['Manrope'] text-sm markdown-content"><RenderMath text={option} /></span>
                     </label>
                   ))}
                 </div>
