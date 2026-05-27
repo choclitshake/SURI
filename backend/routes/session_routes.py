@@ -8,6 +8,7 @@ from backend.models.schemas import (
     UpdateSessionRequest,
 )
 from backend.graph import GRAPH
+from backend.competency_utils import get_chain
 from backend.progress_utils import compute_and_save_session_progress
 
 router = APIRouter(prefix="/api/sessions", tags=["sessions"])
@@ -42,6 +43,10 @@ async def create_session(body: CreateSessionRequest, student=Depends(get_current
 
         session_id = str(uuid.uuid4())
         now_iso = datetime.now(timezone.utc).isoformat()
+        
+        # Determine the deepest prerequisite to start the diagnostic
+        chain = get_chain(body.topic_entry_node)
+        deepest_node = chain[-1] if chain else body.topic_entry_node
 
         await conn.execute(
             """
@@ -52,7 +57,7 @@ async def create_session(body: CreateSessionRequest, student=Depends(get_current
             ) VALUES ($1, $2, $3, $4, NULL, $5, $6, 0, 0.0)
             """,
             session_id, student_id, body.topic_entry_node,
-            body.topic_entry_node, now_iso, now_iso,
+            deepest_node, now_iso, now_iso,
         )
     finally:
         await release_db(conn)
@@ -61,7 +66,7 @@ async def create_session(body: CreateSessionRequest, student=Depends(get_current
         "id": session_id,
         "session_id": session_id,
         "topic_entry_node": body.topic_entry_node,
-        "current_node": body.topic_entry_node,
+        "current_node": deepest_node,
     }
 
 

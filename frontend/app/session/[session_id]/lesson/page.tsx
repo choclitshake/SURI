@@ -70,7 +70,7 @@ function LessonVisualizer({ nodeId }: { nodeId: string }) {
           <text x="54" y="52" className="text-[10px] font-mono font-black fill-[#1F2720]">x₁</text>
           <text x="138" y="52" className="text-[10px] font-mono font-black fill-[#1F2720]">x₂</text>
         </svg>
-        <p className="text-[9px] font-black text-slate-500 text-center uppercase mt-1 tracking-wider">Parabola Roots [1]</p>
+        <p className="text-[9px] font-black text-slate-500 text-center uppercase mt-1 tracking-wider">Parabola Roots</p>
       </div>
     );
   }
@@ -87,7 +87,7 @@ function LessonVisualizer({ nodeId }: { nodeId: string }) {
           <circle cx="100" cy="60" r="4.5" fill="#fdd400" stroke="#1F2720" strokeWidth="2" />
           <text x="110" y="55" className="text-[10px] font-mono font-black fill-[#1F2720]">(x, y)</text>
         </svg>
-        <p className="text-[9px] font-black text-slate-500 text-center uppercase mt-1 tracking-wider">Line Intersection [1]</p>
+        <p className="text-[9px] font-black text-slate-500 text-center uppercase mt-1 tracking-wider">Line Intersection</p>
       </div>
     );
   }
@@ -108,7 +108,7 @@ function LessonVisualizer({ nodeId }: { nodeId: string }) {
           </div>
         </div>
         <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center">
-          Radical Rewrite Rule [1]
+          Radical Rewrite Rule
         </p>
       </div>
     );
@@ -131,7 +131,7 @@ function LessonVisualizer({ nodeId }: { nodeId: string }) {
           <text x="20" y="50" className="text-[8px] font-mono fill-slate-400">x</text>
           <text x="18" y="98" className="text-[8px] font-mono fill-[#1F2720] font-black">+2</text>
         </svg>
-        <p className="text-[9px] font-black text-slate-500 text-center uppercase mt-1 tracking-wider">Area Factoring Model [1]</p>
+        <p className="text-[9px] font-black text-slate-500 text-center uppercase mt-1 tracking-wider">Area Factoring Model</p>
       </div>
     );
   }
@@ -157,7 +157,7 @@ function LessonVisualizer({ nodeId }: { nodeId: string }) {
           <polygon points="98,53 103,58 97,61" fill="#fdd400" />
           <text x="65" y="32" className="text-[8px] font-mono font-black fill-[#1F2720]">+2</text>
         </svg>
-        <p className="text-[9px] font-black text-slate-500 text-center uppercase mt-1 tracking-wider">Number Line Vector [1]</p>
+        <p className="text-[9px] font-black text-slate-500 text-center uppercase mt-1 tracking-wider">Number Line Vector</p>
       </div>
     );
   }
@@ -174,7 +174,7 @@ function LessonVisualizer({ nodeId }: { nodeId: string }) {
           <circle cx="150" cy="60" r="4" fill="#fdd400" stroke="#1F2720" strokeWidth="2" />
           <text x="125" y="20" className="text-[8px] font-mono fill-slate-400">Degree n = 3</text>
         </svg>
-        <p className="text-[9px] font-black text-slate-500 text-center uppercase mt-1 tracking-wider">Multi-Root Polynomial [1]</p>
+        <p className="text-[9px] font-black text-slate-500 text-center uppercase mt-1 tracking-wider">Multi-Root Polynomial</p>
       </div>
     );
   }
@@ -182,7 +182,7 @@ function LessonVisualizer({ nodeId }: { nodeId: string }) {
   return (
     <div className="flex flex-col items-center justify-center h-full p-4">
       <BookOpen size={24} className="text-[#1F2720]/40" />
-      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center mt-2">Theory Sandbox [1]</p>
+      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center mt-2">Theory Sandbox</p>
     </div>
   );
 }
