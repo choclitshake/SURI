@@ -314,7 +314,7 @@ export default function DiagnosticPage() {
         {phase === "intro" ? (
           <div className="bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] p-6 md:p-8 shadow-[8px_8px_0px_0px_#1F2720] space-y-6">
             <p className="font-['Manrope'] text-sm md:text-base text-slate-700 leading-relaxed font-bold">
-              This short diagnostic walks through the prerequisite chain for your active topic. 
+              This short diagnostic builds up from foundational prerequisites to your active topic. 
               Your answers help map out existing baseline knowledge block skills to identify custom starting nodes.
             </p>
 

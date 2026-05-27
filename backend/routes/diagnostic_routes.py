@@ -32,8 +32,8 @@ def _load_probes() -> dict:
 
 PROBES: dict = _load_probes()
 
-QUESTIONS_PER_NODE = 8
-PASS_THRESHOLD = 6  # >= 6/8 (75%) = mastered
+QUESTIONS_PER_NODE = 4
+PASS_THRESHOLD = 3  # >= 3/4 (75%) = mastered
 
 
 # ---------------------------------------------------------------------------
@@ -358,13 +358,18 @@ async def submit_diagnostic_answer(
 
             # ── Node complete: 8 questions answered ──────────────────────────
             node_passed = correct_count >= PASS_THRESHOLD
-            prereq = GRAPH[current_node]["prerequisite"]
+            
+            chain = get_chain(session_row["topic_entry_node"])
+            reversed_chain = list(reversed(chain))
+            
+            current_idx = reversed_chain.index(current_node) if current_node in reversed_chain else -1
+            next_node = reversed_chain[current_idx + 1] if current_idx != -1 and current_idx + 1 < len(reversed_chain) else None
 
-            if prereq:
-                # Move to prerequisite node
+            if next_node:
+                # Move to next node in the forward progression (towards target)
                 await conn.execute(
                     "UPDATE sessions SET current_node = $1, current_probe_index = NULL, last_active_at = $2 WHERE id = $3",
-                    prereq, now_iso, session_id,
+                    next_node, now_iso, session_id,
                 )
                 return {
                     "correct": is_correct,
@@ -374,7 +379,7 @@ async def submit_diagnostic_answer(
                     "correct_count": correct_count,
                     "questions_answered": QUESTIONS_PER_NODE,
                     "questions_total": QUESTIONS_PER_NODE,
-                    "next_node_id": prereq,
+                    "next_node_id": next_node,
                     "identified_node_id": None,
                     "prerequisite_path": None,
                 }

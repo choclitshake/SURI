@@ -7,11 +7,11 @@ import {
   getTopicChain,
   getStudentProgress,
 } from "../../../../lib/api";
-import { 
-  Compass, 
-  Leaf, 
-  ShieldAlert, 
-  ArrowRight, 
+import {
+  Compass,
+  Leaf,
+  ShieldAlert,
+  ArrowRight,
   Sparkles,
   Flame,
   Sprout
@@ -56,16 +56,16 @@ export default function GapResultPage() {
       try {
         setLoading(true);
         const session = await getSession(sessionId);
-        
+
         const { chain: topicChain } = await getTopicChain(session.topic_entry_node);
         setChain(topicChain);
-        
+
         const progress = await getStudentProgress(session.student_id);
-        
-        const currentSessionProgress = 
+
+        const currentSessionProgress =
           progress.active_sessions.find((s) => s.id === sessionId) ||
           progress.completed_sessions?.find((s) => s.id === sessionId);
-        
+
         const statusesMap: Record<string, NodeStatusInfo> = {};
         if (currentSessionProgress) {
           currentSessionProgress.mastered_nodes.forEach((n) => {
@@ -88,7 +88,7 @@ export default function GapResultPage() {
         setLoading(false);
       }
     };
-    
+
     if (sessionId) {
       loadData();
     }
@@ -101,24 +101,24 @@ export default function GapResultPage() {
   const getStatusBadge = (status: string | undefined) => {
     switch (status) {
       case "mastered":
-        return { 
-          text: "Clear Trail", 
-          bg: "bg-green-100 text-green-900 border-[#1F2720]" 
+        return {
+          text: "Clear Trail",
+          bg: "bg-green-100 text-green-900 border-[#1F2720]"
         };
       case "unresolved":
-        return { 
-          text: "Thorny Path", 
-          bg: "bg-red-100 text-red-900 border-[#1F2720]" 
+        return {
+          text: "Thorny Path",
+          bg: "bg-red-100 text-red-900 border-[#1F2720]"
         };
       case "in_progress":
-        return { 
-          text: "Exploring", 
-          bg: "bg-[#ffe170]/40 text-[#1F2720] border-[#1F2720]" 
+        return {
+          text: "Exploring",
+          bg: "bg-[#ffe170]/40 text-[#1F2720] border-[#1F2720]"
         };
       default:
-        return { 
-          text: "Unexplored", 
-          bg: "bg-slate-100 text-slate-500 border-slate-300" 
+        return {
+          text: "Unexplored",
+          bg: "bg-slate-100 text-slate-500 border-slate-300"
         };
     }
   };
@@ -126,7 +126,7 @@ export default function GapResultPage() {
   // Determine dynamic diagnostic result evaluations
   const allMastered = chain.length > 0 && chain.every(id => nodeStatuses[id]?.status === "mastered");
   const mascotSrc = allMastered ? "/suri-snake-happy.png" : "/suri-snake-sad.png";
-  const suriQuote = allMastered 
+  const suriQuote = allMastered
     ? "💬 \"Sss-pectacular! You fully cleared all trails in this chain! No obstacles detected!\""
     : "💬 \"We found a thorny gap blocking your path. Let'sss clear those algebra brambles together, Ranger!\"";
 
@@ -143,9 +143,10 @@ export default function GapResultPage() {
 
   return (
     <div className="bg-[#1b261c] min-h-screen text-[#1F2720] py-8 px-4 md:px-8 relative overflow-hidden font-['Manrope'] flex flex-col items-center">
-      
+
       {/* Inline styles for custom animations */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes floatFirefly {
           0% { transform: translateY(110%) translateX(0); opacity: 0; }
           20% { opacity: 0.8; }
@@ -175,8 +176,8 @@ export default function GapResultPage() {
       ` }} />
 
       {/* Background Forest Overlay */}
-      <div className="absolute inset-0 opacity-15 bg-cover bg-bottom mix-blend-overlay pointer-events-none" 
-           style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAEXma6INVd0pxsf2NimA83gxdCqv-1PqJrcWOioIbkPEtj3Z7oIxOvuUvLYNc4Dp9x3Y1BdR1CuvLCFJx5RSzJA9_Kk02IsPNQSy0DeGhX33fZvqV6ZTAci5gEWEnXt3d5H0IqVOBVrHAtZ0wRSpSPEhIZkwT8lWCqZo0inU40TzVsVWo-vjMqvT5w8nLCUkx-agKpKsnu_I62S8u6WesHawWnmWYTE_400YVkv8YcJ_L_q-lbQ4H0O-Ey3ld_l4PtBxxi-Kv7vQ8')" }} />
+      <div className="absolute inset-0 opacity-15 bg-cover bg-bottom mix-blend-overlay pointer-events-none"
+        style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAEXma6INVd0pxsf2NimA83gxdCqv-1PqJrcWOioIbkPEtj3Z7oIxOvuUvLYNc4Dp9x3Y1BdR1CuvLCFJx5RSzJA9_Kk02IsPNQSy0DeGhX33fZvqV6ZTAci5gEWEnXt3d5H0IqVOBVrHAtZ0wRSpSPEhIZkwT8lWCqZo0inU40TzVsVWo-vjMqvT5w8nLCUkx-agKpKsnu_I62S8u6WesHawWnmWYTE_400YVkv8YcJ_L_q-lbQ4H0O-Ey3ld_l4PtBxxi-Kv7vQ8')" }} />
 
       {/* Floating Glowing Fireflies */}
       <div className="firefly w-2 h-2" style={{ left: "8%", bottom: "12%", animation: "floatFirefly 7s ease-in-out infinite" }} />
@@ -188,7 +189,7 @@ export default function GapResultPage() {
         {/* Premium Bento Header (Forest with Gold Accents) */}
         <header className="bg-gradient-to-b from-[#1b261c] to-[#2e3e2d] rounded-[32px] p-6 md:p-8 border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
           <div className="absolute top-0 right-1/4 w-32 h-32 bg-yellow-400/25 rounded-full blur-3xl pointer-events-none" />
-          
+
           <div className="flex items-center justify-between mb-4 z-10 border-b-4 border-[#1F2720]/30 pb-3">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400] border border-[#1F2720]" />
@@ -200,10 +201,10 @@ export default function GapResultPage() {
           </div>
 
           <div className="z-10 flex items-center gap-4">
-            <img 
-              src={mascotSrc} 
-              alt="Suri Guide" 
-              className="h-20 w-auto object-contain select-none shrink-0 animate-jelly" 
+            <img
+              src={mascotSrc}
+              alt="Suri Guide"
+              className="h-20 w-auto object-contain select-none shrink-0 animate-jelly"
             />
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-white font-['Hanken_Grotesk'] drop-shadow-[2px_2px_0px_#1F2720]">
@@ -236,7 +237,7 @@ export default function GapResultPage() {
 
         {chain.length > 0 ? (
           <div className="bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] p-6 md:p-8 shadow-[8px_8px_0px_0px_#1F2720]">
-            
+
             {/* Upper Map Description */}
             <div className="mb-8">
               <h2 className="text-sm font-['Manrope'] font-black text-[#1F2720] uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -244,7 +245,7 @@ export default function GapResultPage() {
                 Path Evaluation
               </h2>
               <p className="font-['Manrope'] text-sm md:text-base text-slate-700 leading-relaxed font-bold">
-                Your mathematical understanding has been mapped directly to your active topic chain [1]. Remediation begins at the first identified weak node to ensure structurally solid foundations.
+                Your mathematical understanding has been mapped directly to your active topic chain. Remediation begins at the first identified weak node to ensure structurally solid foundations.
               </p>
             </div>
 
@@ -263,8 +264,8 @@ export default function GapResultPage() {
                 }
 
                 return (
-                  <div 
-                    key={nodeId} 
+                  <div
+                    key={nodeId}
                     className={`p-4 md:p-5 border-[3px] rounded-2xl transition-all duration-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${cardStyle}`}
                   >
                     <div className="flex items-start sm:items-center gap-3">
@@ -301,7 +302,7 @@ export default function GapResultPage() {
               >
                 Start Remediation Track <ArrowRight className="w-4 h-4 stroke-[3px]" />
               </button>
-              
+
               <button
                 onClick={() => router.push("/dashboard")}
                 className="flex-1 bg-white text-[#1F2720] border-[3.5px] border-[#1F2720] py-4 text-xs font-black uppercase rounded-2xl tracking-wider shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] transition-all cursor-pointer"

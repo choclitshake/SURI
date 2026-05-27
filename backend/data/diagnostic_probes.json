@@ -1448,7 +1448,7 @@
     },
     {
       "node_id": "L1V",
-      "question_text": "Find the value of $n$ in $\frac{n}{4} + 5 = 9$.",
+      "question_text": "Find the value of $n$ in $\\frac{n}{4} + 5 = 9$.",
       "options": [
         "$n = 1$",
         "$n = 16$",
@@ -1481,7 +1481,7 @@
     },
     {
       "node_id": "L1V",
-      "question_text": "Solve for $a$ in the equation $\frac{2a - 3}{5} = 3$.",
+      "question_text": "Solve for $a$ in the equation $\\frac{2a - 3}{5} = 3$.",
       "options": [
         "$a = 6$",
         "$a = 9$",
@@ -1503,7 +1503,7 @@
     },
     {
       "node_id": "L1V",
-      "question_text": "What is the value of $x$ in $\frac{x}{2} - \frac{x}{3} = 2$?",
+      "question_text": "What is the value of $x$ in $\\frac{x}{2} - \\frac{x}{3} = 2$?",
       "options": [
         "$x = 6$",
         "$x = 10$",
@@ -1536,7 +1536,7 @@
     },
     {
       "node_id": "L1V",
-      "question_text": "Solve for $m$: $\frac{3}{4}m - 2 = \frac{1}{2}m + 1$.",
+      "question_text": "Solve for $m$: $\\frac{3}{4}m - 2 = \\frac{1}{2}m + 1$.",
       "options": [
         "$m = 4$",
         "$m = 8$",
@@ -1558,7 +1558,7 @@
     },
     {
       "node_id": "L1V",
-      "question_text": "Solve for $w$ in $\frac{w + 3}{2} = \frac{2w - 1}{3}$.",
+      "question_text": "Solve for $w$ in $\\frac{w + 3}{2} = \\frac{2w - 1}{3}$.",
       "options": [
         "$w = 7$",
         "$w = 9$",
@@ -1580,7 +1580,7 @@
     },
     {
       "node_id": "L1V",
-      "question_text": "Solve for $y$: $\frac{y}{3} + \frac{y}{2} = 5$.",
+      "question_text": "Solve for $y$: $\\frac{y}{3} + \\frac{y}{2} = 5$.",
       "options": [
         "$y = 6$",
         "$y = 5$",
@@ -2296,7 +2296,7 @@
       "options": [
         "$2$",
         "$1$",
-        "$\frac{1}{2}$",
+        "$\\frac{1}{2}$",
         "$-2$"
       ],
       "correct_option_index": 2
