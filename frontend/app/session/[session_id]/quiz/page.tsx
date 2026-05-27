@@ -61,8 +61,11 @@ export default function QuizPage() {
   const [streakMultiplier, setStreakMultiplier] = useState(1.0);
 
   // 1. Initial Load
+  const hasFetched = useRef(false);
   useEffect(() => {
     async function load() {
+      if (hasFetched.current) return;
+      hasFetched.current = true;
       try {
         const session = await getSession(sessionId);
         setNodeId(session.current_node);
