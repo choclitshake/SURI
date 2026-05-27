@@ -1158,12 +1158,12 @@
     },
     {
       "node_id": "SLE",
-      "question_text": "At a snack bar, 2 sodas and 1 hot dog cost \u20b15. 1 soda and 2 hot dogs cost \u20b17. What is the cost of one soda?",
+      "question_text": "At a snack bar, 2 sodas and 1 hot dog cost PHP 5. 1 soda and 2 hot dogs cost PHP 7. What is the cost of one soda?",
       "options": [
-        "\u20b11.00",
-        "\u20b11.50",
-        "\u20b12.00",
-        "\u20b12.50"
+        "PHP 1.00",
+        "PHP 1.50",
+        "PHP 2.00",
+        "PHP 2.50"
       ],
       "correct_option_index": 0
     },
@@ -1848,12 +1848,12 @@
     },
     {
       "node_id": "RPP",
-      "question_text": "A store offers a discount of 10% on a \u20b150 item. How much is the discount?",
+      "question_text": "A store offers a discount of 10% on a PHP 50 item. How much is the discount?",
       "options": [
-        "\u20b15",
-        "\u20b110",
-        "\u20b140",
-        "\u20b145"
+        "PHP 5",
+        "PHP 10",
+        "PHP 40",
+        "PHP 45"
       ],
       "correct_option_index": 0
     },
@@ -1914,12 +1914,12 @@
     },
     {
       "node_id": "RPP",
-      "question_text": "If a shirt costs \u20b120 and the tax is 5%, what is the total cost of the shirt?",
+      "question_text": "If a shirt costs PHP 20 and the tax is 5%, what is the total cost of the shirt?",
       "options": [
-        "\u20b120.05",
-        "\u20b121.00",
-        "\u20b125.00",
-        "\u20b120.50"
+        "PHP 20.05",
+        "PHP 21.00",
+        "PHP 25.00",
+        "PHP 20.50"
       ],
       "correct_option_index": 1
     },
@@ -1947,12 +1947,12 @@
     },
     {
       "node_id": "RPP",
-      "question_text": "If 5 pencils cost \u20b12.00, how much do 8 pencils cost at the same rate?",
+      "question_text": "If 5 pencils cost PHP 2.00, how much do 8 pencils cost at the same rate?",
       "options": [
-        "\u20b13.00",
-        "\u20b13.20",
-        "\u20b13.50",
-        "\u20b14.00"
+        "PHP 3.00",
+        "PHP 3.20",
+        "PHP 3.50",
+        "PHP 4.00"
       ],
       "correct_option_index": 1
     }
