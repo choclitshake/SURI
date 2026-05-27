@@ -205,7 +205,7 @@ export default function PracticePage() {
   };
 
   const handleBackToTopics = () => {
-    router.push(`/topics/${nodeId}`);
+    router.push(`/session/${sessionId}/lesson`);
   };
 
   const cleanMathExpr = (expr: string) => {
@@ -470,8 +470,9 @@ export default function PracticePage() {
 
               const isCorrect = stepResult?.correct;
               const hasSubmitted = !!submissionResult;
+              const isTextStep = requiresTextInput(step.correct_value);
 
-              const cleanBlankExpr = cleanMathExpr(step.blank_expression);
+              let cleanBlankExpr = cleanMathExpr(step.blank_expression).replace("?", "___");
               const exprParts = cleanBlankExpr.split("___");
               const rawBefore = exprParts[0];
               const rawAfter = exprParts[1] || "";
@@ -480,8 +481,6 @@ export default function PracticePage() {
               const isMisconceptionStep =
                 submissionResult?.misconception_found &&
                 submissionResult?.misconception_step_index === step.step_index;
-
-              const isTextStep = requiresTextInput(step.correct_value);
 
               let borderClass = "border-[#1F2720] hover:border-emerald-700 shadow-[4px_4px_0px_0px_#1F2720]";
               let bgClass = "bg-white";
