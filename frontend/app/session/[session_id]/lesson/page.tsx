@@ -652,7 +652,12 @@ export default function LessonPage() {
         <footer className="pt-4 flex flex-col items-center gap-3">
           <button
             onClick={handleStartPractice}
-            className="w-full bg-[#fdd400] text-[#1F2720] hover:bg-[#ffe170] border-[4px] border-[#1F2720] py-4 text-sm font-black uppercase tracking-wider transition-all rounded-[24px] shadow-[6px_6px_0px_0px_#1F2720] hover:shadow-[8px_8px_0px_0px_#1F2720] active:translate-y-1 active:translate-x-1 active:shadow-[2px_2px_0px_0px_#1F2720] cursor-pointer flex items-center justify-center gap-2"
+            disabled={progressPercent < 100}
+            className={`w-full border-[4px] border-[#1F2720] py-4 text-sm font-black uppercase tracking-wider transition-all rounded-[24px] flex items-center justify-center gap-2 ${
+              progressPercent < 100
+                ? "bg-slate-200 text-slate-400 opacity-70 cursor-not-allowed shadow-[6px_6px_0px_0px_#cbd5e1]"
+                : "bg-[#fdd400] text-[#1F2720] hover:bg-[#ffe170] shadow-[6px_6px_0px_0px_#1F2720] hover:shadow-[8px_8px_0px_0px_#1F2720] active:translate-y-1 active:translate-x-1 active:shadow-[2px_2px_0px_0px_#1F2720] cursor-pointer"
+            }`}
           >
             Start Practice Track <ArrowRight className="w-5 h-5 stroke-[3px]" />
           </button>
