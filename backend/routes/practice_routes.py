@@ -200,6 +200,7 @@ def normalize_val(val: str) -> str:
     val = re.sub(r'\s*([\+\-\*/=\(\)\^,])\s*', r'\1', val)
     val = re.sub(r'\s+', ' ', val)
     val = re.sub(r'\^{\(([^()]+)\)}', r'^{\1}', val)
+    val = re.sub(r'\^{([a-zA-Z0-9]+)}', r'^\1', val)
     return val
 
 

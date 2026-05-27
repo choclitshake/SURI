@@ -296,7 +296,7 @@ function ProgressContent() {
             {topics.map((topic) => {
               const chain = topicChains[topic.node_id] || [];
               const orderedChain = [...chain].reverse();
-              
+
               // Calculate topic-specific track mastery percentage [1]
               const trackTotal = orderedChain.length;
               const trackMastered = orderedChain.filter((n) => nodeStatuses[n.node_id] === "mastered").length;
@@ -370,33 +370,29 @@ function ProgressContent() {
                               className="relative grid grid-cols-1 items-center md:grid-cols-2 md:gap-6"
                             >
                               <div
-                                className={`absolute left-3 top-1/2 h-1 w-8 -translate-y-1/2 bg-slate-300 z-0 md:w-16 ${
-                                  isLeft
+                                className={`absolute left-3 top-1/2 h-1 w-8 -translate-y-1/2 bg-slate-300 z-0 md:w-16 ${isLeft
                                     ? "md:left-auto md:right-1/2 md:mr-1"
                                     : "md:left-1/2 md:ml-1"
-                                }`}
+                                  }`}
                               />
 
                               <div
-                                className={`relative z-20 w-full md:max-w-[540px] pl-7 md:pl-0 ${
-                                  isLeft
+                                className={`relative z-20 w-full md:max-w-[540px] pl-7 md:pl-0 ${isLeft
                                     ? "md:col-start-1 md:justify-self-end md:pr-5"
                                     : "md:col-start-2 md:justify-self-start md:pl-5"
-                                }`}
+                                  }`}
                               >
                                 <div
-                                  className={`p-3 rounded-[16px] border-[3px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] w-full transition-all min-h-[108px] ${
-                                    !isAccessible
+                                  className={`p-3 rounded-[16px] border-[3px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] w-full transition-all min-h-[108px] ${!isAccessible
                                       ? "bg-neutral-100"
                                       : isTarget
-                                      ? "bg-gradient-to-r from-amber-50 to-yellow-50/50"
-                                      : "bg-white"
-                                  }`}
+                                        ? "bg-gradient-to-r from-amber-50 to-yellow-50/50"
+                                        : "bg-white"
+                                    }`}
                                 >
                                   <div
-                                    className={`flex flex-col gap-3 sm:items-center ${
-                                      isLeft ? "sm:flex-row" : "sm:flex-row-reverse"
-                                    }`}
+                                    className={`flex flex-col gap-3 sm:items-center ${isLeft ? "sm:flex-row" : "sm:flex-row-reverse"
+                                      }`}
                                   >
                                     <div className="min-w-0 flex-1 text-left flex flex-col justify-center gap-2 self-center">
                                       <h4 className="text-[19px] font-black text-[#1F2720] leading-tight truncate">
@@ -428,7 +424,7 @@ function ProgressContent() {
                                         )}
                                       </div>
 
-                                      {status !== "mastered" && (
+                                      {status !== "mastered" ? (
                                         <button
                                           onClick={() =>
                                             isAccessible && handleStudyNode(node.node_id)
@@ -436,11 +432,10 @@ function ProgressContent() {
                                           disabled={
                                             !isAccessible || launchingNodeId !== null
                                           }
-                                          className={`px-2 py-2 text-[10px] font-mono font-bold uppercase rounded-lg transition-all flex items-center justify-center gap-1 w-full ${
-                                            !isAccessible
+                                          className={`px-2 py-2 text-[10px] font-mono font-bold uppercase rounded-lg transition-all flex items-center justify-center gap-1 w-full ${!isAccessible
                                               ? "bg-neutral-100 text-neutral-500 border border-neutral-300 cursor-not-allowed"
                                               : "bg-white hover:bg-slate-50 text-[#001a54] border border-slate-200 hover:border-[#001a54]/40 cursor-pointer"
-                                          }`}
+                                            }`}
                                         >
                                           {isNodeLoading ? (
                                             <Loader2
@@ -455,7 +450,20 @@ function ProgressContent() {
                                               className="stroke-[3px]"
                                             />
                                           )}
-                                          {isAccessible ? "Study Node [1]" : "Locked"}
+                                          {isAccessible ? "Study Node" : "Locked"}
+                                        </button>
+                                      ) : (
+                                        <button
+                                          onClick={() => handleStudyNode(node.node_id)}
+                                          disabled={launchingNodeId !== null}
+                                          className="px-2 py-2 text-[10px] font-mono font-bold uppercase rounded-lg transition-all flex items-center justify-center gap-1 w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 hover:border-emerald-300 cursor-pointer"
+                                        >
+                                          {isNodeLoading ? (
+                                            <Loader2 size={10} className="animate-spin" />
+                                          ) : (
+                                            <BookOpen size={14} className="stroke-[3px]" />
+                                          )}
+                                          Review Node
                                         </button>
                                       )}
                                     </div>
@@ -465,13 +473,12 @@ function ProgressContent() {
 
                               <div className="absolute left-3 top-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[radial-gradient(circle,_rgba(34,197,94,0.3)_0%,_rgba(34,197,94,0)_70%)] z-10 md:left-1/2" />
                               <div
-                                className={`absolute left-3 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full border-2 border-slate-300 bg-white z-20 md:left-1/2 ${
-                                  status === "mastered"
+                                className={`absolute left-3 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full border-2 border-slate-300 bg-white z-20 md:left-1/2 ${status === "mastered"
                                     ? "border-green-500 bg-green-500"
                                     : status === "in_progress"
-                                    ? "border-[#fdd400] bg-[#fdd400]"
-                                    : ""
-                                } ${isTarget ? "ring-4 ring-[#fdd400]/20" : ""}`}
+                                      ? "border-[#fdd400] bg-[#fdd400]"
+                                      : ""
+                                  } ${isTarget ? "ring-4 ring-[#fdd400]/20" : ""}`}
                               />
                             </div>
                           );

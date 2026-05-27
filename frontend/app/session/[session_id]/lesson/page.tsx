@@ -8,18 +8,18 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import confetti from "canvas-confetti";
-import { 
-  BookOpen, 
-  Loader2, 
-  Sparkles, 
-  Check, 
-  ArrowRight, 
-  HelpCircle, 
-  Trophy, 
-  Flame, 
-  Compass, 
-  Leaf, 
-  ShieldAlert 
+import {
+  BookOpen,
+  Loader2,
+  Sparkles,
+  Check,
+  ArrowRight,
+  HelpCircle,
+  Trophy,
+  Flame,
+  Compass,
+  Leaf,
+  ShieldAlert
 } from "lucide-react";
 
 // SURI's custom motivational tips tailored directly to active node topics
@@ -193,7 +193,7 @@ export default function LessonPage() {
   const sessionId = params.session_id as string;
 
   const [content, setContent] = useState<ContentResponse | null>(null);
-  const [currentNode, setCurrentNode] = useState<string>(""); 
+  const [currentNode, setCurrentNode] = useState<string>("");
   const [errorType, setErrorType] = useState<"no_content" | "general" | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -209,7 +209,7 @@ export default function LessonPage() {
 
     try {
       const session = await getSession(sessionId);
-      setCurrentNode(session.current_node); 
+      setCurrentNode(session.current_node);
       const data = await getContent(session.current_node);
 
       if (data.error === "no_content") {
@@ -349,10 +349,10 @@ export default function LessonPage() {
 
   return (
     <div className="bg-[#1b261c] min-h-screen text-[#1F2720] py-8 px-4 md:px-8 relative overflow-hidden font-['Manrope'] flex flex-col items-center">
-      
+
       {/* Background Forest Silhouette */}
-      <div className="absolute inset-0 opacity-15 bg-cover bg-bottom mix-blend-overlay pointer-events-none" 
-           style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAEXma6INVd0pxsf2NimA83gxdCqv-1PqJrcWOioIbkPEtj3Z7oIxOvuUvLYNc4Dp9x3Y1BdR1CuvLCFJx5RSzJA9_Kk02IsPNQSy0DeGhX33fZvqV6ZTAci5gEWEnXt3d5H0IqVOBVrHAtZ0wRSpSPEhIZkwT8lWCqZo0inU40TzVsVWo-vjMqvT5w8nLCUkx-agKpKsnu_I62S8u6WesHawWnmWYTE_400YVkv8YcJ_L_q-lbQ4H0O-Ey3ld_l4PtBxxi-Kv7vQ8')" }} />
+      <div className="absolute inset-0 opacity-15 bg-cover bg-bottom mix-blend-overlay pointer-events-none"
+        style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAEXma6INVd0pxsf2NimA83gxdCqv-1PqJrcWOioIbkPEtj3Z7oIxOvuUvLYNc4Dp9x3Y1BdR1CuvLCFJx5RSzJA9_Kk02IsPNQSy0DeGhX33fZvqV6ZTAci5gEWEnXt3d5H0IqVOBVrHAtZ0wRSpSPEhIZkwT8lWCqZo0inU40TzVsVWo-vjMqvT5w8nLCUkx-agKpKsnu_I62S8u6WesHawWnmWYTE_400YVkv8YcJ_L_q-lbQ4H0O-Ey3ld_l4PtBxxi-Kv7vQ8')" }} />
 
       {/* Floating Glowing Fireflies */}
       <div className="firefly w-2 h-2" style={{ left: "8%", bottom: "12%", animation: "floatFirefly 8s ease-in-out infinite" }} />
@@ -421,7 +421,7 @@ export default function LessonPage() {
               <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400] border border-[#1F2720]" />
               <span className="font-['Manrope'] text-[10px] text-emerald-300 tracking-[0.2em] uppercase font-black">ACTIVE LESSON MODULE</span>
             </div>
-            
+
             <button
               onClick={handleExit}
               className="font-['Manrope'] text-[10px] text-[#1F2720] bg-[#fdd400] hover:bg-[#ffe170] px-4.5 py-2 rounded-xl border-2 border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0px_0px_0px_0px_#1F2720] transition-all cursor-pointer font-black uppercase tracking-wider"
@@ -468,33 +468,30 @@ export default function LessonPage() {
         <div className="grid grid-cols-3 gap-3">
           <button
             onClick={() => setActiveTab("concept")}
-            className={`py-3 rounded-2xl font-['Manrope'] text-xs font-black tracking-wider uppercase border-[3.5px] border-[#1F2720] transition-all cursor-pointer shadow-[3.5px_3.5px_0px_0px_#1F2720] active:translate-y-0.5 ${
-              activeTab === "concept" 
-                ? "bg-[#fdd400] text-[#1F2720]" 
-                : "bg-white text-slate-500 hover:bg-slate-50"
-            }`}
+            className={`py-3 rounded-2xl font-['Manrope'] text-xs font-black tracking-wider uppercase border-[3.5px] border-[#1F2720] transition-all cursor-pointer shadow-[3.5px_3.5px_0px_0px_#1F2720] active:translate-y-0.5 ${activeTab === "concept"
+              ? "bg-[#fdd400] text-[#1F2720]"
+              : "bg-white text-slate-500 hover:bg-slate-50"
+              }`}
           >
             📔 Core Concept
           </button>
-          
+
           <button
             onClick={() => setActiveTab("example")}
-            className={`py-3 rounded-2xl font-['Manrope'] text-xs font-black tracking-wider uppercase border-[3.5px] border-[#1F2720] transition-all cursor-pointer shadow-[3.5px_3.5px_0px_0px_#1F2720] active:translate-y-0.5 ${
-              activeTab === "example" 
-                ? "bg-[#fdd400] text-[#1F2720]" 
-                : "bg-white text-slate-500 hover:bg-slate-50"
-            }`}
+            className={`py-3 rounded-2xl font-['Manrope'] text-xs font-black tracking-wider uppercase border-[3.5px] border-[#1F2720] transition-all cursor-pointer shadow-[3.5px_3.5px_0px_0px_#1F2720] active:translate-y-0.5 ${activeTab === "example"
+              ? "bg-[#fdd400] text-[#1F2720]"
+              : "bg-white text-slate-500 hover:bg-slate-50"
+              }`}
           >
             ✍️ Worked Example
           </button>
 
           <button
             onClick={() => setActiveTab("explanation")}
-            className={`py-3 rounded-2xl font-['Manrope'] text-xs font-black tracking-wider uppercase border-[3.5px] border-[#1F2720] transition-all cursor-pointer shadow-[3.5px_3.5px_0px_0px_#1F2720] active:translate-y-0.5 ${
-              activeTab === "explanation" 
-                ? "bg-[#fdd400] text-[#1F2720]" 
-                : "bg-white text-slate-500 hover:bg-slate-50"
-            }`}
+            className={`py-3 rounded-2xl font-['Manrope'] text-xs font-black tracking-wider uppercase border-[3.5px] border-[#1F2720] transition-all cursor-pointer shadow-[3.5px_3.5px_0px_0px_#1F2720] active:translate-y-0.5 ${activeTab === "explanation"
+              ? "bg-[#fdd400] text-[#1F2720]"
+              : "bg-white text-slate-500 hover:bg-slate-50"
+              }`}
           >
             🗺️ Explanation
           </button>
@@ -502,7 +499,7 @@ export default function LessonPage() {
 
         {/* Interactive Active Content Scrolls */}
         <div className="bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] p-6 md:p-8 relative min-h-[300px] flex flex-col justify-between">
-          
+
           {/* TAB 1: CORE CONCEPT */}
           {activeTab === "concept" && (
             <div className="space-y-6 flex-1">
@@ -548,11 +545,10 @@ export default function LessonPage() {
                   type="button"
                   disabled={readConcept}
                   onClick={() => handleMarkRead("concept")}
-                  className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider border-[2.5px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] cursor-pointer transition-all ${
-                    readConcept 
-                      ? "bg-green-100 text-green-900 shadow-none pointer-events-none" 
-                      : "bg-[#79ff8f] text-[#1F2720] hover:bg-[#8aff9e]"
-                  }`}
+                  className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider border-[2.5px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] cursor-pointer transition-all ${readConcept
+                    ? "bg-green-100 text-green-900 shadow-none pointer-events-none"
+                    : "bg-[#79ff8f] text-[#1F2720] hover:bg-[#8aff9e]"
+                    }`}
                 >
                   {readConcept ? "✓ Logged Understood!" : "Check Off Concept"}
                 </button>
@@ -591,11 +587,10 @@ export default function LessonPage() {
                   type="button"
                   disabled={readExample}
                   onClick={() => handleMarkRead("example")}
-                  className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider border-[2.5px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] cursor-pointer transition-all ${
-                    readExample 
-                      ? "bg-green-100 text-green-900 shadow-none pointer-events-none" 
-                      : "bg-[#79ff8f] text-[#1F2720] hover:bg-[#8aff9e]"
-                  }`}
+                  className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider border-[2.5px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] cursor-pointer transition-all ${readExample
+                    ? "bg-green-100 text-green-900 shadow-none pointer-events-none"
+                    : "bg-[#79ff8f] text-[#1F2720] hover:bg-[#8aff9e]"
+                    }`}
                 >
                   {readExample ? "✓ Logged Understood!" : "Check Off Example"}
                 </button>
@@ -634,11 +629,10 @@ export default function LessonPage() {
                   type="button"
                   disabled={readExplanation}
                   onClick={() => handleMarkRead("explanation")}
-                  className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider border-[2.5px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] cursor-pointer transition-all ${
-                    readExplanation 
-                      ? "bg-green-100 text-green-900 shadow-none pointer-events-none" 
-                      : "bg-[#79ff8f] text-[#1F2720] hover:bg-[#8aff9e]"
-                  }`}
+                  className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider border-[2.5px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] cursor-pointer transition-all ${readExplanation
+                    ? "bg-green-100 text-green-900 shadow-none pointer-events-none"
+                    : "bg-[#79ff8f] text-[#1F2720] hover:bg-[#8aff9e]"
+                    }`}
                 >
                   {readExplanation ? "✓ Logged Understood!" : "Check Off Explanation"}
                 </button>
@@ -652,15 +646,19 @@ export default function LessonPage() {
         <footer className="pt-4 flex flex-col items-center gap-3">
           <button
             onClick={handleStartPractice}
-            className="w-full bg-[#fdd400] text-[#1F2720] hover:bg-[#ffe170] border-[4px] border-[#1F2720] py-4 text-sm font-black uppercase tracking-wider transition-all rounded-[24px] shadow-[6px_6px_0px_0px_#1F2720] hover:shadow-[8px_8px_0px_0px_#1F2720] active:translate-y-1 active:translate-x-1 active:shadow-[2px_2px_0px_0px_#1F2720] cursor-pointer flex items-center justify-center gap-2"
+            disabled={progressPercent < 100}
+            className={`w-full border-[4px] border-[#1F2720] py-4 text-sm font-black uppercase tracking-wider transition-all rounded-[24px] flex items-center justify-center gap-2 ${progressPercent < 100
+              ? "bg-slate-200 text-slate-400 opacity-70 cursor-not-allowed shadow-[6px_6px_0px_0px_#cbd5e1]"
+              : "bg-[#fdd400] text-[#1F2720] hover:bg-[#ffe170] shadow-[6px_6px_0px_0px_#1F2720] hover:shadow-[8px_8px_0px_0px_#1F2720] active:translate-y-1 active:translate-x-1 active:shadow-[2px_2px_0px_0px_#1F2720] cursor-pointer"
+              }`}
           >
-            Start Practice Track <ArrowRight className="w-5 h-5 stroke-[3px]" />
+            Quiz Me! <ArrowRight className="w-5 h-5 stroke-[3px]" />
           </button>
           <button
             onClick={handleStartQuiz}
             className="w-full bg-[#1F2720] text-white hover:bg-[#2e3a2f] border-[4px] border-[#1F2720] py-4 text-sm font-black uppercase tracking-wider transition-all rounded-[24px] shadow-[6px_6px_0px_0px_#fdd400] hover:shadow-[8px_8px_0px_0px_#fdd400] active:translate-y-1 active:translate-x-1 active:shadow-[2px_2px_0px_0px_#fdd400] cursor-pointer flex items-center justify-center gap-2"
           >
-            Quiz Mode <span className="text-[#fdd400]">⚡</span>
+            Let's Practice! <span className="text-[#fdd400]">⚡</span>
           </button>
         </footer>
 
