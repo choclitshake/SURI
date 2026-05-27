@@ -547,6 +547,7 @@ export function submitQuizStep(body: {
   step_index: number;
   submitted_value: string | null;
   time_remaining_ms: number;
+  save_streak?: boolean;
 }): Promise<QuizSubmitStepResponse> {
   return request<QuizSubmitStepResponse>("/api/quiz/submit-step", {
     method: "POST",
@@ -570,6 +571,7 @@ export function useQuizHint(body: {
   problem_id: string;
   step_index: number;
   hint_type: string;
+  saved_streak?: number;
 }): Promise<QuizUseHintResponse> {
   return request<QuizUseHintResponse>("/api/quiz/use-hint", {
     method: "POST",

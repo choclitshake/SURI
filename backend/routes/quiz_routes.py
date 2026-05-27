@@ -260,14 +260,20 @@ async def submit_step(body: QuizSubmitStepRequest, student=Depends(get_current_s
 
         if correct:
             new_streak = current_streak + 1
-            # Streak of 1 = just unlocked (1.0x), streak of 2 = 1.1x, streak of 3 = 1.2x ...
             multiplier = round(1.0 + max(0, new_streak - 1) * 0.1, 2)
             base_points = calculate_points(body.time_remaining_ms, total_time_ms)
             points_earned = int(base_points * multiplier)
+            new_total = qs["total_points"] + points_earned
         else:
-            new_streak = 0
-            multiplier = 1.0
             points_earned = 0
+            if body.save_streak and qs["total_points"] >= 1000:
+                new_streak = current_streak
+                multiplier = round(1.0 + max(0, new_streak - 1) * 0.1, 2)
+                new_total = qs["total_points"] - 1000
+            else:
+                new_streak = 0
+                multiplier = 1.0
+                new_total = qs["total_points"]
 
         new_total = qs["total_points"] + points_earned
         step_errors = json.loads(qs["step_errors_json"])
@@ -340,7 +346,26 @@ async def use_hint(body: QuizUseHintRequest, student=Depends(get_current_student
         if not qs:
             raise HTTPException(status_code=404, detail="Quiz session not found")
 
-        cost = 2500 if body.hint_type == "equation" else 750
+        if body.hint_type == "save_streak":
+            cost = 1000
+            if qs["total_points"] < cost:
+                raise HTTPException(
+                    status_code=400,
+                    detail={"code": "insufficient_points", "required": cost, "current": qs["total_points"]},
+                )
+            saved_streak = body.saved_streak or 0
+            new_total = qs["total_points"] - cost
+            await conn.execute(
+                "UPDATE quiz_sessions SET total_points = $1, current_streak = $2 WHERE id = $3",
+                new_total, saved_streak, body.quiz_session_id,
+            )
+            return {
+                "hint_text": "",
+                "points_deducted": cost,
+                "total_points": new_total,
+            }
+
+        cost = 750
 
         if qs["total_points"] < cost:
             raise HTTPException(
@@ -358,20 +383,10 @@ async def use_hint(body: QuizUseHintRequest, student=Depends(get_current_student
         extras = json.loads(prob["step_extras_json"]) if prob["step_extras_json"] else {}
         step_extras = extras.get(str(body.step_index), {})
 
-        hint_type = body.hint_type  # "hint" or "equation"
-
-        if hint_type == "equation":
-            # The equation hint is always the problem_expr — fetch it
-            problem_row = await conn.fetchrow(
-                "SELECT problem_expr FROM practice_problems WHERE id = $1",
-                body.problem_id,
-            )
-            hint_text = problem_row["problem_expr"] if problem_row else "No equation available."
-        else:
-            hint_text = step_extras.get(
-                "hint",
-                "Think carefully about the operation for this step.",
-            )
+        hint_text = step_extras.get(
+            "hint",
+            "Think carefully about the operation for this step.",
+        )
 
         new_total = qs["total_points"] - cost
         await conn.execute(

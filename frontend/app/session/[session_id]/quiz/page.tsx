@@ -35,6 +35,8 @@ export default function QuizPage() {
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [totalPoints, setTotalPoints] = useState(0);
+  const currentProblemIndexRef = useRef(0);
+  const currentStepIndexRef = useRef(0);
   
   // Step state
   const [timeRemainingMs, setTimeRemainingMs] = useState(0);
@@ -55,10 +57,13 @@ export default function QuizPage() {
   // Timer Ref
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastTickRef = useRef<number>(0);
+  const timerFrozenRef = useRef(false);
+  const advanceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Streak
   const [currentStreak, setCurrentStreak] = useState(0);
   const [streakMultiplier, setStreakMultiplier] = useState(1.0);
+  const [streakAtRisk, setStreakAtRisk] = useState(0);
 
   // 1. Initial Load
   useEffect(() => {
@@ -88,6 +93,7 @@ export default function QuizPage() {
         lastTickRef.current = now;
         
         setTimeRemainingMs((prev) => {
+          if (timerFrozenRef.current) return prev;
           const next = prev - delta;
           if (next <= 0) {
             return 0; // Timer hits 0, stops here.
@@ -114,6 +120,7 @@ export default function QuizPage() {
     setSelectedChoice(null);
     setTimeRemainingMs(currentProblem.steps[0].timer_ms);
     setState("STEP");
+    timerFrozenRef.current = false;
   };
 
   const handleSubmit = async (choice: string | null) => {
@@ -130,19 +137,21 @@ export default function QuizPage() {
         time_remaining_ms: timeRemainingMs,
       });
 
+      const preWrongStreak = currentStreak;
       setTotalPoints(res.total_points);
       setCurrentStreak(res.current_streak);
       setStreakMultiplier(res.streak_multiplier);
       
       if (!res.correct && choice !== null) {
         // Wrong attempt: lock in, reveal correct answer, move on
+        setStreakAtRisk(preWrongStreak);
         setStepCorrect(false);
         setCorrectValue(res.correct_value);
         setPointsEarned(0);
-        setCurrentProblemIndex(0);       
+        setCurrentStreak(0);
         setStreakMultiplier(1.0);
         setState("STEP_RESULT");
-        setTimeout(() => advanceToNext(), 2500); // Give 2.5s to read the correct answer
+        advanceTimerRef.current = setTimeout(() => advanceToNext(), 2500);
         return;
       }
 
@@ -191,22 +200,26 @@ export default function QuizPage() {
   };
 
   const advanceToNext = async () => {
-    if (currentStepIndex < currentProblem.steps.length - 1) {
-      // Next step in same problem
-      const nextStep = currentProblem.steps[currentStepIndex + 1];
-      setCurrentStepIndex(currentStepIndex + 1);
+    const probIdx = currentProblemIndexRef.current;
+    const stepIdx = currentStepIndexRef.current;
+    const problem = problems[probIdx];
+
+    if (stepIdx < problem.steps.length - 1) {
+      const nextStep = problem.steps[stepIdx + 1];
+      currentStepIndexRef.current = stepIdx + 1;
+      setCurrentStepIndex(stepIdx + 1);
       setHintText(null);
       setIsWrongAttempt(false);
       setSelectedChoice(null);
       setTimeRemainingMs(nextStep.timer_ms);
       setState("STEP");
-    } else if (currentProblemIndex < problems.length - 1) {
-      // Next problem
-      setCurrentProblemIndex(currentProblemIndex + 1);
+    } else if (probIdx < problems.length - 1) {
+      currentProblemIndexRef.current = probIdx + 1;
+      currentStepIndexRef.current = 0;
+      setCurrentProblemIndex(probIdx + 1);
       setCurrentStepIndex(0);
       setState("INTRO");
     } else {
-      // Finish quiz
       setState("LOADING");
       try {
         const res = await finishQuiz({ quiz_session_id: quizSessionId });
@@ -219,7 +232,7 @@ export default function QuizPage() {
     }
   };
 
-  const buyHint = async (type: "hint" | "equation") => {
+  const buyHint = async (type: "hint") => {
     try {
       const res = await useQuizHint({
         quiz_session_id: quizSessionId,
@@ -229,7 +242,6 @@ export default function QuizPage() {
       });
       setTotalPoints(res.total_points);
       if (type === "hint") setHintText(res.hint_text);
-      if (type === "equation") setEquationRevealed(true);
     } catch (err: any) {
       if (err.status === 400) {
         alert("Not enough points!");
@@ -396,15 +408,32 @@ export default function QuizPage() {
             >
               <Lightbulb size={16} /> Hint (750 pts)
             </button>
-            {!equationRevealed && (
-              <button
-                onClick={() => buyHint("equation")}
-                disabled={state === "STEP_RESULT" || isSubmitting}
-                className="flex items-center gap-2 font-black text-xs uppercase tracking-wider px-4 py-3 bg-[#faf8f5] border-2 border-[#1F2720] text-[#1F2720] rounded-xl shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] disabled:opacity-50 disabled:shadow-[3px_3px_0px_0px_#1F2720] transition-all cursor-pointer"
-              >
-                Show Equation (2500 pts)
-              </button>
-            )}
+            <button
+              onClick={async () => {
+                if (totalPoints < 750) {
+                  alert("Not enough points!");
+                  return;
+                }
+                timerFrozenRef.current = true;
+                setTimeout(() => { timerFrozenRef.current = false; }, 10_000);
+                try {
+                  const res = await useQuizHint({
+                    quiz_session_id: quizSessionId,
+                    problem_id: currentProblem.id,
+                    step_index: currentStep.step_index,
+                    hint_type: "freeze",
+                  });
+                  setTotalPoints(res.total_points);
+                } catch (err: any) {
+                  timerFrozenRef.current = false;
+                  alert("Not enough points!");
+                }
+              }}
+              disabled={timerFrozenRef.current || state === "STEP_RESULT" || isSubmitting}
+              className="flex items-center gap-2 font-black text-xs uppercase tracking-wider px-4 py-3 bg-blue-100 border-2 border-[#1F2720] text-blue-900 rounded-xl shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] disabled:opacity-50 transition-all cursor-pointer"
+            >
+              ❄️ Freeze Timer (750 pts)
+            </button>
             {timeRemainingMs === 0 && (
               <button
                 onClick={handleSkip}
@@ -468,6 +497,35 @@ export default function QuizPage() {
                   <h2 className="text-3xl font-black font-['Hanken_Grotesk'] text-[#1F2720] mb-2 uppercase">{timeRemainingMs === 0 && selectedChoice === null ? "TIME OUT" : "INCORRECT"}</h2>
                   <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 mt-4">Correct Answer:</p>
                   <div className="text-2xl font-black text-[#1F2720] bg-white border-2 border-[#1F2720] px-6 py-3 inline-block rounded-xl shadow-[3px_3px_0px_0px_#1F2720] markdown-content">{renderMath(correctValue || "", true)}</div>
+                
+                  {!stepCorrect && streakAtRisk > 0 && (
+                    <button
+                      onClick={async () => {
+                        if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+                        try {
+                          const res = await useQuizHint({
+                            quiz_session_id: quizSessionId,
+                            problem_id: currentProblem.id,
+                            step_index: currentStep.step_index,
+                            hint_type: "save_streak",
+                            saved_streak: streakAtRisk,
+                          });
+                          setTotalPoints(res.total_points);
+                          setCurrentStreak(streakAtRisk);
+                          const mult = Math.round((1.0 + Math.max(0, streakAtRisk - 1) * 0.1) * 100) / 100;
+                          setStreakMultiplier(mult);
+                          setStreakAtRisk(0);
+                        } catch (err: any) {
+                          console.log("save streak error:", err, err.status, err.detail);
+                          alert("Not enough points!");
+                        }
+                        advanceTimerRef.current = setTimeout(() => advanceToNext(), 1500);
+                      }}
+                      className="mt-4 flex items-center gap-2 mx-auto font-black text-xs uppercase tracking-wider px-4 py-3 bg-orange-100 border-2 border-[#1F2720] text-orange-900 rounded-xl shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 transition-all cursor-pointer"
+                    >
+                      🔥 Save Streak (1000 pts)
+                    </button>
+                  )}
                 </>
               )}
             </div>
