@@ -24,7 +24,7 @@ from backend.models.schemas import ProgressionDecideRequest
 router = APIRouter(prefix="/api/progression", tags=["progression"])
 
 PRACTICE_SET_SIZE = 5
-PASS_THRESHOLD = 3
+PASS_THRESHOLD = 4  # must pass >= 4/5 (75%) to advance
 
 
 @router.post("/decide")

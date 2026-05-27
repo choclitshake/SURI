@@ -48,7 +48,7 @@ router = APIRouter(prefix="/api/quiz", tags=["quiz"])
 
 # ── Constants ────────────────────────────────────────────────────────────────
 PRACTICE_SET_SIZE = 5
-PASS_THRESHOLD = 3          # must pass ≥ 3 problems to advance
+PASS_THRESHOLD = 4          # must pass ≥ 4 problems to advance (75%)
 BASE_POINTS = 500          # max points for fastest correct answer
 MIN_POINTS = 100            # floor for any correct answer
 
