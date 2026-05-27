@@ -188,11 +188,15 @@ No other text, no markdown, no code fences. Return raw JSON string only.
 def normalize_val(val: str) -> str:
     """Normalize input strings for robust mathematical comparison."""
     val = val.strip().lower()
+    val = val.replace('\\\\', '\\')
     val = val.replace('$', '').replace('*', '')
     val = val.replace(r'\left(', '(').replace(r'\right)', ')')
     val = val.replace(r'\left', '').replace(r'\right', '')
     val = re.sub(r'\\frac{([^}]+)}{([^}]+)}', r'\1/\2', val)
     val = re.sub(r'\\frac([a-zA-Z0-9])([a-zA-Z0-9])', r'\1/\2', val)
+    val = re.sub(r'\\sqrt\s*\[\]\s*{', r'\\sqrt{', val)
+    val = re.sub(r'\\sqrt\s*{([^}]+)}', r'\\sqrt{\1}', val)
+    val = re.sub(r'\\sqrt\s*([a-zA-Z0-9])', r'\\sqrt{\1}', val)
     val = re.sub(r'\s*([\+\-\*/=\(\)\^,])\s*', r'\1', val)
     val = re.sub(r'\s+', ' ', val)
     val = re.sub(r'\^{\(([^()]+)\)}', r'^{\1}', val)

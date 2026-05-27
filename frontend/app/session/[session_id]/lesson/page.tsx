@@ -243,6 +243,10 @@ export default function LessonPage() {
     router.push(`/session/${sessionId}/practice`);
   };
 
+  const handleStartQuiz = () => {
+    router.push(`/session/${sessionId}/quiz`);
+  };
+
   const handleExit = () => {
     router.push("/topics");
   };
@@ -645,12 +649,18 @@ export default function LessonPage() {
         </div>
 
         {/* Footer Navigation Section */}
-        <footer className="pt-4 flex flex-col items-center">
+        <footer className="pt-4 flex flex-col items-center gap-3">
           <button
             onClick={handleStartPractice}
             className="w-full bg-[#fdd400] text-[#1F2720] hover:bg-[#ffe170] border-[4px] border-[#1F2720] py-4 text-sm font-black uppercase tracking-wider transition-all rounded-[24px] shadow-[6px_6px_0px_0px_#1F2720] hover:shadow-[8px_8px_0px_0px_#1F2720] active:translate-y-1 active:translate-x-1 active:shadow-[2px_2px_0px_0px_#1F2720] cursor-pointer flex items-center justify-center gap-2"
           >
             Start Practice Track <ArrowRight className="w-5 h-5 stroke-[3px]" />
+          </button>
+          <button
+            onClick={handleStartQuiz}
+            className="w-full bg-[#1F2720] text-white hover:bg-[#2e3a2f] border-[4px] border-[#1F2720] py-4 text-sm font-black uppercase tracking-wider transition-all rounded-[24px] shadow-[6px_6px_0px_0px_#fdd400] hover:shadow-[8px_8px_0px_0px_#fdd400] active:translate-y-1 active:translate-x-1 active:shadow-[2px_2px_0px_0px_#fdd400] cursor-pointer flex items-center justify-center gap-2"
+          >
+            Quiz Mode <span className="text-[#fdd400]">⚡</span>
           </button>
         </footer>
 
