@@ -37,6 +37,7 @@ export default function DiagnosticPage() {
   const [skipping, setSkipping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ correct: boolean; nextAction: string } | null>(null);
+  const [topicEntryNode, setTopicEntryNode] = useState<string>("");
 
   // Show toast and confetti on feedback change
   useEffect(() => {
@@ -77,6 +78,7 @@ export default function DiagnosticPage() {
     const initTotal = async () => {
       try {
         const session = await getSession(sessionId);
+        setTopicEntryNode(session.topic_entry_node);
         const { chain } = await getTopicChain(session.topic_entry_node);
         setTotalQuestions(chain.length);
       } catch (e) {
@@ -238,9 +240,17 @@ export default function DiagnosticPage() {
                 {phase === "intro" ? "PLACEMENT DIAGNOSTIC" : "EVALUATION ACTIVE"}
               </span>
             </div>
-            <span className="font-['Manrope'] text-[9px] font-black text-[#1F2720] bg-[#fdd400] px-2.5 py-1 rounded-md border-2 border-[#1F2720] uppercase">
-              DB_SYNC
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => router.push(`/topics/${topicEntryNode}`)}
+                className="font-['Manrope'] text-[10px] text-[#1F2720] bg-white hover:bg-slate-100 px-3 py-2 rounded-xl border-2 border-[#1F2720] shadow-[2.5px_2.5px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[0px_0px_0px_0px_#1F2720] transition-all cursor-pointer font-black uppercase tracking-wider"
+              >
+                Exit
+              </button>
+              <span className="font-['Manrope'] text-[9px] font-black text-[#1F2720] bg-[#fdd400] px-2.5 py-1 rounded-md border-2 border-[#1F2720] uppercase">
+                DB_SYNC
+              </span>
+            </div>
           </div>
 
           <div className="z-10 flex items-center gap-4">

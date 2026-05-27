@@ -243,6 +243,7 @@ class QuizSubmitStepRequest(BaseModel):
     step_index: int
     submitted_value: Optional[str] = None  # None = timeout
     time_remaining_ms: int
+    save_streak: bool = False
 
 
 class QuizSubmitStepResponse(BaseModel):
@@ -268,7 +269,8 @@ class QuizUseHintRequest(BaseModel):
     quiz_session_id: str
     problem_id: str
     step_index: int
-    hint_type: str = "hint"   # "hint" | "equation"
+    hint_type: str = "hint"   # "hint" 
+    saved_streak: Optional[int] = None
 
 
 class QuizUseHintResponse(BaseModel):
