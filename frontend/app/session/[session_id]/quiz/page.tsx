@@ -228,9 +228,18 @@ export default function QuizPage() {
     }
   };
 
-  const renderMath = (expr: string | null | undefined) => {
+  const requiresTextInput = (val: string) => {
+    const withoutLatex = val.replace(/\\[a-zA-Z]+/g, "");
+    return /[a-zA-Z]{2,}/.test(withoutLatex) || withoutLatex.includes(",");
+  };
+
+  const renderMath = (expr: string | null | undefined, autoFormat: boolean = false) => {
     if (!expr) return null;
-    const inline = expr.replace(/\$\$(.+?)\$\$/g, (_, inner) => `$${inner}$`);
+    let text = expr;
+    if (autoFormat && !requiresTextInput(text) && !text.includes("$")) {
+      text = `$${text}$`;
+    }
+    const inline = text.replace(/\$\$(.+?)\$\$/g, (_, inner) => `$${inner}$`);
     const clean = inline.replace(/(\d)\s*\*\s*([a-zA-Z])/g, "$1$2").replace(/([a-zA-Z])\s*\*\s*([a-zA-Z])/g, "$1$2");
     return <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{clean}</ReactMarkdown>;
   };
@@ -260,11 +269,11 @@ export default function QuizPage() {
             Exit
           </button>
         </div>
-        <div className="max-w-2xl text-center space-y-8 bg-[#faf8f5] p-8 md:p-12 rounded-[32px] border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] relative">
+        <div className="max-w-5xl w-full text-center space-y-8 bg-[#faf8f5] p-8 md:p-12 rounded-[32px] border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] relative mx-4">
           <div className="inline-block bg-[#1F2720] px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase text-[#fdd400] shadow-[2px_2px_0px_0px_#fdd400]">
             Problem {currentProblemIndex + 1} of {problems.length}
           </div>
-          <div className="text-3xl md:text-5xl font-['Hanken_Grotesk'] font-black leading-tight text-[#1F2720]">
+          <div className="text-xl md:text-3xl font-['Hanken_Grotesk'] font-black leading-relaxed text-[#1F2720] markdown-content px-4">
             {renderMath(currentProblem.word_problem_text || "")}
           </div>
           <button
@@ -327,8 +336,8 @@ export default function QuizPage() {
 
           <div className="text-center space-y-4 w-full">
             <h2 className="text-[11px] font-black text-emerald-800 bg-emerald-100 border-2 border-[#1F2720] inline-block px-3 py-1 rounded-md uppercase tracking-widest">{renderMath(currentStep.instruction)}</h2>
-            <div className="text-3xl md:text-4xl bg-white border-[4px] border-[#1F2720] p-6 rounded-3xl shadow-[6px_6px_0px_0px_#1F2720] text-[#1F2720] font-black flex justify-center">
-              {renderMath(currentStep.blank_expression.replace("?", "\\_\\_\\_"))}
+            <div className="text-3xl md:text-4xl bg-white border-[4px] border-[#1F2720] p-6 rounded-3xl shadow-[6px_6px_0px_0px_#1F2720] text-[#1F2720] font-black flex justify-center markdown-content">
+              {renderMath(currentStep.blank_expression.replace("?", "\\_\\_\\_"), true)}
             </div>
           </div>
 
@@ -353,9 +362,9 @@ export default function QuizPage() {
                     setSelectedChoice(choice);
                     handleSubmit(choice);
                   }}
-                  className={`p-5 md:p-6 text-xl bg-white border-[3px] rounded-2xl font-bold transition-all cursor-pointer ${btnClass} flex justify-center items-center`}
+                  className={`p-5 md:p-6 text-xl bg-white border-[3px] rounded-2xl font-bold transition-all cursor-pointer ${btnClass} flex justify-center items-center markdown-content`}
                 >
-                  {renderMath(choice)}
+                  {renderMath(choice, true)}
                 </button>
               );
             })}
@@ -405,9 +414,9 @@ export default function QuizPage() {
                     <span className="text-[#1F2720] font-bold text-xs">{renderMath(s.instruction)}</span>
                     <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border-2 border-[#1F2720]">
                       <span className="font-black text-slate-400 text-[10px] uppercase">Answer:</span>
-                      <span className="font-black text-[#1F2720] text-sm md:text-base">{renderMath(s.correct_value)}</span>
+                      <span className="font-black text-[#1F2720] text-sm md:text-base">{renderMath(s.correct_value, true)}</span>
                       <span className="text-[#1F2720]/30 font-black">|</span>
-                      <span className="font-black text-[#1F2720]">{renderMath(filledExpr)}</span>
+                      <span className="font-black text-[#1F2720]">{renderMath(filledExpr, true)}</span>
                     </div>
                   </div>
                 );
@@ -431,7 +440,7 @@ export default function QuizPage() {
                   <XCircle size={64} className="text-red-500 mx-auto mb-4" />
                   <h2 className="text-3xl font-black font-['Hanken_Grotesk'] text-[#1F2720] mb-2 uppercase">{timeRemainingMs === 0 && selectedChoice === null ? "TIME OUT" : "INCORRECT"}</h2>
                   <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 mt-4">Correct Answer:</p>
-                  <div className="text-2xl font-black text-[#1F2720] bg-white border-2 border-[#1F2720] px-6 py-3 inline-block rounded-xl shadow-[3px_3px_0px_0px_#1F2720]">{renderMath(correctValue || "")}</div>
+                  <div className="text-2xl font-black text-[#1F2720] bg-white border-2 border-[#1F2720] px-6 py-3 inline-block rounded-xl shadow-[3px_3px_0px_0px_#1F2720] markdown-content">{renderMath(correctValue || "", true)}</div>
                 </>
               )}
             </div>
