@@ -476,6 +476,7 @@ export interface QuizStepWithChoices {
   operation_description: string;
   mapped_node_id: string;
   choices: string[];
+  correct_value: string;
   timer_ms: number;
 }
 

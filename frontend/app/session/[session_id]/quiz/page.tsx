@@ -237,26 +237,39 @@ export default function QuizPage() {
 
   if (state === "LOADING") {
     return (
-      <div className="min-h-screen bg-[#001a54] flex flex-col items-center justify-center text-white">
-        <Loader2 className="animate-spin mb-4" size={48} />
-        <h2 className="text-xl font-bold font-['Hanken_Grotesk'] tracking-widest uppercase">Loading Quiz</h2>
+      <div className="min-h-screen bg-[#1b261c] flex flex-col items-center justify-center font-['Manrope'] p-8">
+        <div className="bg-[#faf8f5] border-[4px] border-[#1F2720] rounded-[32px] p-8 max-w-sm w-full text-center shadow-[8px_8px_0px_0px_#1F2720]">
+          <div className="relative w-12 h-12 mx-auto mb-4">
+            <div className="absolute inset-0 border-4 border-[#e6e8ea] rounded-full" />
+            <div className="absolute inset-0 border-4 border-[#1F2720] border-t-[#fdd400] rounded-full animate-spin" />
+          </div>
+          <h2 className="text-xl font-black font-['Hanken_Grotesk'] tracking-widest uppercase text-[#1F2720]">Loading Quiz</h2>
+        </div>
       </div>
     );
   }
 
   if (state === "INTRO") {
     return (
-      <div className="min-h-screen bg-[#001a54] flex flex-col items-center justify-center text-white p-8">
-        <div className="max-w-2xl text-center space-y-8">
-          <div className="inline-block bg-white/10 px-4 py-1.5 rounded-full text-xs font-mono font-bold tracking-widest uppercase text-[#fdd400]">
+      <div className="min-h-screen bg-[#1b261c] flex flex-col items-center justify-center p-6 md:p-8 relative overflow-hidden font-['Manrope']">
+        <div className="absolute top-6 right-6 md:top-8 md:right-8 z-20">
+          <button
+            onClick={() => router.push(`/session/${sessionId}/lesson`)}
+            className="font-['Manrope'] text-[10px] text-[#1F2720] bg-[#fdd400] hover:bg-[#ffe170] px-4 py-2 rounded-xl border-2 border-[#1F2720] shadow-[2.5px_2.5px_0px_0px_#1F2720] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0px_0px_0px_0px_#1F2720] transition-all cursor-pointer font-black uppercase tracking-wider"
+          >
+            Exit
+          </button>
+        </div>
+        <div className="max-w-2xl text-center space-y-8 bg-[#faf8f5] p-8 md:p-12 rounded-[32px] border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] relative">
+          <div className="inline-block bg-[#1F2720] px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase text-[#fdd400] shadow-[2px_2px_0px_0px_#fdd400]">
             Problem {currentProblemIndex + 1} of {problems.length}
           </div>
-          <div className="text-3xl md:text-5xl font-['Hanken_Grotesk'] font-extrabold leading-tight">
+          <div className="text-3xl md:text-5xl font-['Hanken_Grotesk'] font-black leading-tight text-[#1F2720]">
             {renderMath(currentProblem.word_problem_text || "")}
           </div>
           <button
             onClick={handleStartProblem}
-            className="mt-12 bg-[#fdd400] text-black px-12 py-4 rounded-full font-bold uppercase tracking-wider text-lg hover:scale-105 transition-transform shadow-[0_0_30px_rgba(253,212,0,0.3)]"
+            className="mt-12 bg-[#fdd400] text-[#1F2720] border-[4px] border-[#1F2720] w-full py-4 rounded-[24px] font-black uppercase tracking-wider text-lg hover:-translate-y-0.5 active:translate-y-1 active:shadow-[2px_2px_0px_0px_#1F2720] transition-all shadow-[6px_6px_0px_0px_#1F2720]"
           >
             Start Solving
           </button>
@@ -269,59 +282,67 @@ export default function QuizPage() {
     const progressPct = (timeRemainingMs / currentStep.timer_ms) * 100;
     
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col relative overflow-hidden">
+      <div className="min-h-screen bg-[#1b261c] flex flex-col relative overflow-hidden font-['Manrope']">
         {/* Top Bar */}
-        <div className="bg-white p-4 shadow-sm flex items-center justify-between z-10 relative">
-          <div className="font-mono font-bold text-[#001a54]">
-            Total Points: <span className="text-lg text-[#fdd400] bg-[#001a54] px-2 py-0.5 rounded">{totalPoints}</span>
+        <div className="bg-[#faf8f5] p-4 border-b-[4px] border-[#1F2720] shadow-sm flex items-center justify-between z-10 relative">
+          <div className="font-black text-[#1F2720] text-sm uppercase tracking-widest flex items-center gap-2">
+            Points <span className="text-lg text-[#1F2720] bg-[#fdd400] border-2 border-[#1F2720] px-2.5 py-0.5 rounded shadow-[2px_2px_0px_0px_#1F2720]">{totalPoints}</span>
           </div>
-          <div className="flex items-center gap-2 font-mono font-bold text-slate-500">
-            <Timer size={18} />
-            {(timeRemainingMs / 1000).toFixed(1)}s
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 font-black text-[#1F2720] bg-white px-3 py-1.5 rounded-xl border-2 border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
+              <Timer size={18} className="text-red-500" />
+              {(timeRemainingMs / 1000).toFixed(1)}s
+            </div>
+            <button
+              onClick={() => router.push(`/session/${sessionId}/lesson`)}
+              className="font-['Manrope'] text-[10px] text-[#1F2720] bg-white hover:bg-slate-100 px-3 py-2 rounded-xl border-2 border-[#1F2720] shadow-[2.5px_2.5px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[0px_0px_0px_0px_#1F2720] transition-all cursor-pointer font-black uppercase tracking-wider"
+            >
+              Exit
+            </button>
           </div>
         </div>
 
         {/* Timer Bar */}
-        <div className="h-1.5 bg-slate-200 w-full z-10 relative">
+        <div className="h-2 bg-slate-200 w-full z-10 relative border-b-2 border-[#1F2720]/10">
           <div 
-            className="h-full bg-[#fdd400] transition-all duration-100 ease-linear" 
+            className="h-full bg-red-500 transition-all duration-100 ease-linear" 
             style={{ width: `${Math.max(0, progressPct)}%` }}
           />
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full z-10 relative space-y-8">
+        <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full z-10 relative space-y-6">
           {equationRevealed && (
-            <div className="bg-white/50 border border-slate-200 px-6 py-3 rounded-2xl shadow-sm">
-              <div className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest mb-1 text-center">Problem Equation</div>
-              <div className="text-xl font-bold text-[#001a54]">{renderMath(currentProblem.problem_expr)}</div>
+            <div className="bg-[#fdd400]/20 border-[3px] border-[#fdd400] px-6 py-3 rounded-2xl shadow-[4px_4px_0px_0px_#1F2720]">
+              <div className="text-[10px] font-black text-[#1F2720] uppercase tracking-widest mb-1 text-center">Problem Equation</div>
+              <div className="text-xl font-bold text-[#1F2720]">{renderMath(currentProblem.problem_expr)}</div>
             </div>
           )}
 
-          <div className="text-center space-y-2">
-            <div className="text-xl md:text-2xl font-['Hanken_Grotesk'] font-bold text-slate-800 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <div className="text-center space-y-2 w-full">
+            <div className="text-lg md:text-xl font-bold text-[#1F2720] bg-[#faf8f5] p-4 rounded-2xl border-[4px] border-[#1F2720] shadow-[6px_6px_0px_0px_#1F2720]">
               {renderMath(currentProblem.word_problem_text || "")}
             </div>
           </div>
 
-          <div className="text-center space-y-4">
-            <h2 className="text-2xl font-bold text-slate-700">{renderMath(currentStep.instruction)}</h2>
-            <div className="text-4xl bg-white border-2 border-[#001a54] p-8 rounded-3xl shadow-[0_10px_30px_rgba(0,26,84,0.05)] text-[#001a54] font-bold">
+          <div className="text-center space-y-4 w-full">
+            <h2 className="text-[11px] font-black text-emerald-800 bg-emerald-100 border-2 border-[#1F2720] inline-block px-3 py-1 rounded-md uppercase tracking-widest">{renderMath(currentStep.instruction)}</h2>
+            <div className="text-3xl md:text-4xl bg-white border-[4px] border-[#1F2720] p-6 rounded-3xl shadow-[6px_6px_0px_0px_#1F2720] text-[#1F2720] font-black flex justify-center">
               {renderMath(currentStep.blank_expression.replace("?", "\\_\\_\\_"))}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mt-4">
             {currentStep.choices.map((choice, idx) => {
               const isSelected = selectedChoice === choice;
-              let btnClass = "border-slate-200 text-[#001a54] hover:border-[#fdd400] hover:shadow-md";
+              let btnClass = "border-[#1F2720] text-[#1F2720] hover:bg-slate-50 shadow-[4px_4px_0px_0px_#1F2720] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#1F2720]";
               
               if (isSelected) {
-                if (isSubmitting) btnClass = "border-[#fdd400] bg-[#fdd400]/10 text-[#001a54]";
-                else if (state === "STEP_RESULT" && stepCorrect) btnClass = "border-green-500 bg-green-50 text-green-700";
-                else if (isWrongAttempt || (state === "STEP_RESULT" && !stepCorrect)) btnClass = "border-red-500 bg-red-50 text-red-700 opacity-50";
+                if (isSubmitting) btnClass = "border-[#1F2720] bg-[#fdd400] text-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720]";
+                else if (state === "STEP_RESULT" && stepCorrect) btnClass = "border-[#1F2720] bg-[#79ff8f] text-green-900 shadow-[4px_4px_0px_0px_#1F2720]";
+                else if (isWrongAttempt || (state === "STEP_RESULT" && !stepCorrect)) btnClass = "border-[#1F2720] bg-red-400 text-red-900 opacity-80 shadow-[4px_4px_0px_0px_#1F2720]";
               } else if (isSubmitting || state === "STEP_RESULT") {
-                btnClass = "border-slate-200 text-slate-400 opacity-50"; // disabled visual
+                btnClass = "border-[#1F2720] text-slate-400 bg-slate-100 opacity-50 shadow-[4px_4px_0px_0px_#1F2720]"; // disabled visual
               }
 
               return (
@@ -332,7 +353,7 @@ export default function QuizPage() {
                     setSelectedChoice(choice);
                     handleSubmit(choice);
                   }}
-                  className={`p-6 text-xl bg-white border-2 rounded-2xl font-bold shadow-sm transition-all hover:-translate-y-1 ${btnClass}`}
+                  className={`p-5 md:p-6 text-xl bg-white border-[3px] rounded-2xl font-bold transition-all cursor-pointer ${btnClass} flex justify-center items-center`}
                 >
                   {renderMath(choice)}
                 </button>
@@ -340,11 +361,11 @@ export default function QuizPage() {
             })}
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4 justify-center w-full">
             <button
               onClick={() => buyHint("hint")}
               disabled={hintText !== null || state === "STEP_RESULT" || isSubmitting}
-              className="flex items-center gap-2 font-mono text-sm font-bold uppercase px-4 py-2 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 font-black text-xs uppercase tracking-wider px-4 py-3 bg-[#faf8f5] border-2 border-[#1F2720] text-[#1F2720] rounded-xl shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] disabled:opacity-50 disabled:shadow-[3px_3px_0px_0px_#1F2720] transition-all cursor-pointer"
             >
               <Lightbulb size={16} /> Hint (750 pts)
             </button>
@@ -352,7 +373,7 @@ export default function QuizPage() {
               <button
                 onClick={() => buyHint("equation")}
                 disabled={state === "STEP_RESULT" || isSubmitting}
-                className="flex items-center gap-2 font-mono text-sm font-bold uppercase px-4 py-2 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 font-black text-xs uppercase tracking-wider px-4 py-3 bg-[#faf8f5] border-2 border-[#1F2720] text-[#1F2720] rounded-xl shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] disabled:opacity-50 disabled:shadow-[3px_3px_0px_0px_#1F2720] transition-all cursor-pointer"
               >
                 Show Equation (2500 pts)
               </button>
@@ -361,7 +382,7 @@ export default function QuizPage() {
               <button
                 onClick={handleSkip}
                 disabled={state === "STEP_RESULT" || isSubmitting}
-                className="flex items-center gap-2 font-mono text-sm font-bold uppercase px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                className="flex items-center gap-2 font-black text-xs uppercase tracking-wider px-4 py-3 bg-red-400 border-2 border-[#1F2720] text-red-900 rounded-xl shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] disabled:opacity-50 transition-all cursor-pointer"
               >
                 <SkipForward size={16} /> Skip Step
               </button>
@@ -369,24 +390,24 @@ export default function QuizPage() {
           </div>
 
           {hintText && (
-            <div className="bg-[#fdd400]/20 border border-[#fdd400] text-[#001a54] p-4 rounded-xl font-medium max-w-xl text-center">
+            <div className="bg-[#fdd400] border-[3px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] text-[#1F2720] p-4 rounded-xl font-bold max-w-xl text-center text-sm md:text-base">
               💡 {hintText}
             </div>
           )}
 
           {currentStepIndex > 0 && (
-            <div className="w-full bg-slate-100 rounded-xl p-4 border border-slate-200 space-y-2 opacity-80 mt-8">
-              <h3 className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest">Previous Steps</h3>
+            <div className="w-full bg-[#faf8f5] rounded-2xl p-5 border-[3.5px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] space-y-3 opacity-90 mt-8">
+              <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-[#1F2720]/10 pb-2">Previous Steps</h3>
               {currentProblem.steps.slice(0, currentStepIndex).reverse().map((s, idx) => {
                 const filledExpr = s.blank_expression.replace("?", s.correct_value);
                 return (
-                  <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between text-sm border-b border-slate-200 last:border-0 pb-2 last:pb-0 gap-2">
-                    <span className="text-slate-600 font-medium">{renderMath(s.instruction)}</span>
-                    <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-lg border border-slate-200">
-                      <span className="font-bold text-slate-400 text-xs uppercase">Answer:</span>
-                      <span className="font-bold text-[#001a54] text-lg">{renderMath(s.correct_value)}</span>
-                      <span className="text-slate-300">|</span>
-                      <span className="font-bold text-[#001a54]">{renderMath(filledExpr)}</span>
+                  <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between text-sm border-b border-slate-200 last:border-0 pb-3 pt-1 last:pb-0 gap-3">
+                    <span className="text-[#1F2720] font-bold text-xs">{renderMath(s.instruction)}</span>
+                    <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border-2 border-[#1F2720]">
+                      <span className="font-black text-slate-400 text-[10px] uppercase">Answer:</span>
+                      <span className="font-black text-[#1F2720] text-sm md:text-base">{renderMath(s.correct_value)}</span>
+                      <span className="text-[#1F2720]/30 font-black">|</span>
+                      <span className="font-black text-[#1F2720]">{renderMath(filledExpr)}</span>
                     </div>
                   </div>
                 );
@@ -397,20 +418,20 @@ export default function QuizPage() {
 
         {/* STEP RESULT OVERLAY */}
         {state === "STEP_RESULT" && (
-          <div className={`absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm ${stepCorrect ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
-            <div className={`bg-white p-8 rounded-3xl shadow-2xl text-center border-4 ${stepCorrect ? 'border-green-500' : 'border-red-500'} scale-110 transition-transform`}>
+          <div className={`absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm ${stepCorrect ? 'bg-[#79ff8f]/20' : 'bg-red-500/20'}`}>
+            <div className={`bg-[#faf8f5] p-8 rounded-[32px] shadow-[8px_8px_0px_0px_#1F2720] text-center border-[4px] border-[#1F2720] scale-110 transition-transform`}>
               {stepCorrect ? (
                 <>
                   <CheckCircle2 size={64} className="text-green-500 mx-auto mb-4" />
-                  <h2 className="text-3xl font-black text-green-600 mb-2">CORRECT!</h2>
-                  <p className="text-xl font-bold text-slate-600">+{pointsEarned} pts</p>
+                  <h2 className="text-3xl font-black font-['Hanken_Grotesk'] text-[#1F2720] mb-2 uppercase">CORRECT!</h2>
+                  <p className="text-xl font-black text-green-600 bg-green-100 border-2 border-[#1F2720] px-4 py-1 inline-block rounded-lg shadow-[2px_2px_0px_0px_#1F2720]">+{pointsEarned} pts</p>
                 </>
               ) : (
                 <>
                   <XCircle size={64} className="text-red-500 mx-auto mb-4" />
-                  <h2 className="text-3xl font-black text-red-600 mb-2">{timeRemainingMs === 0 && selectedChoice === null ? "TIME OUT" : "INCORRECT"}</h2>
-                  <p className="text-lg font-bold text-slate-600 mb-2">Correct Answer:</p>
-                  <div className="text-2xl font-bold text-[#001a54] bg-slate-100 px-4 py-2 rounded-xl">{renderMath(correctValue || "")}</div>
+                  <h2 className="text-3xl font-black font-['Hanken_Grotesk'] text-[#1F2720] mb-2 uppercase">{timeRemainingMs === 0 && selectedChoice === null ? "TIME OUT" : "INCORRECT"}</h2>
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 mt-4">Correct Answer:</p>
+                  <div className="text-2xl font-black text-[#1F2720] bg-white border-2 border-[#1F2720] px-6 py-3 inline-block rounded-xl shadow-[3px_3px_0px_0px_#1F2720]">{renderMath(correctValue || "")}</div>
                 </>
               )}
             </div>
@@ -423,33 +444,35 @@ export default function QuizPage() {
   if (state === "SUMMARY" && summaryData) {
     const { progression } = summaryData;
     return (
-      <div className="min-h-screen bg-[#001a54] flex flex-col items-center justify-center p-6 text-white">
-        <div className="max-w-3xl w-full bg-white rounded-3xl p-8 md:p-12 shadow-2xl text-slate-800 text-center relative overflow-hidden">
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#fdd400]/20 rounded-full blur-[60px]" />
+      <div className="min-h-screen bg-[#1b261c] flex flex-col items-center justify-center p-6 text-[#1F2720] font-['Manrope']">
+        <div className="max-w-3xl w-full bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] p-8 md:p-12 shadow-[8px_8px_0px_0px_#1F2720] text-center relative overflow-hidden">
+          <div className="absolute top-0 right-1/4 w-32 h-32 bg-yellow-400/20 rounded-full blur-3xl pointer-events-none" />
           
-          <h1 className="text-4xl font-black font-['Hanken_Grotesk'] text-[#001a54] mb-2 uppercase tracking-tight">Session Complete</h1>
+          <span className="font-black text-[10px] text-[#1F2720] bg-[#fdd400] border-2 border-[#1F2720] px-4.5 py-1.5 rounded-md uppercase tracking-widest shadow-[2px_2px_0px_0px_#1F2720]">SESSION COMPLETE</span>
           
-          <div className="flex justify-center gap-8 my-8">
-            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-              <div className="text-sm font-mono font-bold text-slate-400 uppercase tracking-widest mb-2">Final Score</div>
-              <div className="text-5xl font-black text-[#fdd400] drop-shadow-sm">{summaryData.total_points}</div>
+          <h1 className="text-4xl font-black font-['Hanken_Grotesk'] text-[#1F2720] mt-4 mb-2 tracking-tight">Quiz Results</h1>
+          
+          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-8 my-8">
+            <div className="bg-white p-6 rounded-2xl border-[3.5px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] flex-1">
+              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Final Score</div>
+              <div className="text-5xl font-black text-[#1F2720] drop-shadow-sm">{summaryData.total_points}</div>
             </div>
-            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-              <div className="text-sm font-mono font-bold text-slate-400 uppercase tracking-widest mb-2">Accuracy</div>
-              <div className="text-5xl font-black text-[#001a54] drop-shadow-sm">{Math.round((summaryData.total_correct / Math.max(1, summaryData.total_steps)) * 100)}%</div>
+            <div className="bg-white p-6 rounded-2xl border-[3.5px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] flex-1">
+              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Accuracy</div>
+              <div className="text-5xl font-black text-[#1F2720] drop-shadow-sm">{Math.round((summaryData.total_correct / Math.max(1, summaryData.total_steps)) * 100)}%</div>
             </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl text-left mb-8 shadow-inner">
-            <h3 className="text-xs font-mono font-bold text-blue-800 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <Lightbulb size={16} /> AI Feedback
+          <div className="bg-blue-50 border-[3px] border-[#1F2720] p-6 rounded-2xl text-left mb-8 shadow-[4px_4px_0px_0px_#1F2720]">
+            <h3 className="text-[10px] font-black text-[#1F2720] bg-white border-2 border-[#1F2720] inline-flex items-center gap-2 px-3 py-1 rounded-md uppercase tracking-widest mb-4">
+              <Lightbulb size={14} className="text-[#fdd400]" /> AI Feedback
             </h3>
-            <p className="text-blue-900 leading-relaxed font-medium">
+            <p className="text-[#1F2720] font-bold text-sm leading-relaxed">
               {summaryData.feedback_text}
             </p>
           </div>
 
-          <div className="border-t border-slate-200 pt-8 mt-4 flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center">
             {progression.topic_complete ? (
               <button onClick={() => router.push("/topics")} className="btn-primary">
                 Return to Dashboard
@@ -460,39 +483,48 @@ export default function QuizPage() {
               </button>
             ) : progression.go_deeper_available && progression.go_deeper_node ? (
               <button onClick={() => router.push(`/session/${sessionId}/lesson`)} className="btn-primary">
-                Review Basics: {progression.go_deeper_node.node_label}
+                Review Basics
               </button>
             ) : (
               <button onClick={() => router.push(`/session/${sessionId}/lesson`)} className="btn-primary">
                 Review Lesson
               </button>
             )}
-            <button onClick={() => router.push("/topics")} className="px-6 py-4 rounded-xl font-mono font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-100 transition-colors">
-              Exit
+            <button onClick={() => router.push(`/session/${sessionId}/lesson`)} className="bg-white text-[#1F2720] border-[4px] border-[#1F2720] px-8 py-4 text-xs font-black uppercase rounded-[24px] tracking-wider transition-all cursor-pointer shadow-[6px_6px_0px_0px_#1F2720] hover:-translate-y-0.5 active:translate-y-1 active:translate-x-1 active:shadow-[2px_2px_0px_0px_#1F2720]">
+              Exit Quiz
             </button>
           </div>
         </div>
 
         <style dangerouslySetInnerHTML={{__html: `
           .btn-primary {
-            background-color: #001a54;
-            color: white;
+            background-color: #fdd400;
+            color: #1F2720;
+            border: 4px solid #1F2720;
             padding: 1rem 2rem;
-            border-radius: 0.75rem;
-            font-family: monospace;
-            font-weight: bold;
+            border-radius: 24px;
+            font-weight: 900;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            box-shadow: 6px 6px 0px 0px #1F2720;
+            transition: all 0.15s ease-in-out;
+            cursor: pointer;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(0,26,84,0.15);
           }
           .btn-primary:hover {
-            background-color: #001138;
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,26,84,0.25);
+            background-color: #ffe170;
+          }
+          .btn-primary:active {
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0px 0px #1F2720;
+          }
+          .markdown-content .katex {
+            font-size: 1.1em;
           }
         `}} />
       </div>
