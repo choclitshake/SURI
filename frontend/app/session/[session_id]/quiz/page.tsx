@@ -45,6 +45,7 @@ export default function QuizPage() {
   const [equationRevealed, setEquationRevealed] = useState(false);
   const [isWrongAttempt, setIsWrongAttempt] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [stepAnswers, setStepAnswers] = useState<Record<number, { user: string; correct: string }>>({});
   
   // Step Result state
   const [stepCorrect, setStepCorrect] = useState<boolean | null>(null);
@@ -119,6 +120,7 @@ export default function QuizPage() {
     setIsWrongAttempt(false);
     setSelectedChoice(null);
     setTimeRemainingMs(currentProblem.steps[0].timer_ms);
+    setStepAnswers({});
     setState("STEP");
     timerFrozenRef.current = false;
   };
@@ -136,6 +138,13 @@ export default function QuizPage() {
         submitted_value: choice,
         time_remaining_ms: timeRemainingMs,
       });
+
+      if (choice !== null) {
+        setStepAnswers(prev => ({ 
+          ...prev, 
+          [currentStep.step_index]: { user: choice, correct: res.correct_value } 
+        }));
+      }
 
       const preWrongStreak = currentStreak;
       setTotalPoints(res.total_points);
@@ -456,14 +465,28 @@ export default function QuizPage() {
               <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-[#1F2720]/10 pb-2">Previous Steps</h3>
               {currentProblem.steps.slice(0, currentStepIndex).reverse().map((s, idx) => {
                 const filledExpr = s.blank_expression.replace("?", s.correct_value);
+                const userAnswer = stepAnswers[s.step_index]?.user;
+                const correctAnswer = stepAnswers[s.step_index]?.correct;
+                const isCorrect = userAnswer !== undefined && correctAnswer !== undefined &&
+                  userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
                 return (
                   <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between text-sm border-b border-slate-200 last:border-0 pb-3 pt-1 last:pb-0 gap-3">
                     <span className="text-[#1F2720] font-bold text-xs">{renderMath(s.instruction)}</span>
-                    <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border-2 border-[#1F2720]">
-                      <span className="font-black text-slate-400 text-[10px] uppercase">Answer:</span>
-                      <span className="font-black text-[#1F2720] text-sm md:text-base">{renderMath(s.correct_value, true)}</span>
-                      <span className="text-[#1F2720]/30 font-black">|</span>
-                      <span className="font-black text-[#1F2720]">{renderMath(filledExpr, true)}</span>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border-2 border-[#1F2720]">
+                        <span className="font-black text-slate-400 text-[10px] uppercase">Question:</span>
+                        <span className="font-black text-[#1F2720] text-sm md:text-base">{renderMath(s.correct_value, true)}</span>
+                        <span className="text-[#1F2720]/30 font-black">|</span>
+                        <span className="font-black text-[#1F2720]">{renderMath(filledExpr, true)}</span>
+                      </div>
+                      {userAnswer !== undefined && (
+                        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border-2 border-[#1F2720]">
+                          <span className="font-black text-slate-400 text-[10px] uppercase">Your Answer:</span>
+                          <span className={`font-black text-sm md:text-base ${isCorrect ? "text-green-600" : "text-red-500"}`}>
+                            {renderMath(userAnswer, true)}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
