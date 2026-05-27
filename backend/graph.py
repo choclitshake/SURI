@@ -18,7 +18,7 @@ GRAPH = {
         "grade": 8,
         "chains": ["chain1", "chain4"],
         "prerequisite": "SP",
-        "dependents": ["QE", "PE"]
+        "dependents": ["QE"]
     },
     "SP": {
         "label": "Special Products / Polynomial Multiplication",
@@ -94,7 +94,7 @@ GRAPH = {
         "label": "Polynomial Equations",
         "grade": 10,
         "chains": ["chain4"],
-        "prerequisite": "FP",
+        "prerequisite": "PO",
         "dependents": []
     },
     "PD": {
@@ -102,14 +102,14 @@ GRAPH = {
         "grade": 10,
         "chains": ["chain4"],
         "prerequisite": "PO",
-        "dependents": ["PE"]
+        "dependents": []
     },
     "PO": {
         "label": "Polynomial Operations",
         "grade": 8,
         "chains": ["chain4"],
         "prerequisite": None,
-        "dependents": ["PD"]
+        "dependents": ["PE", "PD"]
     }
 }
 
