@@ -505,13 +505,14 @@ export default function QuizPage() {
             </div>
           </div>
 
-          <div className="bg-blue-50 border-[3px] border-[#1F2720] p-6 rounded-2xl text-left mb-8 shadow-[4px_4px_0px_0px_#1F2720]">
-            <h3 className="text-[10px] font-black text-[#1F2720] bg-white border-2 border-[#1F2720] inline-flex items-center gap-2 px-3 py-1 rounded-md uppercase tracking-widest mb-4">
-              <Lightbulb size={14} className="text-[#fdd400]" /> AI Feedback
-            </h3>
-            <p className="text-[#1F2720] font-bold text-sm leading-relaxed">
-              {summaryData.feedback_text}
-            </p>
+          <div className="bg-[#ffe170] border-[4px] border-[#1F2720] p-5 rounded-2xl text-left mb-8 shadow-[4px_4px_0px_0px_#1F2720] flex items-start gap-4">
+            <img src="/suri-snake-left.png" alt="Suri" className="h-14 w-auto object-contain shrink-0" />
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#1F2720] mb-2">SURI ss-says:</p>
+              <p className="text-[#1F2720] font-bold text-sm leading-relaxed">
+                {summaryData.feedback_text}
+              </p>
+            </div>
           </div>
 
           <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center">
