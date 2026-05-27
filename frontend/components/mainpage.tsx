@@ -38,8 +38,8 @@ export default function MainPage({ children }: { children: React.ReactNode }) {
       <nav className="fixed top-0 left-0 right-0 z-50">
         <div className="absolute inset-0" style={{ background: "rgba(219,212,199,0.85)", backdropFilter: "blur(12px)", maskImage: "linear-gradient(to bottom, black 0%, black 60%, transparent 100%)", WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 60%, transparent 100%)" }} />
         <div className="relative flex items-center h-24 px-4 md:px-8">
-          <div className="flex items-center bg-white px-7 md:px-10 h-14 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-            <img alt="SURI" src="/SURI.png" className="h-11 w-auto object-contain" />
+          <div className="flex items-center bg-white px-7 md:px-6 h-14 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+            <img alt="SURI" src="/SURI1.png" className="h-16 w-auto object-contain" />
           </div>
           <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-10 bg-white px-10 h-14 rounded-full border border-[#c3c5d9]/30 shadow-[0_4px_20px_rgba(0,0,0,0.04)] pointer-events-auto">
           {NAV_ITEMS.map(({ label, href }) => {

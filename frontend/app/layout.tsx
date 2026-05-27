@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Adaptive mathematics learning application for Philippine Junior High School students",
   icons: {
-    icon: "/SURI.png",
+    icon: "/suri-snake-happy.png",
   },
 };
 
