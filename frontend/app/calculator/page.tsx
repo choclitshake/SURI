@@ -247,8 +247,8 @@ export default function AlgebraCalculatorPage() {
 
   return (
     <MainPage>
-      <div className=" min-h-screen text-[#1F2720] py-4 px-4 md:px-8 space-y-6">
-        <div className="max-w-5xl mx-auto space-y-6">
+      <div className=" min-h-screen text-[#1F2720] py-4 px-2 md:px-4">
+        <div className="w-full max-w-[1800px] mx-auto space-y-6">
           {/* Premium Compact Bento Header */}
           <header className="bg-[#223324] rounded-[32px] p-6 md:p-8 border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] relative overflow-hidden flex flex-col justify-between min-h-[180px]">
 

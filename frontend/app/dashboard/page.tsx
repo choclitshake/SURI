@@ -278,92 +278,76 @@ function DashboardContent() {
         <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
 
           {/* Gamified Cartoony Adventure Map */}
-          <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-b from-[#1b261c] to-[#2e3e2d] p-6 border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] group">
-            {/* Background Forest Silhouette */}
-            <div className="absolute inset-0 opacity-20 bg-cover bg-bottom mix-blend-overlay pointer-events-none" 
-                 style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAEXma6INVd0pxsf2NimA83gxdCqv-1PqJrcWOioIbkPEtj3Z7oIxOvuUvLYNc4Dp9x3Y1BdR1CuvLCFJx5RSzJA9_Kk02IsPNQSy0DeGhX33fZvqV6ZTAci5gEWEnXt3d5H0IqVOBVrHAtZ0wRSpSPEhIZkwT8lWCqZo0inU40TzVsVWo-vjMqvT5w8nLCUkx-agKpKsnu_I62S8u6WesHawWnmWYTE_400YVkv8YcJ_L_q-lbQ4H0O-Ey3ld_l4PtBxxi-Kv7vQ8')" }} />
+          <section
+            className="relative overflow-hidden rounded-[30px] h-[430px] md:h-[520px] border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] group flex flex-col"
+            style={{ backgroundImage: "url('/bg.png')", backgroundSize: "cover", backgroundPosition: "center" }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-[#1b261c]/70 via-[#1b261c]/25 to-[#1b261c]/10 pointer-events-none" />
 
             {/* Glowing Forest Gradients */}
-            <div className="absolute top-0 right-1/4 w-44 h-44 bg-yellow-400/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-4 left-1/3 w-36 h-36 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-1/4 w-36 h-36 bg-yellow-400/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-4 left-1/3 w-28 h-28 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none" />
 
             {/* Floating CSS Fireflies */}
             <div className="firefly w-2 h-2" style={{ left: "10%", bottom: "8%", animation: "floatFirefly 6s ease-in-out infinite" }} />
-            <div className="firefly w-2.5 h-2.5" style={{ left: "25%", bottom: "5%", animation: "floatFirefly 9s ease-in-out infinite 1.5s" }} />
+            <div className="firefly w-2 h-2" style={{ left: "25%", bottom: "5%", animation: "floatFirefly 9s ease-in-out infinite 1.5s" }} />
             <div className="firefly w-1.5 h-1.5" style={{ left: "42%", bottom: "10%", animation: "floatFirefly 5s ease-in-out infinite 0.5s" }} />
-            <div className="firefly w-3 h-3" style={{ left: "60%", bottom: "12%", animation: "floatFirefly 8s ease-in-out infinite 2.5s" }} />
+            <div className="firefly w-2.5 h-2.5" style={{ left: "60%", bottom: "12%", animation: "floatFirefly 8s ease-in-out infinite 2.5s" }} />
             <div className="firefly w-2 h-2" style={{ left: "78%", bottom: "6%", animation: "floatFirefly 7s ease-in-out infinite 3.5s" }} />
 
-            {/* Map Header Overlay with Mascot integration */}
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 pb-3 border-b-4 border-[#1F2720]">
-              <div className="flex items-center gap-3">
-                <img 
-                  alt="Suri the Snake Ranger Guide" 
-                  src="/suri-snake-right.png" 
-                  className="h-21 w-auto object-contain select-none shrink-0" 
+            {/* Map Header Overlay */}
+            <div className="relative z-20 p-2.5 md:p-3">
+              <div className="bg-[#f8f6ef] border-[3px] border-[#1F2720] rounded-2xl px-4 md:px-5 py-2.5 shadow-[4px_4px_0px_0px_#1F2720] min-h-[104px] md:min-h-[118px] inline-flex items-center gap-3 w-fit max-w-full">
+                <img
+                  alt="Suri the Snake Ranger Guide"
+                  src="/suri-snake-right.png"
+                  className="h-14 md:h-16 w-auto object-contain select-none shrink-0 -ml-0.5"
                   style={{ animationDuration: "3s" }}
                 />
-                <div>
-                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-black tracking-widest text-[#1F2720] bg-[#fdd400] uppercase border-[3px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
-                    <Compass className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: "10s" }} /> Suri Snake
+
+                <div className="min-w-0">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-black tracking-widest text-[#1F2720] bg-[#fdd400] uppercase border-[2px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
+                    <Compass className="w-3 h-3 animate-spin" style={{ animationDuration: "10s" }} /> Suri Snake
                   </span>
-                  <h2 className="font-['Hanken_Grotesk'] text-2xl text-white font-black tracking-tight mt-1.5 drop-shadow-[2px_2px_0px_#1F2720]">
+                  <h2 className="font-['Hanken_Grotesk'] text-2xl md:text-3xl text-[#1F2720] font-black tracking-tight mt-1 leading-tight">
                     Welcome Back, {name}!
                   </h2>
                 </div>
               </div>
-              
-              {/* Speech Bubble */}
-              <div className="relative bg-[#ffe170] text-[#1F2720] font-['Manrope'] font-black text-[11px] p-3 rounded-2xl border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] max-w-[250px] self-start md:self-auto flex items-center">
-                <span>💬 "Let's explore the Mathwood! Sss-implifying algebra trails is my favorite hobby!"</span>
-                {/* bubble speech triangles */}
-                <div className="absolute top-1/2 -left-[10px] -translate-y-1/2 w-0 h-0 border-t-[8px] border-t-transparent border-r-[10px] border-r-[#1F2720] border-b-[8px] border-b-transparent hidden md:block" />
-                <div className="absolute top-1/2 -left-[6px] -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-r-[8px] border-r-[#ffe170] border-b-[6px] border-b-transparent hidden md:block" />
-              </div>
             </div>
 
             {/* Path Winding Map Area */}
-<div
-  className="relative w-full aspect-[21/10] md:aspect-[2/1] rounded-[28px] border-[4px] border-[#1F2720] flex items-center justify-center overflow-hidden bg-cover bg-center"
-  style={{
-    backgroundImage:
-      "url('/bg.png')",
-  }}
->              
-              {/* SVG Winding Path Trail */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                {/* Thick Comic Trail base */}
-                <path
-                  d="M 10 50 Q 25 15, 38 68 T 63 32 T 90 55"
-                  fill="none"
-                  stroke="#1F2720"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                />
-                {/* Earthy middle dirt path */}
-                <path
-                  d="M 10 50 Q 25 15, 38 68 T 63 32 T 90 55"
-                  fill="none"
-                  stroke="#8f7129"
-                  strokeWidth="3.2"
-                  strokeLinecap="round"
-                />
-                {/* Glowing Dotted Magic Trail */}
-                <path
-                  d="M 10 50 Q 25 15, 38 68 T 63 32 T 90 55"
-                  fill="none"
-                  stroke="#ffe170"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeDasharray="2.5 2.5"
-                  style={{
-                    animation: "glowingTrail 6s linear infinite",
-                  }}
-                />
-              </svg>
+            <div className="relative z-10 flex-1 min-h-0 px-3 pb-3">
+              <div className="absolute inset-2 origin-center scale-[0.86] md:scale-[0.92]">
+                {/* SVG Winding Path Trail */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path
+                    d="M 10 58 Q 25 30, 38 74 T 63 44 T 90 60"
+                    fill="none"
+                    stroke="#1F2720"
+                    strokeWidth="4.8"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M 10 58 Q 25 30, 38 74 T 63 44 T 90 60"
+                    fill="none"
+                    stroke="#8f7129"
+                    strokeWidth="3.1"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M 10 58 Q 25 30, 38 74 T 63 44 T 90 60"
+                    fill="none"
+                    stroke="#ffe170"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                    strokeDasharray="2.5 2.5"
+                    style={{ animation: "glowingTrail 6s linear infinite" }}
+                  />
+                </svg>
 
               {/* NODE 1: COMPLETED BASECAMP */}
-              <div 
+              <div
                 className="absolute left-[10%] top-[50%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center island-node group cursor-pointer z-10"
                 onClick={() => {
                   if (completedSessions.length > 0) {
@@ -371,8 +355,7 @@ function DashboardContent() {
                   }
                 }}
               >
-                {/* Cartoon Tooltip Card */}
-                <div className="absolute bottom-18 bg-white border-[3.5px] border-[#1F2720] p-3.5 rounded-2xl w-48 text-center text-xs opacity-0 scale-90 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto transition-all duration-200 z-50 text-[#1F2720] font-['Manrope'] cartoon-tooltip">
+                <div className="absolute bottom-18 bg-white border-[3px] border-[#1F2720] p-3 rounded-xl w-48 text-center text-xs opacity-0 scale-90 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto transition-all duration-200 z-50 text-[#1F2720] font-['Manrope'] cartoon-tooltip">
                   <div className="font-black text-green-700 mb-1 flex items-center justify-center gap-1">
                     <Check className="w-4 h-4 stroke-[3px]" /> Trail Clear!
                   </div>
@@ -384,18 +367,18 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                <div className="w-14 h-14 rounded-full bg-[#79ff8f] border-[4px] border-[#1F2720] flex items-center justify-center text-[#1b4320] shadow-[3px_3px_0px_0px_#1F2720] group-hover:scale-110 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] transition-all relative">
+                <div className="w-14 h-14 rounded-full bg-[#79ff8f] border-[3px] border-[#1F2720] flex items-center justify-center text-[#1b4320] shadow-[3px_3px_0px_0px_#1F2720] group-hover:scale-110 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] transition-all relative">
                   <Check className="w-7 h-7 stroke-[4px]" />
                   <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#fdd400] text-[9px] font-black text-[#1F2720] border-2 border-[#1F2720]">✓</span>
                 </div>
-                <span className="mt-2.5 bg-white text-[#1F2720] px-3 py-1 rounded-full text-[9px] font-black tracking-wider uppercase border-[3.5px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
+                <span className="mt-2.5 bg-white text-[#1F2720] px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase border-[3px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
                   {completedSessions.length > 0 ? completedSessions[0].topic_label.slice(0, 10) + "..." : "Basecamp"}
                 </span>
               </div>
 
               {/* NODE 2: THE ACTIVE CAMPFIRE */}
-              <div 
-                className="absolute left-[38%] top-[68%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center island-node group cursor-pointer z-20 scale-110"
+              <div
+                className="absolute left-[38%] top-[68%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center island-node group cursor-pointer z-20"
                 onClick={() => {
                   if (activeSessions.length > 0) {
                     handleResume(activeSessions[0].id);
@@ -404,12 +387,9 @@ function DashboardContent() {
                   }
                 }}
               >
-                {/* Glowing Aura Ring */}
-                <div className="absolute w-20 h-20 rounded-full pointer-events-none z-0 bg-[#fdd400]" 
-                     style={{ animation: "pulseGlow 2s infinite" }} />
+                <div className="absolute w-20 h-20 rounded-full pointer-events-none z-0 bg-[#fdd400]" style={{ animation: "pulseGlow 2s infinite" }} />
 
-                {/* Cartoon Tooltip Card */}
-                <div className="absolute bottom-22 bg-[#ffe170] border-[4.5px] border-[#1F2720] p-4 rounded-2xl w-56 text-center text-xs opacity-0 scale-90 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto transition-all duration-200 z-50 text-[#1F2720] font-['Manrope'] cartoon-tooltip">
+                <div className="absolute bottom-22 bg-[#ffe170] border-[3.5px] border-[#1F2720] p-3 rounded-xl w-56 text-center text-xs opacity-0 scale-90 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto transition-all duration-200 z-50 text-[#1F2720] font-['Manrope'] cartoon-tooltip">
                   <div className="font-black text-[#1F2720] mb-1 flex items-center justify-center gap-1 animate-bounce">
                     <Flame className="w-4.5 h-4.5 text-[#1F2720] fill-[#1F2720]" /> ACTIVE QUEST
                   </div>
@@ -423,59 +403,54 @@ function DashboardContent() {
                   <div className="w-full bg-white rounded-full h-3.5 mt-2 border-2 border-[#1F2720] p-0.5 overflow-hidden">
                     <div className="h-full bg-emerald-500 rounded-full border-r-2 border-[#1F2720]" style={{ width: `${coursePct}%` }}></div>
                   </div>
-                  <div className="text-[10px] text-[#1F2720] font-black mt-2 pt-2 border-t-2 border-[#1F2720]/15 animate-pulse">
-                    TAP TO EXPLORE NOW!
-                  </div>
                 </div>
 
-                <div className="w-16 h-16 rounded-full bg-[#fdd400] border-[4px] border-[#1F2720] flex items-center justify-center text-[#221b00] shadow-[4px_4px_0px_0px_#1F2720] relative z-10 animate-jelly transition-all active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720]">
+                <div className="w-16 h-16 rounded-full bg-[#fdd400] border-[3px] border-[#1F2720] flex items-center justify-center text-[#221b00] shadow-[4px_4px_0px_0px_#1F2720] relative z-10 animate-jelly transition-all active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720]">
                   <Flame className="w-9 h-9 fill-[#221b00] text-[#221b00]" />
                 </div>
-                <span className="mt-2.5 bg-[#fdd400] text-[#221b00] px-4.5 py-1.5 rounded-full text-[10px] font-black tracking-wider uppercase border-[3.5px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720]">
+                <span className="mt-2.5 bg-[#fdd400] text-[#221b00] px-4 py-1 rounded-full text-[10px] font-black tracking-wider uppercase border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720]">
                   {activeSessions.length > 0 ? activeSessions[0].topic_label.slice(0, 12) + "..." : "Quest"}
                 </span>
               </div>
 
               {/* NODE 3: LOCKED CANOPY */}
-              <div className="absolute left-[63%] top-[32%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center island-node group opacity-60 z-10">
-                {/* Cartoon Tooltip Card */}
-                <div className="absolute bottom-18 bg-white border-[3.5px] border-[#1F2720] p-3 rounded-2xl w-48 text-center text-xs opacity-0 scale-90 pointer-events-none group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 z-50 text-[#1F2720] font-['Manrope'] cartoon-tooltip">
+              <div className="absolute left-[63%] top-[44%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center island-node group opacity-60 z-10">
+                <div className="absolute bottom-18 bg-white border-[3px] border-[#1F2720] p-3 rounded-xl w-48 text-center text-xs opacity-0 scale-90 pointer-events-none group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 z-50 text-[#1F2720] font-['Manrope'] cartoon-tooltip">
                   <div className="font-black text-slate-500 mb-1 flex items-center justify-center gap-1">
-                    <Lock className="w-3.5 h-3.5" /> Locked Canopy
+                    <Lock className="w-4 h-4" /> Locked Canopy
                   </div>
                   <div className="text-[10px] text-slate-600 font-bold leading-normal">
                     Conquer the active quest to clear the thorns and unlock this trail!
                   </div>
                 </div>
 
-                <div className="w-14 h-14 rounded-full bg-[#ccd3cd] border-[4px] border-[#1F2720] flex items-center justify-center text-[#525f54] shadow-[3px_3px_0px_0px_#1F2720]">
+                <div className="w-14 h-14 rounded-full bg-[#ccd3cd] border-[3px] border-[#1F2720] flex items-center justify-center text-[#525f54] shadow-[3px_3px_0px_0px_#1F2720]">
                   <Lock className="w-6 h-6" />
                 </div>
-                <span className="mt-2 bg-[#ccd3cd] text-[#1F2720]/70 px-3 py-1 rounded-full text-[9px] font-black uppercase border-[3.5px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
+                <span className="mt-2.5 bg-[#ccd3cd] text-[#1F2720]/70 px-3 py-1 rounded-full text-[10px] font-black uppercase border-[3px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
                   Quadratics
                 </span>
               </div>
 
-              {/* NODE 4: ANCIENT PEAK */}
-              <div className="absolute left-[90%] top-[55%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center island-node group opacity-60 z-10">
-                {/* Cartoon Tooltip Card */}
-                <div className="absolute bottom-18 bg-white border-[3.5px] border-[#1F2720] p-3 rounded-2xl w-48 text-center text-xs opacity-0 scale-90 pointer-events-none group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 z-50 text-[#1F2720] font-['Manrope'] cartoon-tooltip">
-                  <div className="font-black text-slate-500 mb-1 flex items-center justify-center gap-1">
-                    <Lock className="w-3.5 h-3.5" /> Ancient Peaks
+                {/* NODE 4: ANCIENT PEAK */}
+                <div className="absolute left-[90%] top-[55%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center island-node group opacity-60 z-10">
+                  <div className="absolute bottom-18 bg-white border-[3px] border-[#1F2720] p-3 rounded-xl w-48 text-center text-xs opacity-0 scale-90 pointer-events-none group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 z-50 text-[#1F2720] font-['Manrope'] cartoon-tooltip">
+                    <div className="font-black text-slate-500 mb-1 flex items-center justify-center gap-1">
+                      <Lock className="w-4 h-4" /> Ancient Peaks
+                    </div>
+                    <div className="text-[10px] text-slate-600 font-bold leading-normal">
+                      The ultimate trial of the Mathwood! Requires master ranking.
+                    </div>
                   </div>
-                  <div className="text-[10px] text-slate-600 font-bold leading-normal">
-                    The ultimate trial of the Mathwood! Requires master ranking.
-                  </div>
-                </div>
 
-                <div className="w-14 h-14 rounded-full bg-[#ccd3cd] border-[4px] border-[#1F2720] flex items-center justify-center text-[#525f54] shadow-[3px_3px_0px_0px_#1F2720]">
-                  <Lock className="w-6 h-6" />
+                  <div className="w-14 h-14 rounded-full bg-[#ccd3cd] border-[3px] border-[#1F2720] flex items-center justify-center text-[#525f54] shadow-[3px_3px_0px_0px_#1F2720]">
+                    <Lock className="w-6 h-6" />
+                  </div>
+                  <span className="mt-2.5 bg-[#ccd3cd] text-[#1F2720]/70 px-3 py-1 rounded-full text-[10px] font-black uppercase border-[3px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
+                    Exponents
+                  </span>
                 </div>
-                <span className="mt-2 bg-[#ccd3cd] text-[#1F2720]/70 px-3 py-1 rounded-full text-[9px] font-black uppercase border-[3.5px] border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
-                  Exponents
-                </span>
               </div>
-
             </div>
           </section>
 
@@ -483,7 +458,7 @@ function DashboardContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
             
             {/* Guild Quests (Active Lessons) */}
-            <section className="bg-[#faf8f5] rounded-[32px] p-6 border-4 border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[12px_12px_0px_0px_#1F2720] transition-all flex flex-col">
+            <section className="bg-[#faf8f5] rounded-[32px] p-6 border-4 border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[12px_12px_0px_0px_#1F2720] transition-all flex flex-col min-h-[360px] md:min-h-[430px]">
               <div className="flex items-center justify-between mb-5 border-b-4 border-[#1F2720] pb-3">
                 <h3 className="flex items-center gap-2 font-['Hanken_Grotesk'] text-xl text-[#1F2720] font-black">
                   <Compass className="w-6 h-6 text-[#1F2720]" />
@@ -525,7 +500,7 @@ ${
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-col gap-4 flex-1 max-h-[300px] overflow-y-auto pr-1">
+                <div className="flex flex-col gap-4 flex-1 max-h-[340px] md:max-h-[380px] overflow-y-auto pr-1">
                   {activeSessions.slice(0, 5).map((s) => {
                     const pct = parseFloat(String(s.completion_percentage)) || 0;
                     return (
@@ -574,7 +549,7 @@ ${
             </section>
 
             {/* Tangled Brambles (Error History / Mascot Remediations) */}
-            <section className="bg-[#faf8f5] rounded-[32px] p-6 border-4 border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[12px_12px_0px_0px_#1F2720] transition-all flex flex-col group">
+            <section className="bg-[#faf8f5] rounded-[32px] p-6 border-4 border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[12px_12px_0px_0px_#1F2720] transition-all flex flex-col group min-h-[360px] md:min-h-[430px]">
               <div className="flex items-center justify-between mb-5 border-b-4 border-[#1F2720] pb-3">
                 <h3 className="flex items-center gap-2 font-['Hanken_Grotesk'] text-xl text-[#1F2720] font-black">
                   <ShieldAlert className="w-6 h-6 text-[#ba1a1a]" />
@@ -622,7 +597,7 @@ ${
                     </p>
                   </div>
                 ) : (
-                  <div className="divide-y-4 divide-[#1F2720]/15 max-h-[220px] overflow-y-auto pr-1 relative">
+                  <div className="divide-y-4 divide-[#1F2720]/15 max-h-[280px] md:max-h-[320px] overflow-y-auto pr-1 relative">
                     {/* Peeking Mascot inside errors list */}
                     <div className="sticky top-0 float-right z-10 pointer-events-none opacity-20 group-hover:opacity-100 transition-opacity duration-300">
                       <img 
@@ -665,7 +640,13 @@ ${
         </div>
 
         {/* Right Sidebar Area */}
-        <aside className="col-span-12 lg:col-span-4">
+        <aside className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+          <section className="bg-[#ffe170] text-[#1F2720] p-4 rounded-[24px] border-4 border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720]">
+            <p className="font-['Manrope'] text-[13px] md:text-sm font-black leading-snug m-0">
+              💬 "Let's explore the Mathwood! Sss-implifying algebra trails is my favorite hobby!"
+            </p>
+          </section>
+
           <section className="bg-[#faf8f5] p-6 md:p-8 rounded-[32px] border-4 border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[12px_12px_0px_0px_#1F2720] transition-all h-full flex flex-col">
             
             {/* Header / Ranger License */}

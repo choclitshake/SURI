@@ -155,18 +155,8 @@ function ErrorHistoryContent() {
         }
       ` }} />
 
-      <div className=" min-h-screen text-[#1F2720] py-6 px-4 md:px-6 relative overflow-hidden flex flex-col items-center">
-        
-        {/* Magic Forest Background Overlay */}
-        <div className="absolute inset-0 opacity-15 bg-bottom mix-blend-overlay pointer-events-none" 
-/>
-        {/* Floating CSS Fireflies */}
-        <div className="firefly w-2 h-2" style={{ left: "10%", bottom: "8%", animation: "floatFirefly 6s ease-in-out infinite" }} />
-        <div className="firefly w-2.5 h-2.5" style={{ left: "25%", bottom: "5%", animation: "floatFirefly 9s ease-in-out infinite 1.5s" }} />
-        <div className="firefly w-1.5 h-1.5" style={{ left: "42%", bottom: "10%", animation: "floatFirefly 5s ease-in-out infinite 0.5s" }} />
-        <div className="firefly w-3 h-3" style={{ left: "75%", bottom: "12%", animation: "floatFirefly 8s ease-in-out infinite 2.5s" }} />
-
-        <div className="w-full max-w-5xl space-y-6 relative z-10">
+      <div className=" min-h-screen text-[#1F2720] py-4 px-2 md:px-4 relative overflow-hidden">
+        <div className="w-full max-w-[1800px] mx-auto space-y-6 relative z-10">
 
           {/* Gamified Header Bento Blocks */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
