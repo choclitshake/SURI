@@ -30,12 +30,12 @@ export default function QuizPage() {
   const [nodeId, setNodeId] = useState<string>("");
   const [quizSessionId, setQuizSessionId] = useState<string>("");
   const [problems, setProblems] = useState<QuizProblem[]>([]);
-  
+
   // Progress tracking
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [totalPoints, setTotalPoints] = useState(0);
-  
+
   // Step state
   const [timeRemainingMs, setTimeRemainingMs] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
@@ -43,12 +43,12 @@ export default function QuizPage() {
   const [equationRevealed, setEquationRevealed] = useState(false);
   const [isWrongAttempt, setIsWrongAttempt] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Step Result state
   const [stepCorrect, setStepCorrect] = useState<boolean | null>(null);
   const [correctValue, setCorrectValue] = useState<string | null>(null);
   const [pointsEarned, setPointsEarned] = useState(0);
-  
+
   // Summary state
   const [summaryData, setSummaryData] = useState<QuizFinishResponse | null>(null);
 
@@ -89,7 +89,7 @@ export default function QuizPage() {
         const now = Date.now();
         const delta = now - lastTickRef.current;
         lastTickRef.current = now;
-        
+
         setTimeRemainingMs((prev) => {
           const next = prev - delta;
           if (next <= 0) {
@@ -123,7 +123,7 @@ export default function QuizPage() {
     if (state !== "STEP") return;
     if (timerRef.current) clearInterval(timerRef.current);
     setIsSubmitting(true);
-    
+
     try {
       const res = await submitQuizStep({
         quiz_session_id: quizSessionId,
@@ -136,7 +136,7 @@ export default function QuizPage() {
       setTotalPoints(res.total_points);
       setCurrentStreak(res.current_streak);
       setStreakMultiplier(res.streak_multiplier);
-      
+
       if (!res.correct && choice !== null) {
         // Wrong attempt: lock in, reveal correct answer, move on
         setStepCorrect(false);
@@ -302,7 +302,7 @@ export default function QuizPage() {
 
   if (state === "STEP" || state === "STEP_RESULT") {
     const progressPct = (timeRemainingMs / currentStep.timer_ms) * 100;
-    
+
     return (
       <div className="min-h-screen bg-[#1b261c] flex flex-col relative overflow-hidden font-['Manrope']">
         {/* Top Bar */}
@@ -333,8 +333,8 @@ export default function QuizPage() {
 
         {/* Timer Bar */}
         <div className="h-2 bg-slate-200 w-full z-10 relative border-b-2 border-[#1F2720]/10">
-          <div 
-            className="h-full bg-red-500 transition-all duration-100 ease-linear" 
+          <div
+            className="h-full bg-red-500 transition-all duration-100 ease-linear"
             style={{ width: `${Math.max(0, progressPct)}%` }}
           />
         </div>
@@ -365,7 +365,7 @@ export default function QuizPage() {
             {currentStep.choices.map((choice, idx) => {
               const isSelected = selectedChoice === choice;
               let btnClass = "border-[#1F2720] text-[#1F2720] hover:bg-slate-50 shadow-[4px_4px_0px_0px_#1F2720] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#1F2720]";
-              
+
               if (isSelected) {
                 if (isSubmitting) btnClass = "border-[#1F2720] bg-[#fdd400] text-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720]";
                 else if (state === "STEP_RESULT" && stepCorrect) btnClass = "border-[#1F2720] bg-[#79ff8f] text-green-900 shadow-[4px_4px_0px_0px_#1F2720]";
@@ -419,8 +419,12 @@ export default function QuizPage() {
           </div>
 
           {hintText && (
-            <div className="bg-[#fdd400] border-[3px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] text-[#1F2720] p-4 rounded-xl font-bold max-w-xl text-center text-sm md:text-base">
-              💡 {hintText}
+            <div className="bg-[#ffe170] border-[4px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] text-[#1F2720] p-4 rounded-2xl max-w-xl flex items-start gap-3">
+              <img src="/suri-snake-left.png" alt="Suri" className="h-10 w-auto object-contain shrink-0" />
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#1F2720] mb-1">SURI ss-says:</p>
+                <p className="font-bold text-sm md:text-base">{hintText}</p>
+              </div>
             </div>
           )}
 
@@ -485,11 +489,11 @@ export default function QuizPage() {
       <div className="min-h-screen bg-[#1b261c] flex flex-col items-center justify-center p-6 text-[#1F2720] font-['Manrope']">
         <div className="max-w-3xl w-full bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] p-8 md:p-12 shadow-[8px_8px_0px_0px_#1F2720] text-center relative overflow-hidden">
           <div className="absolute top-0 right-1/4 w-32 h-32 bg-yellow-400/20 rounded-full blur-3xl pointer-events-none" />
-          
+
           <span className="font-black text-[10px] text-[#1F2720] bg-[#fdd400] border-2 border-[#1F2720] px-4.5 py-1.5 rounded-md uppercase tracking-widest shadow-[2px_2px_0px_0px_#1F2720]">SESSION COMPLETE</span>
-          
+
           <h1 className="text-4xl font-black font-['Hanken_Grotesk'] text-[#1F2720] mt-4 mb-2 tracking-tight">Quiz Results</h1>
-          
+
           <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-8 my-8">
             <div className="bg-white p-6 rounded-2xl border-[3.5px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720] flex-1">
               <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Final Score</div>
@@ -534,7 +538,8 @@ export default function QuizPage() {
           </div>
         </div>
 
-        <style dangerouslySetInnerHTML={{__html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
           .btn-primary {
             background-color: #fdd400;
             color: #1F2720;
