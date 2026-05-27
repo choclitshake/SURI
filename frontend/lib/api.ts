@@ -498,6 +498,8 @@ export interface QuizSubmitStepResponse {
   correct_value: string;
   points_earned: number;
   total_points: number;
+  current_streak: number;   
+  streak_multiplier: number; 
 }
 
 export interface QuizSkipStepResponse {

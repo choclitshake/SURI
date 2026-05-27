@@ -56,6 +56,10 @@ export default function QuizPage() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastTickRef = useRef<number>(0);
 
+  // Streak
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [streakMultiplier, setStreakMultiplier] = useState(1.0);
+
   // 1. Initial Load
   useEffect(() => {
     async function load() {
@@ -127,12 +131,16 @@ export default function QuizPage() {
       });
 
       setTotalPoints(res.total_points);
+      setCurrentStreak(res.current_streak);
+      setStreakMultiplier(res.streak_multiplier);
       
       if (!res.correct && choice !== null) {
         // Wrong attempt: lock in, reveal correct answer, move on
         setStepCorrect(false);
         setCorrectValue(res.correct_value);
         setPointsEarned(0);
+        setCurrentProblemIndex(0);       
+        setStreakMultiplier(1.0);
         setState("STEP_RESULT");
         setTimeout(() => advanceToNext(), 2500); // Give 2.5s to read the correct answer
         return;
@@ -142,8 +150,9 @@ export default function QuizPage() {
       setStepCorrect(res.correct);
       setCorrectValue(res.correct_value);
       setPointsEarned(res.points_earned);
+      setCurrentStreak(res.current_streak);
+      setStreakMultiplier(res.streak_multiplier);
       setState("STEP_RESULT");
-      
       setTimeout(() => advanceToNext(), 1500);
 
     } catch (err) {
@@ -170,6 +179,8 @@ export default function QuizPage() {
       setStepCorrect(false);
       setCorrectValue(res.correct_value);
       setPointsEarned(0);
+      setCurrentStreak(0);
+      setStreakMultiplier(1.0);
       setState("STEP_RESULT");
       setTimeout(() => advanceToNext(), 1500);
     } catch (err) {
@@ -296,6 +307,13 @@ export default function QuizPage() {
         <div className="bg-[#faf8f5] p-4 border-b-[4px] border-[#1F2720] shadow-sm flex items-center justify-between z-10 relative">
           <div className="font-black text-[#1F2720] text-sm uppercase tracking-widest flex items-center gap-2">
             Points <span className="text-lg text-[#1F2720] bg-[#fdd400] border-2 border-[#1F2720] px-2.5 py-0.5 rounded shadow-[2px_2px_0px_0px_#1F2720]">{totalPoints}</span>
+            <div className="flex items-center gap-1 bg-orange-100 border-2 border-[#1F2720] px-2.5 py-0.5 rounded shadow-[2px_2px_0px_0px_#1F2720]">
+              <span className="text-base leading-none">🔥</span>
+              <span className="text-sm text-[#1F2720]">{currentStreak}</span>
+              {streakMultiplier > 1.0 && (
+                <span className="text-orange-600 text-xs">{streakMultiplier}×</span>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 font-black text-[#1F2720] bg-white px-3 py-1.5 rounded-xl border-2 border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
@@ -434,6 +452,15 @@ export default function QuizPage() {
                   <CheckCircle2 size={64} className="text-green-500 mx-auto mb-4" />
                   <h2 className="text-3xl font-black font-['Hanken_Grotesk'] text-[#1F2720] mb-2 uppercase">CORRECT!</h2>
                   <p className="text-xl font-black text-green-600 bg-green-100 border-2 border-[#1F2720] px-4 py-1 inline-block rounded-lg shadow-[2px_2px_0px_0px_#1F2720]">+{pointsEarned} pts</p>
+                  {currentStreak >= 2 && (
+                    <div className="mt-3 flex items-center justify-center gap-2">
+                      <span className="text-2xl">🔥</span>
+                      <span className="font-black text-orange-600 text-sm uppercase tracking-wider">{currentStreak} streak · {streakMultiplier}×</span>
+                    </div>
+                  )}
+                  {currentStreak === 1 && (
+                    <p className="mt-3 text-xs font-black text-slate-400 uppercase tracking-widest">Streak started — keep going!</p>
+                  )}
                 </>
               ) : (
                 <>

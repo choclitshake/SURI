@@ -250,6 +250,8 @@ class QuizSubmitStepResponse(BaseModel):
     correct_value: str
     points_earned: int
     total_points: int
+    current_streak: int       
+    streak_multiplier: float
 
 
 class QuizSkipStepRequest(BaseModel):

@@ -218,7 +218,7 @@ async def submit_step(body: QuizSubmitStepRequest, student=Depends(get_current_s
     conn = await get_db()
     try:
         qs = await conn.fetchrow(
-            "SELECT id, total_points, node_id, step_errors_json FROM quiz_sessions WHERE id = $1",
+            "SELECT id, total_points, node_id, step_errors_json, current_streak FROM quiz_sessions WHERE id = $1",
             body.quiz_session_id,
         )
         if not qs:
@@ -238,19 +238,36 @@ async def submit_step(body: QuizSubmitStepRequest, student=Depends(get_current_s
 
         correct_value = step["correct_value"]
         submitted = body.submitted_value  # can be None (timeout)
+        current_streak = qs["current_streak"]
 
         # Timeout: 0 points, not logged
         if submitted is None:
+            await conn.execute(
+                "UPDATE quiz_sessions SET total_points = $1, current_streak = 0 WHERE id = $2",
+                qs["total_points"], body.quiz_session_id,
+            )
             return {
                 "correct": False,
                 "correct_value": correct_value,
                 "points_earned": 0,
                 "total_points": qs["total_points"],
+                "current_streak": 0,
+                "streak_multiplier": 1.0,
             }
 
         correct = check_correct(submitted, correct_value)
         total_time_ms = TIMER_MS.get(step.get("step_type", "algebra"), DEFAULT_TIMER_MS)
-        points_earned = calculate_points(body.time_remaining_ms, total_time_ms) if correct else 0
+
+        if correct:
+            new_streak = current_streak + 1
+            # Streak of 1 = just unlocked (1.0x), streak of 2 = 1.1x, streak of 3 = 1.2x ...
+            multiplier = round(1.0 + max(0, new_streak - 1) * 0.1, 2)
+            base_points = calculate_points(body.time_remaining_ms, total_time_ms)
+            points_earned = int(base_points * multiplier)
+        else:
+            new_streak = 0
+            multiplier = 1.0
+            points_earned = 0
 
         new_total = qs["total_points"] + points_earned
         step_errors = json.loads(qs["step_errors_json"])
@@ -264,10 +281,15 @@ async def submit_step(body: QuizSubmitStepRequest, student=Depends(get_current_s
                 "submitted_value": submitted,
                 "correct_value": correct_value,
             })
+        print("DEBUG submit_step returning:", {
+            "correct": correct,
+            "current_streak": new_streak,
+            "streak_multiplier": multiplier,
+        })
 
         await conn.execute(
-            "UPDATE quiz_sessions SET total_points = $1, step_errors_json = $2 WHERE id = $3",
-            new_total, json.dumps(step_errors), body.quiz_session_id,
+            "UPDATE quiz_sessions SET total_points = $1, step_errors_json = $2, current_streak = $3 WHERE id = $4",
+            new_total, json.dumps(step_errors), new_streak, body.quiz_session_id,
         )
 
         return {
@@ -275,6 +297,8 @@ async def submit_step(body: QuizSubmitStepRequest, student=Depends(get_current_s
             "correct_value": correct_value,
             "points_earned": points_earned,
             "total_points": new_total,
+            "current_streak": new_streak,
+            "streak_multiplier": multiplier,
         }
     finally:
         await release_db(conn)
