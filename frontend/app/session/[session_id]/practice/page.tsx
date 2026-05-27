@@ -8,13 +8,25 @@ import {
   submitPracticeStep, 
   PracticeProblem, 
   PracticeSubmitStepResponse,
-  StepEvaluationResult
 } from "../../../../lib/api";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import React from "react";
+import confetti from "canvas-confetti";
+import { 
+  Compass, 
+  Leaf, 
+  Flame, 
+  ShieldAlert, 
+  Loader2, 
+  Sparkles, 
+  ArrowRight, 
+  BookOpen, 
+  Check, 
+  Calendar 
+} from "lucide-react";
 
 declare global {
   namespace JSX {
@@ -66,13 +78,14 @@ function MathField({
     style: {
       width: "100%",
       minWidth: "180px",
-      minHeight: "44px",
-      padding: "8px 12px",
-      border: "1px solid #cbd5e1",
-      borderRadius: "12px",
+      minHeight: "48px",
+      padding: "10px 14px",
+      border: "3px solid #1F2720",
+      borderRadius: "14px",
       background: "white",
-      fontSize: "1rem",
-      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+      fontSize: "0.95rem",
+      fontWeight: "bold",
+      boxShadow: "3px 3px 0px 0px #1F2720",
       outline: "none",
     },
   });
@@ -167,6 +180,12 @@ export default function PracticePage() {
         [currentProblemIdx]: response
       }));
       setProblemCompleted(true);
+
+      // Instantly celebrate a perfectly completed problem [2]
+      const allCorrect = response.step_results.every(r => r.correct);
+      if (allCorrect) {
+        confetti({ particleCount: 100, spread: 80, origin: { y: 0.75 } });
+      }
     } catch (err: any) {
       console.error(err);
       setErrorMsg(err.detail || err.message || "Failed to submit answers. Please try again.");
@@ -190,19 +209,18 @@ export default function PracticePage() {
   };
 
   const cleanMathExpr = (expr: string) => {
-    // Replaces patterns like '6*x' with '6x'
     return expr.replace(/(\d)\s*\*\s*([a-zA-Z])/g, '$1$2').replace(/([a-zA-Z])\s*\*\s*([a-zA-Z])/g, '$1$2');
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8">
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-sm w-full text-center shadow-[0_15px_30px_rgba(0,26,84,0.05)]">
+      <div className="min-h-screen bg-[#1b261c] flex flex-col items-center justify-center p-8">
+        <div className="bg-[#faf8f5] border-[4px] border-[#1F2720] rounded-[32px] p-8 max-w-sm w-full text-center shadow-[8px_8px_0px_0px_#1F2720]">
           <div className="relative w-12 h-12 mx-auto mb-4">
-            <div className="absolute inset-0 border-4 border-slate-100 rounded-full" />
-            <div className="absolute inset-0 border-4 border-[#001a54] border-t-[#fdd400] rounded-full animate-spin" />
+            <div className="absolute inset-0 border-4 border-[#e6e8ea] rounded-full" />
+            <div className="absolute inset-0 border-4 border-[#1F2720] border-t-[#fdd400] rounded-full animate-spin" />
           </div>
-          <p className="font-mono text-xs text-slate-500 animate-pulse uppercase tracking-wider">{loadingText}</p>
+          <p className="font-['Manrope'] text-xs text-slate-500 font-black animate-pulse uppercase tracking-wider">{loadingText}</p>
         </div>
       </div>
     );
@@ -210,24 +228,23 @@ export default function PracticePage() {
 
   if (errorMsg && problems.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 md:p-8 flex flex-col justify-center items-center">
-        <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl p-8 shadow-[0_15px_30px_rgba(0,26,84,0.05)] text-center relative overflow-hidden">
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#fdd400]/10 rounded-full blur-[40px] pointer-events-none" />
-          <span className="font-mono text-[9px] text-red-600 bg-red-50 border border-red-100 px-2.5 py-1 rounded-md font-bold uppercase tracking-wider">DIAGNOSTIC FAULT</span>
-          <h2 className="text-xl font-bold font-['Hanken_Grotesk',_sans-serif] text-[#001a54] mt-3 mb-2">Error</h2>
-          <p className="font-mono text-xs text-red-600 bg-red-50/50 border border-red-100 rounded-lg p-3 my-4 break-all text-left">
+      <div className="min-h-screen bg-[#1b261c] p-6 md:p-8 flex flex-col justify-center items-center font-['Manrope']">
+        <div className="w-full max-w-xl bg-[#faf8f5] border-[4px] border-[#1F2720] rounded-[32px] p-8 shadow-[8px_8px_0px_0px_#1F2720] text-center relative overflow-hidden">
+          <span className="font-['Manrope'] text-[10px] text-red-900 bg-red-100 border-2 border-[#1F2720] px-3 py-1.5 rounded-md font-black uppercase tracking-wider">DIAGNOSTIC FAULT</span>
+          <h2 className="text-xl font-black text-[#1F2720] mt-4 mb-2">Error</h2>
+          <p className="font-['Manrope'] text-xs text-red-900 bg-red-50 border-2 border-[#1F2720] rounded-xl p-3 my-4 break-all text-left font-bold">
             [FAULT_LOG] {errorMsg}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
             <button
               onClick={loadPracticeData}
-              className="bg-[#001a54] text-white hover:bg-[#001545] py-3 px-6 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)]"
+              className="bg-[#fdd400] text-[#1F2720] border-[3px] border-[#1F2720] py-3 px-6 text-xs font-black uppercase rounded-2xl tracking-wider transition-all cursor-pointer shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5"
             >
               Retry Connection
             </button>
             <button
               onClick={handleBackToTopics}
-              className="bg-white hover:bg-slate-50 text-[#001a54] border border-slate-200 hover:border-slate-300 py-3 px-6 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer"
+              className="bg-white text-[#1F2720] border-[3px] border-[#1F2720] py-3 px-6 text-xs font-black uppercase rounded-2xl tracking-wider transition-all cursor-pointer shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5"
             >
               Back to Topics
             </button>
@@ -245,36 +262,52 @@ export default function PracticePage() {
       return count + (allCorrect ? 1 : 0);
     }, 0);
 
-    return (
-      <div className="min-h-screen bg-slate-50 text-slate-800 p-6 md:p-8 flex items-center justify-center">
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 max-w-2xl w-full shadow-[0_15px_40px_rgba(0,26,84,0.06)] relative overflow-hidden text-center space-y-6">
-          <div className="absolute -top-20 -right-20 w-48 h-48 bg-[#fdd400]/10 rounded-full blur-[60px] pointer-events-none" />
-          <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-[#001a54]/5 rounded-full blur-[60px] pointer-events-none" />
+    const isHighestResult = fullyCorrectCount === problems.length;
 
-          <span className="font-mono text-[9px] text-[#001a54] bg-[#fdd400] px-3 py-1 rounded-full font-extrabold uppercase tracking-widest">SESSION COMPLETE</span>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-[#001a54] font-['Hanken_Grotesk',_sans-serif]">Practice Complete!</h1>
+    return (
+      <div className="min-h-screen bg-[#1b261c] text-[#1F2720] p-6 md:p-8 flex items-center justify-center font-['Manrope']">
+        <div className="bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] p-8 max-w-2xl w-full shadow-[8px_8px_0px_0px_#1F2720] relative overflow-hidden text-center space-y-6">
+          <div className="absolute top-0 right-1/4 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
+
+          <span className="font-black text-[10px] text-[#1F2720] bg-[#fdd400] border-2 border-[#1F2720] px-4.5 py-1.5 rounded-md uppercase tracking-widest shadow-[2px_2px_0px_0px_#1F2720]">SESSION COMPLETE</span>
           
-          <div className="border-y border-slate-100 py-6 my-4 bg-slate-50/50 rounded-xl px-4">
-            <p className="text-slate-400 font-mono uppercase text-[10px] tracking-wider">Your Score</p>
-            <p className="text-5xl font-mono font-bold mt-1 text-[#001a54]">
+          <div className="flex flex-col items-center justify-center gap-3">
+            <img 
+              src={isHighestResult ? "/suri-snake-happy.png" : "/suri-snake-sad.png"} 
+              alt={isHighestResult ? "Suri Happy" : "Suri Supportive"} 
+              className="h-24 w-auto object-contain select-none animate-bounce" 
+            />
+            <p className="text-xs font-black bg-white py-1.5 px-4 rounded-full border-2 border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]">
+              {isHighestResult 
+                ? "💬 \"Sss-pectacular performance, Ranger! Perfect trail map complete!\"" 
+                : "💬 \"You made it through the thorny branches! Let'sss review those stumbling blocks.\""}
+            </p>
+          </div>
+
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#1F2720] font-['Hanken_Grotesk']">Practice Complete!</h1>
+          
+          <div className="border-[3px] border-[#1F2720] py-6 my-4 bg-white rounded-2xl px-4 shadow-[4px_4px_0px_0px_#1F2720]">
+            <p className="text-slate-400 uppercase text-[10px] tracking-wider font-black">Your Score</p>
+            <p className="text-5xl font-black mt-1 text-[#1F2720]">
               {fullyCorrectCount} <span className="text-slate-300">/</span> {problems.length}
             </p>
-            <p className="text-xs font-sans mt-2 text-slate-500 font-medium">
+            <p className="text-xs font-bold mt-2.5 text-slate-500">
               Problems solved perfectly without missteps
             </p>
           </div>
 
-          <div className="text-left font-mono text-xs space-y-2.5 max-w-md mx-auto bg-slate-50 p-4 rounded-xl border border-slate-200/50">
+          {/* Results Summary Logs */}
+          <div className="text-left font-semibold text-xs space-y-3 max-w-md mx-auto bg-white p-4.5 rounded-2xl border-[3px] border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720]">
             {problems.map((prob, idx) => {
               const res = submittedResults[idx];
               const allCorrect = res?.step_results.every(r => r.correct);
               return (
-                <div key={prob.id} className="flex justify-between items-center border-b border-slate-200/60 last:border-b-0 pb-2 last:pb-0">
-                  <span className="text-slate-600 font-semibold truncate max-w-[240px]">Problem {idx + 1}: {cleanMathExpr(prob.problem_expr)}</span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                <div key={prob.id} className="flex justify-between items-center border-b-2 border-[#1F2720]/10 last:border-b-0 pb-2.5 last:pb-0">
+                  <span className="text-[#1F2720] font-black truncate max-w-[240px]">Problem {idx + 1}: {cleanMathExpr(prob.problem_expr)}</span>
+                  <span className={`text-[9px] font-black px-2.5 py-1 rounded-md border-2 ${
                     allCorrect 
-                      ? "bg-green-50 text-green-700 border border-green-200" 
-                      : "bg-red-50 text-red-700 border border-red-200"
+                      ? "bg-green-100 text-green-900 border-[#1F2720]" 
+                      : "bg-red-100 text-red-900 border-[#1F2720]"
                   }`}>
                     {allCorrect ? "✓ ALL CORRECT" : "✗ INCORRECT"}
                   </span>
@@ -285,9 +318,9 @@ export default function PracticePage() {
 
           <button
             onClick={handleGetResults}
-            className="w-full bg-[#001a54] text-white hover:bg-[#001545] py-4 text-sm font-mono uppercase font-bold tracking-wider transition-all rounded-2xl shadow-[0_4px_20px_rgba(0,26,84,0.12)] hover:shadow-[0_0_25px_rgba(253,212,0,0.15)] cursor-pointer flex items-center justify-center gap-2"
+            className="w-full bg-[#fdd400] text-[#1F2720] border-[4px] border-[#1F2720] py-4 text-xs font-black uppercase rounded-[20px] tracking-wider transition-all cursor-pointer shadow-[6px_6px_0px_0px_#1F2720] hover:-translate-y-0.5 active:translate-y-1 active:translate-x-1 active:shadow-[2px_2px_0px_0px_#1F2720] flex items-center justify-center gap-2"
           >
-            Get Session Summary <span className="text-[#fdd400]">→</span>
+            Get Session Summary <ArrowRight className="w-5 h-5 stroke-[3px]" />
           </button>
         </div>
       </div>
@@ -298,13 +331,11 @@ export default function PracticePage() {
   const submissionResult = submittedResults[currentProblemIdx];
 
   const requiresTextInput = (val: string) => {
-    // Strip latex commands (e.g., \sqrt, \frac) before checking for actual words
     const withoutLatex = val.replace(/\\[a-zA-Z]+/g, "");
     return /[a-zA-Z]{2,}/.test(withoutLatex) || withoutLatex.includes(",");
   };
 
   const fixUnbalancedMath = (before: string, after: string) => {
-    // Determine if the blank splits a LaTeX block
     const doubleDollarsBefore = (before.match(/\$\$/g) || []).length;
     if (doubleDollarsBefore % 2 !== 0) {
       return { fixedBefore: before + "$$", fixedAfter: "$$" + after };
@@ -321,46 +352,93 @@ export default function PracticePage() {
 
 
   return (
-    <div className="bg-slate-50 min-h-screen text-slate-800 py-8 px-4 md:px-8">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="bg-[#1b261c] min-h-screen text-[#1F2720] py-8 px-4 md:px-8 relative overflow-hidden font-['Manrope'] flex flex-col items-center">
+      
+      {/* Background Forest Silhouette */}
+      <div className="absolute inset-0 opacity-15 bg-cover bg-bottom mix-blend-overlay pointer-events-none" 
+           style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAEXma6INVd0pxsf2NimA83gxdCqv-1PqJrcWOioIbkPEtj3Z7oIxOvuUvLYNc4Dp9x3Y1BdR1CuvLCFJx5RSzJA9_Kk02IsPNQSy0DeGhX33fZvqV6ZTAci5gEWEnXt3d5H0IqVOBVrHAtZ0wRSpSPEhIZkwT8lWCqZo0inU40TzVsVWo-vjMqvT5w8nLCUkx-agKpKsnu_I62S8u6WesHawWnmWYTE_400YVkv8YcJ_L_q-lbQ4H0O-Ey3ld_l4PtBxxi-Kv7vQ8')" }} />
 
-        {/* Bento Grid Header Block */}
-        <header className="bg-[#001a54] rounded-2xl p-6 md:p-8 border border-white/10 shadow-[0_0_30px_rgba(0,26,84,0.4)] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
-          {/* Subtle ambient gold and navy glow offsets */}
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#fdd400]/10 rounded-full blur-[50px] pointer-events-none" />
-          <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#fdd400]/5 rounded-full blur-[50px] pointer-events-none" />
+      {/* Floating Glowing Fireflies */}
+      <div className="firefly w-2 h-2" style={{ left: "10%", bottom: "10%", animation: "floatFirefly 8s ease-in-out infinite" }} />
+      <div className="firefly w-2.5 h-2.5" style={{ left: "22%", bottom: "5%", animation: "floatFirefly 11s ease-in-out infinite 1.5s" }} />
+
+      {/* Dynamic Math styles overrides */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        .markdown-content {
+          line-height: 2.1;
+        }
+        .markdown-content p {
+          margin-bottom: 1.25rem;
+          color: #1F2720;
+          font-weight: 700;
+        }
+        .markdown-content .katex {
+          font-weight: 900 !important;
+          font-size: 1.08em;
+          color: #1b4320 !important;
+          background-color: rgba(121, 255, 143, 0.22) !important;
+          padding: 3px 8px !important;
+          border-radius: 8px !important;
+          border: 1.5px solid #1F2720 !important;
+          display: inline-block;
+        }
+        .markdown-content .katex-display {
+          margin: 1.5rem 0 !important;
+          padding: 0 !important;
+        }
+        .markdown-content .katex-display .katex {
+          background-color: #ffffff !important;
+          border: 3px solid #1F2720 !important;
+          padding: 12px 22px !important;
+          border-radius: 16px !important;
+          box-shadow: 3px 3px 0px 0px #1F2720 !important;
+          display: inline-block !important;
+        }
+      `}} />
+
+      <div className="max-w-3xl w-full mx-auto space-y-6 relative z-10">
+
+        {/* Dynamic header banner */}
+        <header className="bg-gradient-to-b from-[#1b261c] to-[#2e3e2d] rounded-[32px] p-6 md:p-8 border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+          <div className="absolute top-0 right-1/4 w-32 h-32 bg-yellow-400/20 rounded-full blur-3xl pointer-events-none" />
           
-          <div className="flex items-center justify-between mb-4 z-10">
+          <div className="flex items-center justify-between mb-4 z-10 border-b-4 border-[#1F2720]/30 pb-3">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400]" />
-              <span className="font-mono text-xs text-slate-300 font-bold tracking-[0.2em] uppercase">SCAFFOLDED PRACTICE</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_8px_#fdd400] border border-[#1F2720]" />
+              <span className="font-['Manrope'] text-[10px] text-emerald-300 tracking-[0.2em] uppercase font-black">SCAFFOLDED PRACTICE</span>
             </div>
+            
             <button
               onClick={handleBackToTopics}
-              className="font-mono text-[10px] text-black bg-[#fdd400] hover:bg-black hover:text-white px-3 py-1.5 rounded-xl border border-white/5 transition-all cursor-pointer font-bold uppercase tracking-wider"
+              className="font-['Manrope'] text-[10px] text-[#1F2720] bg-[#fdd400] hover:bg-[#ffe170] px-4.5 py-2 rounded-xl border-2 border-[#1F2720] shadow-[2.5px_2.5px_0px_0px_#1F2720] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0px_0px_0px_0px_#1F2720] transition-all cursor-pointer font-black uppercase tracking-wider"
             >
               Exit
             </button>
           </div>
 
-          <div className="z-10">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-['Hanken_Grotesk',_sans-serif]">
-              Problem Solving Workspace
-            </h1>
-            <p className="font-mono text-[10px] text-slate-300 mt-2 tracking-wide uppercase">
-              Problem <span className="text-[#fdd400] font-bold">{currentProblemIdx + 1}</span> of {problems.length}
-            </p>
+          <div className="z-10 flex items-center gap-4">
+            <img src="/suri-snake-left.png" alt="Suri Guide" className="h-16 w-auto object-contain select-none shrink-0 animate-bounce" style={{ animationDuration: "2.5s" }} />
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-black text-white font-['Hanken_Grotesk'] drop-shadow-[2.5px_2.5px_0px_#1F2720]">
+                Problem Solving Workspace
+              </h1>
+              <p className="font-['Manrope'] text-[10px] text-emerald-200 mt-1.5 font-bold uppercase tracking-wider">
+                Problem <span className="text-[#fdd400] font-black">{currentProblemIdx + 1}</span> of {problems.length}
+              </p>
+            </div>
           </div>
         </header>
 
         <main className="space-y-6">
+          
           {/* Word Problem Card */}
           {problem.word_problem_text && (
-            <section className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-[0_4px_12px_rgba(0,26,84,0.02)] relative overflow-hidden">
-              <span className="absolute top-0 right-0 bg-[#fdd400]/20 text-[#001a54] px-3 py-1 text-[9px] font-mono uppercase font-bold tracking-wider rounded-bl-xl border-l border-b border-slate-200/10">
-                REAL-WORLD SCENARIO
+            <section className="bg-white rounded-[28px] border-[4px] border-[#1F2720] p-6 shadow-[6px_6px_0px_0px_#1F2720] relative overflow-hidden">
+              <span className="absolute top-0 right-0 bg-[#fdd400] text-[#1F2720] px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-bl-2xl border-l-2 border-b-2 border-[#1F2720]">
+                REAL-WORLD QUEST
               </span>
-              <div className="text-slate-700 text-sm md:text-base leading-relaxed mt-2 markdown-content font-medium">
+              <div className="text-[#1F2720] text-sm md:text-base leading-relaxed mt-2 markdown-content">
                 <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                   {problem.word_problem_text}
                 </ReactMarkdown>
@@ -369,10 +447,10 @@ export default function PracticePage() {
           )}
 
           {/* Expression Focus Panel */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-[0_4px_12px_rgba(0,26,84,0.02)] text-center relative overflow-hidden">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[3px] w-24 bg-[#fdd400] rounded-b-full shadow-[0_0_8px_#fdd400]" />
-            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-mono font-bold">Target Mathematical Expression</p>
-            <div className="text-2xl md:text-3xl font-bold mt-2 text-[#001a54] flex justify-center markdown-content">
+          <div className="bg-[#faf8f5] rounded-[24px] border-[3.5px] border-[#1F2720] p-5 shadow-[4px_4px_0px_0px_#1F2720] text-center relative overflow-hidden">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[5px] w-24 bg-[#fdd400] rounded-b-full border-x-2 border-b-2 border-[#1F2720] shadow-[0_0_6px_#fdd400]" />
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Target Mathematical Expression</p>
+            <div className="text-2xl md:text-3xl font-bold mt-2 text-[#1F2720] flex justify-center markdown-content select-none">
               <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                 {cleanMathExpr(problem.problem_expr).startsWith("$") ? cleanMathExpr(problem.problem_expr) : `$${cleanMathExpr(problem.problem_expr)}$`}
               </ReactMarkdown>
@@ -381,7 +459,7 @@ export default function PracticePage() {
 
           {/* Scaffold Steps */}
           <section className="space-y-4">
-            <h2 className="text-[10px] font-mono uppercase tracking-widest font-bold text-slate-400">
+            <h2 className="text-[10px] font-black uppercase tracking-widest text-emerald-300">
               Guided Equation Steps
             </h2>
 
@@ -405,23 +483,23 @@ export default function PracticePage() {
 
               const isTextStep = requiresTextInput(step.correct_value);
 
-              let borderClass = "border-slate-200 hover:border-[#001a54]/30";
+              let borderClass = "border-[#1F2720] hover:border-emerald-700 shadow-[4px_4px_0px_0px_#1F2720]";
               let bgClass = "bg-white";
-              let accentClass = "bg-[#fdd400] shadow-[0_0_6px_rgba(253,212,0,0.5)]";
+              let accentClass = "bg-[#fdd400] shadow-[0_0_6px_rgba(253,212,0,0.5)] border-[#1F2720]";
 
               if (hasSubmitted) {
                 if (isCorrect) {
-                  borderClass = "border-green-300/80";
-                  bgClass = "bg-green-50/20";
-                  accentClass = "bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.4)]";
+                  borderClass = "border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720]";
+                  bgClass = "bg-green-50/50";
+                  accentClass = "bg-[#79ff8f] border-[#1F2720]";
                 } else if (isMisconceptionStep) {
-                  borderClass = "border-red-300";
-                  bgClass = "bg-red-50/10";
-                  accentClass = "bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.4)]";
+                  borderClass = "border-[#1F2720] shadow-[4px_4px_0px_0px_#1F2720]";
+                  bgClass = "bg-red-50/50";
+                  accentClass = "bg-[#ef4444] border-[#1F2720]";
                 } else {
-                  borderClass = "border-slate-300";
-                  bgClass = "bg-slate-50/40";
-                  accentClass = "bg-slate-400";
+                  borderClass = "border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720]";
+                  bgClass = "bg-slate-50";
+                  accentClass = "bg-slate-400 border-[#1F2720]";
                 }
               }
 
@@ -433,39 +511,40 @@ export default function PracticePage() {
               return (
                 <div
                   key={step.step_index}
-                  className={`border rounded-2xl p-5 md:p-6 transition-all duration-300 relative overflow-hidden flex gap-4 ${borderClass} ${bgClass}`}
+                  className={`border-[3.5px] rounded-[24px] p-5 md:p-6 transition-all duration-300 relative overflow-hidden flex gap-4 ${borderClass} ${bgClass}`}
                 >
-                  <div className={`w-1 h-12 rounded-full self-center shrink-0 ${accentClass} transition-all duration-300`} />
+                  <div className={`w-1.5 h-14 rounded-full self-center shrink-0 border-2 ${accentClass} transition-all duration-300`} />
 
                   <div className="flex-1 space-y-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-[#1F2720]/10 pb-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-[#001a54]">Step {idx + 1}</span>
-                        <span className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded-md border font-bold ${
+                        <span className="font-['Manrope'] text-xs font-black text-[#1F2720]">Step {idx + 1}</span>
+                        <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-md border-2 border-[#1F2720] ${
                           step.step_type === "variable_identification"
-                            ? "border-blue-200 text-blue-700 bg-blue-50/50"
-                            : "border-purple-200 text-purple-700 bg-purple-50/50"
+                            ? "bg-blue-100 text-blue-900"
+                            : "bg-purple-100 text-purple-900"
                         }`}>
                           {step.step_type === "variable_identification" ? "Concept Setup" : "Algebraic Step"}
                         </span>
                       </div>
 
                       {hasSubmitted && (
-                        <span className={`font-mono text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
-                          isCorrect ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                        <span className={`font-black text-[10px] uppercase px-2.5 py-1 rounded-md border-2 border-[#1F2720] ${
+                          isCorrect ? "bg-green-100 text-green-900" : "bg-red-100 text-red-900"
                         }`}>
                           {isCorrect ? "✓ Correct" : "✗ Incorrect"}
                         </span>
                       )}
                     </div>
 
-                    <div className="text-slate-700 text-sm md:text-base font-semibold leading-relaxed markdown-content">
+                    <div className="text-[#1F2720] text-sm md:text-base font-black leading-relaxed markdown-content">
                       <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                         {step.instruction}
                       </ReactMarkdown>
                     </div>
 
-                    <div className="font-mono text-sm md:text-base flex flex-wrap items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                    {/* Checkpoint equation input blocks */}
+                    <div className="font-mono text-sm md:text-base flex flex-wrap items-center gap-2 bg-[#faf8f5] border-[3px] border-[#1F2720] rounded-xl p-3 shadow-inner">
                       <ReactMarkdown
                         remarkPlugins={[remarkMath]}
                         rehypePlugins={[rehypeKatex]}
@@ -482,7 +561,7 @@ export default function PracticePage() {
                             onChange={(e) => handleInputChange(step.step_index, e.target.value)}
                             disabled={isSubmitting}
                             placeholder="..."
-                            className="border-b-2 border-[#001a54] bg-white px-2 py-1 text-center font-mono focus:outline-none focus:border-slate-400 w-64 max-w-full transition-all text-sm rounded"
+                            className="border-[3px] border-[#1F2720] rounded-xl bg-white px-3 py-2 text-center font-black focus:outline-none focus:border-[#fdd400] shadow-[2px_2px_0px_0px_#1F2720] w-64 max-w-full text-sm font-mono"
                           />
                         ) : (
                           <div className="w-64 max-w-full">
@@ -494,10 +573,10 @@ export default function PracticePage() {
                           </div>
                         )
                       ) : (
-                        <span className={`font-bold px-2 py-1 rounded-lg border text-sm md:text-base ${
+                        <span className={`font-black px-2.5 py-1 rounded-lg border-2 border-[#1F2720] text-sm md:text-base ${
                           isCorrect
-                            ? "border-green-200 text-green-700 bg-green-50"
-                            : "border-red-200 text-red-700 bg-red-50"
+                            ? "text-green-900 bg-green-100"
+                            : "text-red-900 bg-red-100"
                         }`}>
                           {stepResult?.submitted_value ? (
                             <ReactMarkdown
@@ -525,9 +604,9 @@ export default function PracticePage() {
                     </div>
 
                     {hasSubmitted && !isCorrect && (
-                      <p className="text-[10px] font-mono text-slate-500 flex items-center gap-1.5 mt-2">
+                      <p className="text-[10px] font-black text-slate-500 flex flex-wrap items-center gap-1.5 mt-2">
                         Expected Formulation:
-                        <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                        <span className="font-black text-[#1F2720] bg-slate-100 px-2 py-0.5 rounded border-2 border-[#1F2720]">
                           <ReactMarkdown
                             remarkPlugins={[remarkMath]}
                             rehypePlugins={[rehypeKatex]}
@@ -539,12 +618,16 @@ export default function PracticePage() {
                       </p>
                     )}
 
+                    {/* SURI's targeted feedback layout block */}
                     {isMisconceptionStep && submissionResult?.feedback_text && (
-                      <div className="border-l-4 border-red-500 bg-red-50/50 rounded-r-xl p-4 mt-4 text-red-950">
-                        <p className="text-[9px] font-mono uppercase tracking-widest font-extrabold text-red-700 mb-1">
-                          Tutor Feedback
-                        </p>
-                        <div className="text-sm font-medium leading-relaxed markdown-content">
+                      <div className="border-l-[5px] border-[#ef4444] bg-[#faf8f5] rounded-r-2xl border-[3.5px] border-l-0 border-[#1F2720] p-4.5 mt-4 text-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720]">
+                        <div className="flex items-center gap-2 mb-2">
+                          <img src="/suri-snake-sad.png" alt="Suri sad" className="w-9 h-auto shrink-0" />
+                          <p className="text-[10px] font-black uppercase tracking-widest text-[#1F2720]">
+                            Tutor Feedback Guidance
+                          </p>
+                        </div>
+                        <div className="text-xs font-bold leading-relaxed markdown-content">
                           <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                             {submissionResult.feedback_text}
                           </ReactMarkdown>
@@ -559,20 +642,22 @@ export default function PracticePage() {
         </main>
 
         {errorMsg && (
-          <div className="mt-6 border border-red-200 bg-red-50 p-4 text-xs font-mono text-red-600 rounded-xl break-words">
-            [ERROR] {errorMsg}
+          <div className="mt-6 border-[3.5px] border-[#1F2720] bg-red-100 p-4 text-xs font-black text-red-900 rounded-[20px] shadow-[4px_4px_0px_0px_#1F2720] flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-red-700 shrink-0" />
+            <span>[ERROR EXCEPTION] {errorMsg}</span>
           </div>
         )}
 
-        <footer className="mt-8 pt-6 border-t border-slate-200">
+        {/* Action Bottom Nav */}
+        <footer className="mt-8 pt-6 border-t-4 border-[#1F2720]/15">
           {!problemCompleted ? (
             <button
               onClick={handleSubmitProblem}
               disabled={!allInputsFilled || isSubmitting}
-              className={`w-full py-4 text-sm font-mono uppercase font-bold tracking-wider transition-all rounded-2xl flex items-center justify-center gap-2 ${
+              className={`w-full py-4 text-xs font-black uppercase rounded-[24px] tracking-wider transition-all border-[4px] border-[#1F2720] flex items-center justify-center gap-2 cursor-pointer shadow-[6px_6px_0px_0px_#1F2720] ${
                 !allInputsFilled || isSubmitting
-                  ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
-                  : "bg-[#001a54] text-white hover:bg-[#001545] cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.12)] hover:shadow-[0_0_20px_rgba(253,212,0,0.15)]"
+                  ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none"
+                  : "bg-[#fdd400] text-[#1F2720] hover:bg-[#ffe170] hover:-translate-y-0.5 active:translate-y-1 active:translate-x-1 active:shadow-[1px_1px_0px_0px_#1F2720]"
               }`}
             >
               {isSubmitting ? "Evaluating steps..." : "Submit Answer"}
@@ -580,9 +665,9 @@ export default function PracticePage() {
           ) : (
             <button
               onClick={handleNextProblem}
-              className="w-full bg-[#001a54] text-white hover:bg-[#001545] py-4 text-sm font-mono uppercase font-bold tracking-wider transition-all rounded-2xl shadow-[0_4px_20px_rgba(0,26,84,0.12)] hover:shadow-[0_0_25px_rgba(253,212,0,0.15)] cursor-pointer flex items-center justify-center gap-2"
+              className="w-full bg-[#fdd400] text-[#1F2720] hover:bg-[#ffe170] border-[4px] border-[#1F2720] py-4 text-xs font-black uppercase tracking-wider transition-all rounded-[24px] shadow-[6px_6px_0px_0px_#1F2720] hover:-translate-y-0.5 active:translate-y-1 active:translate-x-1 active:shadow-[1px_1px_0px_0px_#1F2720] cursor-pointer flex items-center justify-center gap-2"
             >
-              {currentProblemIdx + 1 === problems.length ? "See Results" : "Next Problem"} <span className="text-[#fdd400]">→</span>
+              {currentProblemIdx + 1 === problems.length ? "See Results" : "Next Problem"} <ArrowRight className="w-5 h-5 stroke-[3px]" />
             </button>
           )}
         </footer>

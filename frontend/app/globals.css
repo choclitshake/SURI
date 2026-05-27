@@ -1,1 +1,135 @@
 @import "tailwindcss";
+
+@theme {
+  --color-tertiary-container: #00762e;
+  --color-on-error: #ffffff;
+  --color-primary-fixed: #dde1ff;
+  --color-on-surface-variant: #434656;
+  --color-error-container: #ffdad6;
+  --color-surface-container-highest: #e0e3e5;
+  --color-outline: #737688;
+  --color-surface-container-high: #e6e8ea;
+  --color-secondary-fixed: #ffe170;
+  --color-primary: #1F2720;
+  --color-secondary-container: #fdd400;
+  --color-outline-variant: #c3c5d9;
+  --color-surface: #DBD4C7;
+  --color-surface-container-low: #f2f4f6;
+  --color-on-tertiary-container: #79ff8f;
+  --color-background: #DBD4C7;
+  --color-surface-variant: #e0e3e5;
+  --color-on-error-container: #93000a;
+  --color-on-secondary-container: #6f5c00;
+  --color-on-secondary-fixed: #221b00;
+  --color-on-secondary: #ffffff;
+  --color-on-tertiary-fixed-variant: #00531e;
+  --color-primary-fixed-dim: #b7c4ff;
+  --color-on-surface: #191c1e;
+  --color-secondary: #705d00;
+  --color-tertiary-fixed-dim: #3ce36a;
+  --color-on-primary-fixed-variant: #0038b6;
+  --color-inverse-primary: #b7c4ff;
+  --color-secondary-fixed-dim: #e9c400;
+  --color-inverse-surface: #2d3133;
+  --color-surface-bright: #ffffff;
+  --color-primary-container: #1F2720;
+  --color-on-tertiary-fixed: #002108;
+  --color-error: #ba1a1a;
+  --color-on-background: #191c1e;
+  --color-surface-container: #eceef0;
+  --color-tertiary-fixed: #69ff87;
+  --color-on-primary: #ffffff;
+  --color-tertiary: #005b21;
+  --color-surface-tint: #004ced;
+  --color-on-secondary-fixed-variant: #544600;
+  --color-on-primary-fixed: #001452;
+  --color-inverse-on-surface: #eff1f3;
+  --color-surface-dim: #d8dadc;
+  --color-on-tertiary: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-primary-container: #dfe3ff;
+
+  --font-family-headline-lg: "Hanken Grotesk";
+  --font-family-headline-lg-mobile: "Hanken Grotesk";
+  --font-family-label-bold: "Manrope";
+  --font-family-display: "Hanken Grotesk";
+  --font-family-body-lg: "Manrope";
+  --font-family-label-md: "Manrope";
+  --font-family-body-md: "Manrope";
+  --font-family-headline-md: "Hanken Grotesk";
+
+  --font-size-headline-lg: 32px;
+  --font-size-headline-lg--line-height: 40px;
+  --font-size-headline-lg--letter-spacing: -0.01em;
+  --font-size-headline-lg--font-weight: 600;
+  --font-size-headline-lg-mobile: 24px;
+  --font-size-headline-lg-mobile--line-height: 32px;
+  --font-size-headline-lg-mobile--font-weight: 600;
+  --font-size-label-bold: 12px;
+  --font-size-label-bold--line-height: 16px;
+  --font-size-label-bold--font-weight: 700;
+  --font-size-display: 48px;
+  --font-size-display--line-height: 56px;
+  --font-size-display--letter-spacing: -0.02em;
+  --font-size-display--font-weight: 700;
+  --font-size-body-lg: 16px;
+  --font-size-body-lg--line-height: 24px;
+  --font-size-body-lg--font-weight: 400;
+  --font-size-label-md: 12px;
+  --font-size-label-md--line-height: 16px;
+  --font-size-label-md--font-weight: 500;
+  --font-size-body-md: 14px;
+  --font-size-body-md--line-height: 20px;
+  --font-size-body-md--font-weight: 400;
+  --font-size-headline-md: 20px;
+  --font-size-headline-md--line-height: 28px;
+  --font-size-headline-md--font-weight: 600;
+}
+
+body {
+  background-color: #DBD4C7;
+  color: #191c1e;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  vertical-align: middle;
+}
+
+.card-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.island-node {
+  transition: transform 0.2s ease;
+}
+.island-node:hover {
+  transform: scale(1.1);
+}
+
+/* Brush stroke for active nav item */
+.nav-brush {
+  position: relative;
+  z-index: 1;
+}
+.nav-brush::after {
+  content: '';
+  position: absolute;
+  top: 2%;
+  bottom: -5%;
+  left: -16px;
+  right: -16px;
+  background: #fdd400;
+  border-radius: 40% 60% 30% 70% / 60% 40% 70% 30%;
+  transform: rotate(-0.8deg);
+  z-index: -1;
+}
+
+/* Hide scrollbar but keep scroll functionality */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}

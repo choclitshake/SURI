@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import "mathlive";
 if (typeof customElements !== "undefined") {
   const MFE = customElements.get("math-field");
-  if (MFE) MFE.fontsDirectory = "https://cdn.jsdelivr.net/npm/mathlive@0.109.2/fonts";
+  if (MFE) (MFE as any).fontsDirectory = "https://cdn.jsdelivr.net/npm/mathlive@0.109.2/fonts";
 }
 import MainPage from "@/components/mainpage";
 import React from "react";
@@ -64,10 +64,8 @@ function flattenMathSteps(steps: MathStep[]): MathStep[] {
   function traverse(step: MathStep) {
     const subs = getSubsteps(step);
     if (subs.length > 0) {
-      // If composite step has substeps, traverse into them to show complete details
       subs.forEach((sub) => traverse(sub));
     } else {
-      // If atomic step, append directly to show in the resolution stream
       result.push(step);
     }
   }
@@ -77,45 +75,35 @@ function flattenMathSteps(steps: MathStep[]): MathStep[] {
 }
 
 /**
- * Maps raw backend math change types to descriptive step-by-step student explanations
+ * Maps raw backend math change types to descriptive step‑by‑step student explanations
  */
 function getDetailedExplanation(changeType: string, oldNode: string | null, newNode: string | null): string {
   const type = changeType.toUpperCase();
-  
+
   const explanations: Record<string, string> = {
-    // Basic Arithmetic rules
-    "SIMPLIFY_BASICS": "Simplify basics using primary algebraic axioms. Any value raised to the power of 0 simplifies directly to 1 (x^0 = 1), and multiplying a term by 1 leaves its value unchanged.",
-    "EVALUATE_ARITHMETIC": "Evaluate normal numerical calculations. Combine constants together directly to clean up the expression's overall size.",
-    "SIMPLIFY_ARITHMETIC": "Evaluate basic numerical operations. This simplifies integers or decimal constants into a single value.",
-    
-    // Grouping
-    "GROUP_LIKE_TERMS": "Group similar algebraic terms side-by-side. Like terms are terms that share identical variable factors raised to the exact same exponents (such as grouping x² variables or matching independent constants) so they are prepared to be combined.",
-    "COLLECT_LIKE_TERMS": "Collect and group identical algebraic terms next to each other. Putting similar terms next to each other makes the next simplification steps straightforward.",
-    
-    // Polynomial Operations & Coefficients
-    "ADD_POLYNOMIAL_TERMS": "Combine similar polynomial terms. Add the numeric coefficients of terms sharing identical variable groupings and exponent degrees.",
-    "ADD_COEFFICIENTS": "Add the numerical coefficients of matching like terms. Combine the constants while keeping the shared variable factor unchanged.",
-    "SUBTRACT_COEFFICIENTS": "Subtract the numeric coefficients of like terms. This simplifies their combined value while keeping the common variable structure intact.",
-    "MULTIPLY_COEFFICIENTS": "Multiply the numerical constants or coefficients together. This simplifies multiple constant factors into a single coefficient.",
-    
-    // Brackets, Parentheses & Distribution
-    "DISTRIBUTE": "Apply the distributive property: a(b + c) = ab + ac. Multiply the term outside the parentheses with each individual term inside to expand and eliminate the brackets.",
-    "EXPAND_EXPRESSION": "Multiply out algebraic factors. Systematically expand terms using standard binomial expansion rules (FOIL).",
-    "REMOVE_PARENTHESES": "Eliminate brackets safely. If there is a subtraction sign outside, ensure you distribute the negative sign to every individual term inside.",
-    
-    // Factoring
-    "FACTOR_QUADRATIC": "Factor the quadratic expression. Solve and resolve the trinomial into its constituent binomial factors (for example, factoring x² + 5x + 6 into (x + 2)(x + 3)).",
-    "FACTOR_COMMON": "Factor out the Greatest Common Factor (GCF) from all terms. Identify the highest shared multiplier and place it outside parentheses.",
-    "CANCEL_TERMS": "Cancel out equal opposite terms that add up to zero, or simplify matching terms on the numerator and denominator.",
+    SIMPLIFY_BASICS: "Simplify basics using primary algebraic axioms. Any value raised to the power of 0 simplifies directly to 1 (x^0 = 1), and multiplying a term by 1 leaves its value unchanged.",
+    EVALUATE_ARITHMETIC: "Evaluate normal numerical calculations. Combine constants together directly to clean up the expression's overall size.",
+    SIMPLIFY_ARITHMETIC: "Evaluate basic numerical operations. This simplifies integers or decimal constants into a single value.",
+    GROUP_LIKE_TERMS: "Group similar algebraic terms side‑by‑side. Like terms are terms that share identical variable factors raised to the exact same exponents (such as grouping x² variables or matching independent constants) so they are prepared to be combined.",
+    COLLECT_LIKE_TERMS: "Collect and group identical algebraic terms next to each other. Putting similar terms together makes the next simplification steps straightforward.",
+    ADD_POLYNOMIAL_TERMS: "Combine similar polynomial terms. Add the numeric coefficients of terms sharing identical variable groupings and exponent degrees.",
+    ADD_COEFFICIENTS: "Add the numerical coefficients of matching like terms. Combine the constants while keeping the shared variable factor unchanged.",
+    SUBTRACT_COEFFICIENTS: "Subtract the numeric coefficients of like terms. This simplifies their combined value while keeping the common variable structure intact.",
+    MULTIPLY_COEFFICIENTS: "Multiply the numerical constants or coefficients together. This simplifies multiple constant factors into a single coefficient.",
+    DISTRIBUTE: "Apply the distributive property: a(b + c) = ab + ac. Multiply the term outside the parentheses with each individual term inside to expand and eliminate the brackets.",
+    EXPAND_EXPRESSION: "Multiply out algebraic factors. Systematically expand terms using standard binomial expansion rules (FOIL).",
+    REMOVE_PARENTHESES: "Eliminate brackets safely. If there is a subtraction sign outside, ensure you distribute the negative sign to every individual term inside.",
+    FACTOR_QUADRATIC: "Factor the quadratic expression. Solve and resolve the trinomial into its constituent binomial factors (for example, factoring x² + 5x + 6 into (x + 2)(x + 3)).",
+    FACTOR_COMMON: "Factor out the Greatest Common Factor (GCF) from all terms. Identify the highest shared multiplier and place it outside parentheses.",
+    CANCEL_TERMS: "Cancel out equal opposite terms that add up to zero, or simplify matching terms on the numerator and denominator.",
   };
 
   if (explanations[type]) {
     return explanations[type];
   }
 
-  // Intelligent fallback description
   const cleanType = formatChangeType(changeType);
-  return `Apply the operation "${cleanType}" to transition from "${oldNode || 'original state'}" to "${newNode || 'simplified state'}". This systematically streamlines the expression.`;
+  return `Apply the operation "${cleanType}" to transition from "${oldNode || "original state"}" to "${newNode || "simplified state"}". This systematically streamlines the expression.`;
 }
 
 declare global {
@@ -133,12 +121,7 @@ type MathFieldProps = {
   onEnter?: () => void;
 };
 
-function MathField({
-  value,
-  onChange,
-  disabled = false,
-  onEnter,
-}: MathFieldProps) {
+function MathField({ value, onChange, disabled = false, onEnter }: MathFieldProps) {
   const mathFieldRef = useRef<any>(null);
 
   // Update math-field value when prop changes
@@ -156,7 +139,6 @@ function MathField({
     const handleInput = () => {
       onChange(mf.getValue("ascii-math"));
     };
-
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Enter") {
         e.preventDefault();
@@ -212,13 +194,12 @@ export default function AlgebraCalculatorPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [steps, setSteps] = useState<MathStep[]>([]);
-  const [solvedExpr, setSolvedExpr] = useState<string>("");
+  const [solvedExpr, setSolvedExpr] = useState("");
 
   // ── Fetch steps ────────────────────────────────────────────────
 
   async function handleSolve(expr?: string) {
     const target = (expr ?? expression).trim();
-
     if (!target) return;
 
     setLoading(true);
@@ -229,12 +210,8 @@ export default function AlgebraCalculatorPage() {
     try {
       const res = await fetch("/api/solve", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          expression: target,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expression: target }),
       });
 
       const data = await res.json();
@@ -253,9 +230,7 @@ export default function AlgebraCalculatorPage() {
       const fullyDetailedSteps = flattenMathSteps(data.steps);
       setSteps(fullyDetailedSteps);
     } catch {
-      setError(
-        "Could not reach the solver. Make sure the server is running."
-      );
+      setError("Could not reach the solver. Make sure the server is running.");
     } finally {
       setLoading(false);
     }
@@ -272,37 +247,32 @@ export default function AlgebraCalculatorPage() {
 
   return (
     <MainPage>
-      <div className="bg-slate-50 min-h-screen text-slate-800 py-4 px-4 md:px-6 space-y-4">
-        <div className="max-w-3xl mx-auto space-y-4">
+      <div className=" min-h-screen text-[#1F2720] py-4 px-2 md:px-4">
+        <div className="w-full max-w-[1800px] mx-auto space-y-6">
+          {/* Premium Compact Bento Header */}
+          <header className="bg-[#223324] rounded-[32px] p-6 md:p-8 border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] relative overflow-hidden flex flex-col justify-between min-h-[180px]">
 
-          {/* Premium Compact Bento Header (Navy with Gold Accents) */}
-          <header className="bg-[#001a54] rounded-2xl p-4 md:p-5 border border-white/10 shadow-[0_0_20px_rgba(0,26,84,0.3)] relative overflow-hidden flex flex-col justify-between">
-            {/* Subtle ambient gold and navy glow offsets */}
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#fdd400]/10 rounded-full blur-[40px] pointer-events-none" />
-            <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-[#fdd400]/5 rounded-full blur-[40px] pointer-events-none" />
-            
-            <div className="flex items-center justify-between mb-2.5 z-10">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#fdd400] animate-pulse shadow-[0_0_6px_#fdd400]" />
-                <span className="font-mono text-[10px] text-slate-300 font-bold tracking-[0.2em] uppercase">ALGEBRA SOLVER ENGINE</span>
+            <div className="flex items-center justify-between mb-4 z-10">
+              <div className="flex items-center gap-2 bg-[#1b261c] px-3 py-1.5 rounded-full border-[2px] border-[#1F2720]">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#fdd400] animate-pulse border border-[#1F2720]" />
+                <span className="font-['Manrope'] text-xs text-[#fdd400] font-black tracking-[0.2em] uppercase">ALGEBRA SOLVER ENGINE</span>
               </div>
-              <span className="font-mono text-[9px] text-slate-400 bg-black/30 px-2 py-1 rounded-lg border border-white/5 uppercase">CALC_V1</span>
+              <span className="font-['Manrope'] text-[10px] text-[#1F2720] font-black bg-[#fdd400] px-3 py-1.5 rounded-md border-2 border-[#1F2720] shadow-[2px_2px_0px_0px_#1F2720] uppercase">CALC_V1</span>
             </div>
-
-            <div className="z-10">
-              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white font-['Hanken_Grotesk',_sans-serif]">
+            <div className="z-10 mt-6">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white font-['Hanken_Grotesk'] drop-shadow-[2px_2px_0px_#1F2720]">
                 Algebra <span className="text-[#fdd400]">Calculator</span>
               </h1>
-              <p className="font-mono text-[10px] text-slate-300 mt-1 tracking-wide uppercase">
-                Enter an algebraic expression to view a complete step-by-step resolution process [1].
+              <p className="font-['Manrope'] text-sm text-[#ffe170] mt-2 font-bold uppercase drop-shadow-[1px_1px_0px_#1F2720]">
+                Enter an algebraic expression to view a complete step‑by‑step resolution process.
               </p>
             </div>
           </header>
 
-          {/* Input Panel (White-Dominant Light Card) */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 md:p-5 shadow-[0_4px_12px_rgba(0,26,84,0.02)] space-y-3">
-            <div className="flex flex-col gap-3 md:flex-row">
-              <div className="flex-1">
+          {/* Input Panel (Cartoony Card) */}
+          <div className="bg-[#faf8f5] rounded-[32px] border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] p-6 space-y-4">
+            <div className="flex flex-col gap-4 md:flex-row items-center">
+              <div className="flex-1 w-full">
                 <MathField
                   value={expression}
                   disabled={loading}
@@ -310,14 +280,13 @@ export default function AlgebraCalculatorPage() {
                   onEnter={() => handleSolve()}
                 />
               </div>
-
               <button
-                className="bg-[#001a54] text-white hover:bg-[#001545] border border-transparent py-3 px-6 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="bg-[#fdd400] hover:bg-[#ffe170] text-[#1F2720] border-[3px] border-[#1F2720] shadow-[3px_3px_0px_0px_#1F2720] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#1F2720] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1F2720] px-4 py-2 text-[12px] font-['Manrope'] font-black uppercase rounded-xl transition-all flex items-center gap-2 cursor-pointer disabled:opacity-40"
                 onClick={() => handleSolve()}
                 disabled={loading || !expression.trim()}
               >
                 {loading ? (
-                  <Loader2 className="animate-spin" size={14} />
+                  <Loader2 size={14} className="animate-spin" />
                 ) : (
                   <ChevronRight size={14} />
                 )}
@@ -326,11 +295,11 @@ export default function AlgebraCalculatorPage() {
             </div>
 
             {/* Sample Problems */}
-            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-[#1F2720]">
               {SAMPLE_PROBLEMS.map((p) => (
                 <button
                   key={p.expression}
-                  className="bg-slate-50 border border-slate-200 text-[#001a54] hover:bg-slate-100 px-2.5 py-1 font-mono text-[11px] font-bold rounded-lg transition-colors cursor-pointer"
+                  className="bg-white border border-[#1F2720] text-[#1F2720] hover:bg-[#f0f0f0] px-3 py-1 font-mono text-[11px] font-bold rounded-lg transition-colors cursor-pointer"
                   onClick={() => {
                     setExpression(p.expression);
                     handleSolve(p.expression);
@@ -342,102 +311,115 @@ export default function AlgebraCalculatorPage() {
             </div>
 
             {error && (
-              <div className="mt-2 flex items-center gap-2 text-xs font-mono text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
-                <AlertCircle size={14} />
-                {error}
+              <div className="bg-red-100 border-[3px] border-[#1F2720] rounded-[24px] p-5 shadow-[4px_4px_0px_0px_#1F2720] flex items-start gap-4 mt-4">
+                <img src="/suri-snake-sad.png" alt="Sad Suri" className="w-10 h-10 object-contain shrink-0" />
+                <div>
+                  <span className="font-['Manrope'] text-xs text-red-800 font-black uppercase tracking-widest block mb-1">[CALCULATION ERROR]</span>
+                  <p className="font-['Manrope'] text-sm text-red-900 font-bold">{error}</p>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Steps Display Panel (Shows all steps including unpacked substeps) */}
+          {/* Steps Display Panel */}
           {steps.length > 0 && (
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-4 md:p-6 shadow-[0_4px_12px_rgba(0,26,84,0.02)] space-y-4">
-              <div className="pb-3 border-b border-slate-100 flex items-center justify-between">
-                <p className="font-mono text-xs text-slate-500 uppercase tracking-widest">
-                  Solving: <strong className="text-[#001a54] font-black">{solvedExpr}</strong>
+            <div className="bg-white rounded-[32px] border-[4px] border-[#1F2720] shadow-[8px_8px_0px_0px_#1F2720] p-6 space-y-6">
+              <div className="pb-3 border-b border-[#1F2720] flex items-center justify-between">
+                <p className="font-mono text-xs text-[#1F2720] uppercase tracking-widest">
+                  Solving: <strong className="text-[#1F2720] font-black">{solvedExpr}</strong>
                 </p>
-                <span className="font-mono text-[9px] text-[#001a54] bg-[#fdd400]/20 border border-[#fdd400]/40 px-2 py-0.5 rounded uppercase font-bold">
+                <span className="font-['Manrope'] text-[10px] text-[#1F2720] bg-[#fdd400]/20 border border-[#fdd400]/40 px-2 py-0.5 rounded uppercase font-bold">
                   RESOLUTION STREAM
                 </span>
               </div>
 
-              <div className="space-y-4">
-                {steps.map((step, i) => {
-                  const isLastStep = i === steps.length - 1;
+              {/* Optional faint mascot watermark behind steps */}
+              <div className="relative">
+                <img src="/suri-snake-right.png" alt="Mascot" className="absolute top-0 right-0 opacity-10 w-48 h-auto pointer-events-none" />
+                <div className="space-y-4">
+                  {steps.map((step, i) => {
+                    const isLast = i === steps.length - 1;
+                    return (
+                      <div
+                        key={i}
+                        className={`border-[3px] rounded-[24px] p-4 transition-all duration-300 relative overflow-hidden flex gap-3 ${
+                          isLast ? "border-green-200 bg-green-50/10" : "border-[#1F2720] bg-[#faf8f5]"
+                        }`}
+                      >
+                        {/* Vertical indicator */}
+                        <div
+                          className={`w-1 h-12 rounded-full self-center shrink-0 ${
+                            isLast ? "bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.4)]" : "bg-[#fdd400] shadow-[0_0_6px_rgba(253,212,0,0.4)]"
+                          }`}
+                        />
 
-                  return (
-                    <div
-                      key={i}
-                      className={`border rounded-2xl p-4 md:p-5 transition-all duration-300 relative overflow-hidden flex gap-3 ${
-                        isLastStep 
-                          ? "border-green-200 bg-green-50/10" 
-                          : "border-slate-100 bg-slate-50/50"
-                      }`}
-                    >
-                      {/* Left vertical status indicator line (Interactive gold color for active steps) */}
-                      <div className={`w-1 h-12 rounded-full self-center shrink-0 ${
-                        isLastStep 
-                          ? "bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.4)]" 
-                          : "bg-[#fdd400] shadow-[0_0_6px_rgba(253,212,0,0.4)]"
-                      } transition-all duration-300`} />
-
-                      <div className="flex-1 space-y-3">
-                        {/* Step Header info */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-slate-100">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-xs font-bold text-[#001a54]">Step {i + 1}</span>
-                            <span className="text-[9px] font-mono uppercase px-2 py-0.5 rounded-md border border-slate-200 text-slate-500 bg-slate-50 font-bold">
-                              {formatChangeType(step.changeType)}
-                            </span>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-[#1F2720]">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-xs font-bold text-[#1F2720]">Step {i + 1}</span>
+                              <span className="text-[9px] font-mono uppercase px-2 py-0.5 rounded-md border border-[#1F2720] bg-[#e6e8ea] font-black tracking-wider">
+                                {formatChangeType(step.changeType)}
+                              </span>
+                            </div>
+                            {isLast && (
+                              <span className="font-mono text-[9px] font-extrabold uppercase px-2 py-0.5 rounded border bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
+                                <CheckCircle2 size={10} /> Fully Simplified
+                              </span>
+                            )}
                           </div>
-                          
-                          {isLastStep && (
-                            <span className="font-mono text-[9px] font-extrabold uppercase px-2 py-0.5 rounded border bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
-                              <CheckCircle2 size={10} /> Fully Simplified
-                            </span>
+
+                          {step.oldNode && (
+                            <p className="font-mono text-[10px] text-[#1F2720]">
+                              Identified Terms: <span className="line-through text-[#1F2720]">{step.oldNode}</span>
+                            </p>
                           )}
-                        </div>
-
-                        {step.oldNode && (
-                          <p className="font-mono text-[10px] text-slate-400">
-                            Identified Terms: <span className="line-through text-slate-400">{step.oldNode}</span>
-                          </p>
-                        )}
-
-                        <div className="flex flex-wrap items-center gap-3">
-                          <span className="font-mono text-base font-bold text-[#001a54]">=</span>
-                          <div className="font-mono text-sm font-bold text-[#001a54] bg-white border border-slate-200 rounded-xl px-4 py-2 flex-1 shadow-sm">
-                            {step.newNode}
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-base font-bold text-[#1F2720]">=</span>
+                            <div className="font-mono text-sm font-bold text-[#1F2720] bg-white border border-[#1F2720] rounded-xl px-4 py-2 flex-1 shadow-sm">
+                              {step.newNode}
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Pedagogical Tutor Explanation Box */}
-                        <div className="bg-[#001a54]/5 rounded-xl p-3 border border-slate-200/40 text-slate-600 mt-2">
-                          <p className="text-[9px] font-mono uppercase tracking-widest font-extrabold text-[#001a54] mb-1">
-                            Tutor Insight
-                          </p>
-                          <p className="text-xs font-medium leading-relaxed font-sans">
-                            {getDetailedExplanation(step.changeType, step.oldNode, step.newNode)}
-                          </p>
+                          {/* Tutor Insight */}
+                          <div className="bg-[#001a54]/5 rounded-xl p-4 border border-[#1F2720]/40 text-[#1F2720] mt-3 flex items-start gap-3.5">
+                            {/* Tutor Mascot Container */}
+                            <div className="shrink-0 w-12 h-12 bg-white rounded-full border border-[#1F2720]/20 flex items-center justify-center p-1 shadow-sm">
+                              <img 
+                                src="/suri-snake-happy.png" 
+                                alt="Suri Tutor" 
+                                className="w-10 h-10 object-contain" 
+                              />
+                            </div>
+                            
+                            {/* Tutor Content */}
+                            <div className="flex-1">
+                              <p className="text-[9px] font-mono uppercase tracking-widest font-extrabold text-[#001a54] mb-1">
+                                Tutor Insight
+                              </p>
+                              <p className="text-xs font-medium leading-relaxed font-sans">
+                                {getDetailedExplanation(step.changeType, step.oldNode, step.newNode)}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Reset Control Block */}
-              <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-end">
-                <button
-                  className="bg-[#001a54] text-white hover:bg-[#001545] py-3 px-5 text-xs font-mono uppercase font-bold tracking-wider rounded-xl transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] flex items-center gap-2"
-                  onClick={handleReset}
-                >
-                  <RefreshCw size={12} />
-                  Reset Solver
-                </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
+
+          {/* Reset Control */}
+          <div className="flex justify-end mt-4 pt-4 border-t border-[#1F2720]">
+            <button
+              className="bg-[#1F2720] text-white hover:bg-[#162017] py-3 px-5 text-xs font-mono uppercase font-bold tracking-wider rounded-xl transition-all cursor-pointer shadow-[0_4px_12px_rgba(0,26,84,0.1)] flex items-center gap-2"
+              onClick={handleReset}
+            >
+              <RefreshCw size={12} />
+              Reset Solver
+            </button>
+          </div>
         </div>
       </div>
     </MainPage>
