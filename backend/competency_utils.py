@@ -31,11 +31,16 @@ async def upsert_status(
     """Upsert a single competency_status record."""
     existing = await conn.fetchrow(
         """
-        SELECT id FROM competency_status
+        SELECT id, status FROM competency_status
         WHERE student_id = $1 AND node_id = $2
         """,
         student_id, node_id,
     )
+    
+    if existing and existing["status"] == "mastered" and status != "mastered":
+        # Rule: Once a competency is mastered, it cannot be downgraded to any other state
+        return
+
     record_id = existing["id"] if existing else str(uuid.uuid4())
     now_iso = datetime.now(timezone.utc).isoformat()
 

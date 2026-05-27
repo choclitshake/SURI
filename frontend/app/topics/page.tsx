@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import MainPage from "@/components/mainpage";
-import { getTopics, TopicInfo, getMe, getStudentProgress, createSession } from "../../lib/api";
+import { getTopics, TopicInfo, getMe, getStudentProgress, createSession, getGraphChain } from "../../lib/api";
 
 export default function TopicsPage() {
   const router = useRouter();
@@ -12,6 +12,8 @@ export default function TopicsPage() {
   const [completedTopics, setCompletedTopics] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [nodeStatuses, setNodeStatuses] = useState<Record<string, string>>({});
+  const [topicChains, setTopicChains] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
     const load = async () => {
@@ -32,6 +34,32 @@ export default function TopicsPage() {
         setActiveTopics(activeMap);
         setCompletedTopics(completedSet);
         setTopics(data);
+
+        // Compute mastery statuses
+        const statuses: Record<string, string> = {};
+        const scanSession = (session: any) => {
+          session.mastered_nodes?.forEach((n: any) => {
+            statuses[n.node_id] = "mastered";
+          });
+        };
+        progress.active_sessions?.forEach(scanSession);
+        progress.completed_sessions?.forEach(scanSession);
+        setNodeStatuses(statuses);
+
+        // Load graph chains
+        const chainsMap: Record<string, any[]> = {};
+        await Promise.all(
+          data.map(async (topic: any) => {
+            try {
+              const chainData = await getGraphChain(topic.node_id);
+              chainsMap[topic.node_id] = chainData.chain || [];
+            } catch (err) {
+              console.error(`Failed to load chain for ${topic.node_id}`, err);
+              chainsMap[topic.node_id] = [];
+            }
+          })
+        );
+        setTopicChains(chainsMap);
       } catch (err: any) {
         setError(err.detail || err.message || "Failed to load topics. Are you logged in?");
       } finally {
@@ -145,11 +173,16 @@ export default function TopicsPage() {
                 const isActive = topic.node_id in activeTopics;
                 const isCompleted = completedTopics.has(topic.node_id);
                 const isLeft = index % 2 === 0;
-                const trackPct = isCompleted ? 100 : isActive ? 50 : 0;
-                const statusText = isCompleted ? "Mastered" : isActive ? "In Progress" : "Not Attempted";
-                const statusClass = isCompleted
+
+                const chain = topicChains[topic.node_id] || [];
+                const trackTotal = chain.length;
+                const trackMastered = chain.filter((n) => nodeStatuses[n.node_id] === "mastered").length;
+                const trackPct = trackTotal > 0 ? Math.round((trackMastered / trackTotal) * 100) : 0;
+
+                const statusText = trackPct === 100 ? "Mastered" : trackPct > 0 || isActive ? "In Progress" : "Not Attempted";
+                const statusClass = trackPct === 100
                   ? "bg-emerald-600 text-white"
-                  : isActive
+                  : trackPct > 0 || isActive
                   ? "bg-[#fdd400] text-[#1F2720]"
                   : "bg-slate-100 text-slate-600";
 
