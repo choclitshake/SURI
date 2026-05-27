@@ -139,7 +139,6 @@ export default function QuizPage() {
         setStepCorrect(false);
         setCorrectValue(res.correct_value);
         setPointsEarned(0);
-        setCurrentProblemIndex(0);       
         setStreakMultiplier(1.0);
         setState("STEP_RESULT");
         setTimeout(() => advanceToNext(), 2500); // Give 2.5s to read the correct answer
