@@ -1,0 +1,2672 @@
+{
+  "QE": [
+    {
+      "node_id": "QE",
+      "question_text": "Which of the following is a quadratic equation in standard form?",
+      "options": [
+        "$2x + 3 = 0$",
+        "$x^2 - 5x + 6 = 0$",
+        "$x^3 - 1 = 0$",
+        "$3x - 4 = 2$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "QE",
+      "question_text": "In the equation $3x^2 - 5x + 2 = 0$, what is the value of $a$?",
+      "options": [
+        "$3$",
+        "$-5$",
+        "$2$",
+        "$0$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "QE",
+      "question_text": "What are the roots of the equation $x^2 - 9 = 0$?",
+      "options": [
+        "$3$",
+        "$-3$",
+        "$9$ and $-9$",
+        "$3$ and $-3$"
+      ],
+      "correct_option_index": 3
+    },
+    {
+      "node_id": "QE",
+      "question_text": "Solve for $x$ by factoring: $x^2 + 5x + 6 = 0$.",
+      "options": [
+        "$x = 2, x = 3$",
+        "$x = -2, x = -3$",
+        "$x = 1, x = 6$",
+        "$x = -1, x = -6$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "QE",
+      "question_text": "What is the discriminant of $x^2 - 4x + 4 = 0$?",
+      "options": [
+        "$0$",
+        "$4$",
+        "$16$",
+        "$32$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "QE",
+      "question_text": "Which method is most appropriate to solve $x^2 - 7 = 0$?",
+      "options": [
+        "Factoring",
+        "Quadratic Formula",
+        "Extracting Square Roots",
+        "Completing the Square"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "QE",
+      "question_text": "If the discriminant is $-16$, what kind of roots does the quadratic equation have?",
+      "options": [
+        "Two real and rational roots",
+        "Two real and irrational roots",
+        "One real root",
+        "Two imaginary roots"
+      ],
+      "correct_option_index": 3
+    },
+    {
+      "node_id": "QE",
+      "question_text": "Use the quadratic formula to solve $x^2 + 2x - 8 = 0$.",
+      "options": [
+        "$x = 2, x = -4$",
+        "$x = -2, x = 4$",
+        "$x = 1, x = -8$",
+        "$x = -1, x = 8$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "QE",
+      "question_text": "What must be added to $x^2 + 10x$ to make it a perfect square trinomial?",
+      "options": [
+        "$5$",
+        "$10$",
+        "$20$",
+        "$25$"
+      ],
+      "correct_option_index": 3
+    },
+    {
+      "node_id": "QE",
+      "question_text": "Find the sum of the roots of the equation $x^2 - 8x + 12 = 0$.",
+      "options": [
+        "$2$",
+        "$6$",
+        "$8$",
+        "$12$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "QE",
+      "question_text": "What is the product of the roots of the equation $2x^2 + 4x - 6 = 0$?",
+      "options": [
+        "$-3$",
+        "$3$",
+        "$-2$",
+        "$2$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "QE",
+      "question_text": "Solve for $x$: $x(x - 4) = 5$.",
+      "options": [
+        "$x = 5, x = -1$",
+        "$x = -5, x = 1$",
+        "$x = 4, x = 5$",
+        "$x = -4, x = -5$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "QE",
+      "question_text": "The area of a rectangle is $24$ square meters. If the length is $2$ meters more than the width, which equation represents this?",
+      "options": [
+        "$w^2 + 2w - 24 = 0$",
+        "$w^2 - 2w - 24 = 0$",
+        "$w^2 + 2w + 24 = 0$",
+        "$2w^2 + 24 = 0$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "QE",
+      "question_text": "What are the solutions for $(x - 3)^2 = 16$?",
+      "options": [
+        "$x = 7$",
+        "$x = -1$",
+        "$x = 7, x = -1$",
+        "$x = 3, x = 4$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "QE",
+      "question_text": "Which of the following equations has roots $5$ and $-2$?",
+      "options": [
+        "$x^2 + 3x - 10 = 0$",
+        "$x^2 - 3x - 10 = 0$",
+        "$x^2 - 7x + 10 = 0$",
+        "$x^2 + 7x + 10 = 0$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "QE",
+      "question_text": "Solve for $x$ in $2x^2 - 8x = 0$.",
+      "options": [
+        "$x = 0, x = 4$",
+        "$x = 0, x = -4$",
+        "$x = 2, x = 4$",
+        "$x = 4$"
+      ],
+      "correct_option_index": 0
+    }
+  ],
+  "FP": [
+    {
+      "node_id": "FP",
+      "question_text": "What is the greatest common factor (GCF) of the terms in $12x^3 - 18x^2$?",
+      "options": [
+        "$6x$",
+        "$6x^2$",
+        "$3x^2$",
+        "$12x$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Factor the expression $x^2 - 16$.",
+      "options": [
+        "$(x - 4)(x - 4)$",
+        "$(x + 8)(x - 8)$",
+        "$(x + 4)(x - 4)$",
+        "$(x + 16)(x - 1)$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Factor the trinomial $x^2 + 7x + 10$.",
+      "options": [
+        "$(x + 2)(x + 5)$",
+        "$(x + 1)(x + 10)$",
+        "$(x - 2)(x - 5)$",
+        "$(x + 7)(x + 3)$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FP",
+      "question_text": "What is the factored form of $x^2 - 5x - 24$?",
+      "options": [
+        "$(x - 8)(x + 3)$",
+        "$(x + 8)(x - 3)$",
+        "$(x - 6)(x + 4)$",
+        "$(x - 12)(x + 2)$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Factor completely: $3x^2 - 27$.",
+      "options": [
+        "$3(x - 9)(x + 9)$",
+        "$3(x - 3)(x - 3)$",
+        "$3(x - 3)(x + 3)$",
+        "$(3x - 9)(x + 3)$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Which of the following is a factor of $2x^2 + 5x - 3$?",
+      "options": [
+        "$(2x + 1)$",
+        "$(x + 3)$",
+        "$(x - 3)$",
+        "$(2x - 3)$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Factor the perfect square trinomial $4x^2 + 12x + 9$.",
+      "options": [
+        "$(2x + 3)(2x - 3)$",
+        "$(4x + 3)(x + 3)$",
+        "$(2x + 3)^2$",
+        "$(2x + 9)(2x + 1)$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Factor the expression $x^3 + 8$ using the sum of two cubes pattern.",
+      "options": [
+        "$(x + 2)(x^2 - 2x + 4)$",
+        "$(x + 2)(x^2 + 2x + 4)$",
+        "$(x - 2)(x^2 + 2x + 4)$",
+        "$(x + 2)(x^2 - 4x + 4)$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Factor by grouping: $ax + ay + bx + by$.",
+      "options": [
+        "$(a + b)(x + y)$",
+        "$(a + x)(b + y)$",
+        "$(a + y)(b + x)$",
+        "$(a + b)(x - y)$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Factor completely: $2x^3 - 8x$.",
+      "options": [
+        "$2x(x^2 - 4)$",
+        "$2x(x - 2)(x - 2)$",
+        "$2x(x - 2)(x + 2)$",
+        "$2(x^3 - 4x)$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Factor the expression $x^2 - 10x + 25$.",
+      "options": [
+        "$(x - 5)(x + 5)$",
+        "$(x - 5)^2$",
+        "$(x + 5)^2$",
+        "$(x - 25)(x + 1)$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Which of the following is the correct factorization of $6x^2 - 7x - 3$?",
+      "options": [
+        "$(2x - 3)(3x + 1)$",
+        "$(2x + 3)(3x - 1)$",
+        "$(6x + 1)(x - 3)$",
+        "$(3x + 3)(2x - 1)$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Factor $27x^3 - 1$ completely.",
+      "options": [
+        "$(3x - 1)(9x^2 + 3x + 1)$",
+        "$(3x - 1)(9x^2 - 3x + 1)$",
+        "$(3x - 1)(3x^2 + 3x + 1)$",
+        "$(3x + 1)(9x^2 - 3x + 1)$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Factor $x^4 - 81$.",
+      "options": [
+        "$(x^2 - 9)(x^2 - 9)$",
+        "$(x^2 + 9)(x + 3)(x - 3)$",
+        "$(x^2 + 9)(x^2 + 9)$",
+        "$(x - 3)^2(x + 3)^2$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "FP",
+      "question_text": "What is the factored form of $15x^2 + 14x - 8$?",
+      "options": [
+        "$(3x + 4)(5x - 2)$",
+        "$(3x - 4)(5x + 2)$",
+        "$(5x + 4)(3x - 2)$",
+        "$(15x - 2)(x + 4)$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Factor $x^2 + 6x + 9 - y^2$ by grouping.",
+      "options": [
+        "$(x + 3 - y)(x + 3 + y)$",
+        "$(x + 3 - y)^2$",
+        "$(x + 3 + y)(x - 3 - y)$",
+        "$(x + 3)(x + 3 - y^2)$"
+      ],
+      "correct_option_index": 0
+    }
+  ],
+  "SP": [
+    {
+      "node_id": "SP",
+      "question_text": "What is the product of $(x + 5)(x + 3)$?",
+      "options": [
+        "$x^2 + 8x + 15$",
+        "$x^2 + 15x + 8$",
+        "$x^2 + 2x + 15$",
+        "$x^2 + 8x + 8$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Expand the square of a binomial: $(x - 4)^2$.",
+      "options": [
+        "$x^2 - 16$",
+        "$x^2 - 8x - 16$",
+        "$x^2 - 8x + 16$",
+        "$x^2 + 8x + 16$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "SP",
+      "question_text": "What is the result of $(2x + 3)(2x - 3)$?",
+      "options": [
+        "$4x^2 - 9$",
+        "$4x^2 + 9$",
+        "$4x^2 - 12x - 9$",
+        "$2x^2 - 9$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Find the product of $(3x - 2)(x + 4)$.",
+      "options": [
+        "$3x^2 + 10x - 8$",
+        "$3x^2 + 14x - 8$",
+        "$3x^2 + 8x - 8$",
+        "$3x^2 + 10x + 8$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Which expression is equivalent to $(x + y)^2$?",
+      "options": [
+        "$x^2 + y^2$",
+        "$x^2 + xy + y^2$",
+        "$x^2 + 2xy + y^2$",
+        "$x^2 + 2x + 2y + y^2$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Multiply $(2x^2 - 1)(3x^2 + 5)$.",
+      "options": [
+        "$6x^4 + 7x^2 - 5$",
+        "$6x^4 - 7x^2 - 5$",
+        "$6x^4 + 13x^2 - 5$",
+        "$5x^4 + 7x^2 + 4$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Expand $(4x - 5y)^2$.",
+      "options": [
+        "$16x^2 - 25y^2$",
+        "$16x^2 - 20xy + 25y^2$",
+        "$16x^2 - 40xy + 25y^2$",
+        "$16x^2 + 40xy + 25y^2$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "SP",
+      "question_text": "What is $(x + 3)(x^2 - 3x + 9)$?",
+      "options": [
+        "$x^3 + 27$",
+        "$x^3 - 27$",
+        "$x^3 + 9x^2 + 27$",
+        "$x^3 - 9x^2 + 27$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Find the product: $(a - 2b)(a + 2b)(a^2 + 4b^2)$.",
+      "options": [
+        "$a^4 - 16b^4$",
+        "$a^4 + 16b^4$",
+        "$a^4 - 8a^2b^2 + 16b^4$",
+        "$a^4 - 4a^2b^2 + 16b^4$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Simplify $(x + 2)(x + 3)(x - 1)$.",
+      "options": [
+        "$x^3 + 4x^2 + x - 6$",
+        "$x^3 + 6x^2 + 5x - 6$",
+        "$x^3 + 4x^2 - x - 6$",
+        "$x^3 + 2x^2 + x + 6$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "What is the product of $(2x + 1)^3$?",
+      "options": [
+        "$8x^3 + 12x^2 + 6x + 1$",
+        "$8x^3 + 6x^2 + 6x + 1$",
+        "$8x^3 + 12x^2 + 4x + 1$",
+        "$8x^3 + 1$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Expand $(x - 1)(x + 1)(x^2 + 1)$.",
+      "options": [
+        "$x^4 - 1$",
+        "$x^4 + 1$",
+        "$x^4 - 2x^2 + 1$",
+        "$x^4 + 2x^2 - 1$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Multiply $(3x - 4y)(2x + 5y)$.",
+      "options": [
+        "$6x^2 + 7xy - 20y^2$",
+        "$6x^2 + 23xy - 20y^2$",
+        "$6x^2 - 7xy - 20y^2$",
+        "$6x^2 + 15xy - 20y^2$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "What is the result of $(x - 5)(x^2 + 5x + 25)$?",
+      "options": [
+        "$x^3 - 125$",
+        "$x^3 + 125$",
+        "$x^3 - 25x + 125$",
+        "$x^3 + 25x - 125$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Expand $(x + 2)^2 - (x - 2)^2$.",
+      "options": [
+        "$8x$",
+        "$4x$",
+        "$0$",
+        "$8x + 8$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Calculate the product: $(x^2 + x + 1)(x^2 - x + 1)$.",
+      "options": [
+        "$x^4 + x^2 + 1$",
+        "$x^4 + 2x^2 + 1$",
+        "$x^4 - x^2 + 1$",
+        "$x^4 + 1$"
+      ],
+      "correct_option_index": 0
+    }
+  ],
+  "LE": [
+    {
+      "node_id": "LE",
+      "question_text": "Simplify the expression: $x^3 \\cdot x^5$",
+      "options": [
+        "$x^2$",
+        "$x^8$",
+        "$x^{15}$",
+        "$2x^8$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "LE",
+      "question_text": "Evaluate the expression: $(2^2)^3$",
+      "options": [
+        "$2^5$",
+        "$2^6$",
+        "$4^3$",
+        "$2^8$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "LE",
+      "question_text": "What is the simplified form of $\\frac{a^7}{a^3}$?",
+      "options": [
+        "$a^4$",
+        "$a^{10}$",
+        "$a^{21}$",
+        "$a^2$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "LE",
+      "question_text": "Simplify: $(3xy^2)^3$",
+      "options": [
+        "$9x^3y^6$",
+        "$27x^3y^5$",
+        "$27x^3y^6$",
+        "$3x^3y^6$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "LE",
+      "question_text": "What is the value of $(5x^0)^2$?",
+      "options": [
+        "$0$",
+        "$10$",
+        "$25$",
+        "$25x^2$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "LE",
+      "question_text": "Simplify the expression: $x^{-4} \\cdot x^6$",
+      "options": [
+        "$x^2$",
+        "$x^{-24}$",
+        "$x^{-2}$",
+        "$x^{10}$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "LE",
+      "question_text": "Which of the following is equivalent to $b^{-3}$?",
+      "options": [
+        "$-b^3$",
+        "$\\frac{1}{b^3}$",
+        "$\\frac{1}{b^{-3}}$",
+        "$-3b$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "LE",
+      "question_text": "Simplify: $\\left(\\frac{2x}{y}\\right)^4$",
+      "options": [
+        "$\\frac{8x^4}{y^4}$",
+        "$\\frac{16x^4}{y^4}$",
+        "$\\frac{2x^4}{y^4}$",
+        "$\\frac{16x}{y}$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "LE",
+      "question_text": "Evaluate: $3^0 + 4^0 + 5^0$",
+      "options": [
+        "$0$",
+        "$3$",
+        "$12$",
+        "$1$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "LE",
+      "question_text": "Simplify: $\\frac{12x^5y^3}{4x^2y^7}$",
+      "options": [
+        "$3x^3y^4$",
+        "$\\frac{3x^3}{y^4}$",
+        "$8x^3y^4$",
+        "$\\frac{3x^7}{y^{10}}$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "LE",
+      "question_text": "Simplify: $(x^2y^{-3})^2 \\cdot (x^3y^2)$",
+      "options": [
+        "$x^7y^{-4}$",
+        "$x^7y^{-6}$",
+        "$x^4y^{-6}$",
+        "$x^5y^{-1}$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "LE",
+      "question_text": "What is the equivalent expression of $\\frac{x^n \\cdot x^{n+2}}{x^{2n}}$?",
+      "options": [
+        "$x^2$",
+        "$x^{-2}$",
+        "$x^{2n+2}$",
+        "$x^n$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "LE",
+      "question_text": "Simplify: $\\left(\\frac{a^{-2}b^3}{a^4b^{-1}}\\right)^0$",
+      "options": [
+        "$1$",
+        "$0$",
+        "$\\frac{b^4}{a^6}$",
+        "$\\frac{a^6}{b^4}$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "LE",
+      "question_text": "Simplify the expression: $(2x^3y^2)^{-2}$",
+      "options": [
+        "$\\frac{1}{4x^6y^4}$",
+        "$4x^6y^4$",
+        "$-4x^6y^4$",
+        "$\\frac{1}{2x^6y^4}$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "LE",
+      "question_text": "If $2^x = 32$, what is the value of $x$?",
+      "options": [
+        "$3$",
+        "$4$",
+        "$5$",
+        "$6$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "LE",
+      "question_text": "Simplify: $\\frac{(x^2y^3)^4}{x^5y^6}$",
+      "options": [
+        "$x^3y^6$",
+        "$x^8y^{12}$",
+        "$x^3y^{18}$",
+        "$x^{-3}y^{-6}$"
+      ],
+      "correct_option_index": 0
+    }
+  ],
+  "OI": [
+    {
+      "node_id": "OI",
+      "question_text": "What is the result of $-15 + (-8) - (-12)$?",
+      "options": [
+        "$-11$",
+        "$-19$",
+        "$11$",
+        "$19$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "OI",
+      "question_text": "Evaluate the expression $5 - (-3) \\times (-4) + 2$.",
+      "options": [
+        "$-25$",
+        "$15$",
+        "$-5$",
+        "$34$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "OI",
+      "question_text": "Simplify the expression: $(-2)^3 - (-3)^2 + (-4)^2$.",
+      "options": [
+        "$-33$",
+        "$1$",
+        "$-1$",
+        "$33$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "OI",
+      "question_text": "Solve for the value of $x$ in $x = (-12 \\div 4) - (-5 \\times 2)$.",
+      "options": [
+        "$-13$",
+        "$7$",
+        "$13$",
+        "$-7$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "OI",
+      "question_text": "What is the result of $-48 \\div 6 + (-3) \\times (-4)$?",
+      "options": [
+        "$-20$",
+        "$4$",
+        "$20$",
+        "$-4$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "OI",
+      "question_text": "Evaluate $|-10 - 5| - |3 - 8|$.",
+      "options": [
+        "$10$",
+        "$20$",
+        "$0$",
+        "$-10$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "OI",
+      "question_text": "Find the value of $3(4 - 7)^2 - 2(5 - 8)$.",
+      "options": [
+        "$21$",
+        "$33$",
+        "$39$",
+        "$15$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "OI",
+      "question_text": "If $a = -2$ and $b = 3$, what is $a^2b - ab^2$?",
+      "options": [
+        "$-30$",
+        "$30$",
+        "$6$",
+        "$-6$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "OI",
+      "question_text": "Simplify: $(-1)^{101} + (-1)^{100}$.",
+      "options": [
+        "$2$",
+        "$0$",
+        "$-2$",
+        "$1$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "OI",
+      "question_text": "What is the result of $15 - [3 - (4 - 7) + 2]$?",
+      "options": [
+        "$7$",
+        "$9$",
+        "$13$",
+        "$23$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "OI",
+      "question_text": "Evaluate $20 + (-4) \\times 3 - 8 \\div (-2)$.",
+      "options": [
+        "$12$",
+        "$44$",
+        "$24$",
+        "$16$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "OI",
+      "question_text": "Solve: $-5 - (2 - 7)^2 + 10$.",
+      "options": [
+        "$-20$",
+        "$30$",
+        "$-10$",
+        "$10$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "OI",
+      "question_text": "What is the product of $-3$, $-4$, and $2$ subtracted from $10$?",
+      "options": [
+        "$34$",
+        "$-14$",
+        "$22$",
+        "$-2$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "OI",
+      "question_text": "Simplify $\\frac{(-6) \\times 4}{-2} + (-3)$.",
+      "options": [
+        "$9$",
+        "$-9$",
+        "$15$",
+        "$3$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "OI",
+      "question_text": "If $x = -5$, evaluate $x^2 - 3x + 1$.",
+      "options": [
+        "$9$",
+        "$41$",
+        "$-9$",
+        "$11$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "OI",
+      "question_text": "What is $-2 \\times [(-5 + 3)^2 - 4]$?",
+      "options": [
+        "$0$",
+        "$8$",
+        "$-16$",
+        "$16$"
+      ],
+      "correct_option_index": 0
+    }
+  ],
+  "FD": [
+    {
+      "node_id": "FD",
+      "question_text": "What is the result of the expression $\\frac{3}{4} + \\frac{2}{5} - \\frac{1}{2}$?",
+      "options": [
+        "$\\frac{13}{20}$",
+        "$\\frac{6}{20}$",
+        "$\\frac{9}{20}$",
+        "$\\frac{17}{20}$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Evaluate the following decimal operation: $12.5 \\times 0.04 - 0.15$.",
+      "options": [
+        "$0.35$",
+        "$0.5$",
+        "$0.45$",
+        "$0.25$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Simplify the complex fraction $\\frac{\\frac{2}{3} + \\frac{1}{4}}{\\frac{5}{6}}$.",
+      "options": [
+        "$\\frac{11}{10}$",
+        "$\\frac{10}{11}$",
+        "$\\frac{13}{10}$",
+        "$\\frac{10}{13}$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Express the repeating decimal $0.666...$ as a fraction in simplest form.",
+      "options": [
+        "$\\frac{6}{10}$",
+        "$\\frac{3}{5}$",
+        "$\\frac{2}{3}$",
+        "$\\frac{66}{100}$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Solve for $x$ in the equation $\\frac{x}{2.5} = \\frac{4}{0.5}$.",
+      "options": [
+        "$10$",
+        "$20$",
+        "$5$",
+        "$2.5$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "FD",
+      "question_text": "What is $15\\%$ of $\\frac{4}{5}$ expressed as a decimal?",
+      "options": [
+        "$0.12$",
+        "$0.012$",
+        "$0.15$",
+        "$1.2$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Calculate the value of $(0.2)^3 + \\frac{1}{8}$.",
+      "options": [
+        "$0.133$",
+        "$0.125$",
+        "$0.145$",
+        "$0.208$"
+      ],
+      "correct_option_index": 3
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Which of the following is equivalent to $\\frac{3}{8} \\div 0.75$?",
+      "options": [
+        "$0.5$",
+        "$0.25$",
+        "$0.75$",
+        "$1.5$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Find the value of $x$ if $x = \\sqrt{\\frac{1}{16} + \\frac{9}{16}}$.",
+      "options": [
+        "$\\frac{\\sqrt{10}}{4}$",
+        "$\\frac{10}{4}$",
+        "$\\frac{\\sqrt{5}}{2}$",
+        "$\\frac{5}{4}$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Perform the operation: $2.4 \\div (\\frac{1}{2} + 0.3)$.",
+      "options": [
+        "$3$",
+        "$4$",
+        "$5$",
+        "$6$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FD",
+      "question_text": "What is the value of $(\\frac{2}{3})^2 - 0.111...$?",
+      "options": [
+        "$\\frac{1}{3}$",
+        "$\\frac{3}{9}$",
+        "$\\frac{5}{9}$",
+        "$\\frac{4}{9}$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "FD",
+      "question_text": "If $a = 0.5$ and $b = \\frac{1}{4}$, what is $\\frac{a+b}{a-b}$?",
+      "options": [
+        "$2$",
+        "$3$",
+        "$4$",
+        "$1$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Convert the fraction $\\frac{7}{40}$ into a decimal.",
+      "options": [
+        "$0.175$",
+        "$0.125$",
+        "$0.74$",
+        "$0.0175$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Simplify $\\frac{0.008}{0.2}$.",
+      "options": [
+        "$0.4$",
+        "$0.04$",
+        "$0.004$",
+        "$4$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Evaluate $\\frac{1}{2} - (0.25 + \\frac{1}{8})$.",
+      "options": [
+        "$0.125$",
+        "$0.25$",
+        "$0.375$",
+        "$0.0625$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Solve for $x$: $0.5x + \\frac{1}{4} = 1.25$.",
+      "options": [
+        "$1$",
+        "$1.5$",
+        "$2$",
+        "$2.5$"
+      ],
+      "correct_option_index": 2
+    }
+  ],
+  "SLE": [
+    {
+      "node_id": "SLE",
+      "question_text": "Which ordered pair is a solution to the system: $y = 2x + 1$ and $y = -x + 4$?",
+      "options": [
+        "(1, 3)",
+        "(2, 2)",
+        "(0, 4)",
+        "(3, 1)"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "How many solutions does the following system have? $y = 3x + 2$ and $y = 3x - 5$",
+      "options": [
+        "Zero solutions",
+        "Exactly one solution",
+        "Two solutions",
+        "Infinitely many solutions"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "Solve the system by substitution: $y = 4x$ and $x + y = 10$.",
+      "options": [
+        "(1, 4)",
+        "(2, 8)",
+        "(8, 2)",
+        "(4, 1)"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "What is the solution to the system: $x + y = 7$ and $x - y = 3$?",
+      "options": [
+        "(4, 3)",
+        "(5, 2)",
+        "(6, 1)",
+        "(7, 0)"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "If two lines in a system have the same slope but different y-intercepts, the system has:",
+      "options": [
+        "One solution",
+        "No solution",
+        "Infinitely many solutions",
+        "Negative solutions"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "Solve for x: $2x + 3y = 12$ and $2x - y = 4$.",
+      "options": [
+        "x = 3",
+        "x = 2",
+        "x = 4",
+        "x = 1"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "Which system of equations is represented by the lines that intersect at $(-2, 3)$?",
+      "options": [
+        "$y = x + 5$ and $y = -2x - 1$",
+        "$y = x + 1$ and $y = 2x + 7$",
+        "$y = -x + 1$ and $y = x + 5$",
+        "$y = 2x + 7$ and $y = -x + 1$"
+      ],
+      "correct_option_index": 3
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "A system consists of the equations $y = 2x + 3$ and $2y = 4x + 6$. How many solutions does it have?",
+      "options": [
+        "Zero",
+        "One",
+        "Two",
+        "Infinitely many"
+      ],
+      "correct_option_index": 3
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "At a snack bar, 2 sodas and 1 hot dog cost \u20b15. 1 soda and 2 hot dogs cost \u20b17. What is the cost of one soda?",
+      "options": [
+        "\u20b11.00",
+        "\u20b11.50",
+        "\u20b12.00",
+        "\u20b12.50"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "What is the y-coordinate of the solution to the system: $3x + y = 9$ and $2x - y = 1$?",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "Which method is most efficient to solve the system: $x = 3y + 2$ and $x + 2y = 12$?",
+      "options": [
+        "Graphing",
+        "Substitution",
+        "Elimination",
+        "Cross-multiplication"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "If you multiply the first equation of a system by 2 to eliminate a variable, what must be true about the second equation?",
+      "options": [
+        "It must also be multiplied by 2",
+        "It must be divided by 2",
+        "The coefficients of the target variable must be opposites",
+        "The constant must be 0"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "Solve: $5x + 2y = 16$ and $3x + 2y = 12$.",
+      "options": [
+        "(2, 3)",
+        "(3, 2)",
+        "(4, 0)",
+        "(0, 8)"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "A rectangle has a perimeter of 20. If length $L = W + 2$, what is the width $W$?",
+      "options": [
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "Which of these systems is inconsistent?",
+      "options": [
+        "$y=x, y=-x$",
+        "$y=2x+1, y=2x+3$",
+        "$y=x+5, y=3x+5$",
+        "$y=5, x=5$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "Find the intersection point of $x = 4$ and $y = -2$.",
+      "options": [
+        "(0, 0)",
+        "(4, -2)",
+        "(-2, 4)",
+        "None"
+      ],
+      "correct_option_index": 1
+    }
+  ],
+  "L2V": [
+    {
+      "node_id": "L2V",
+      "question_text": "Which of the following is a linear equation in two variables?",
+      "options": [
+        "x^2 + y = 5",
+        "3x + 2y = 6",
+        "x + 1/y = 4",
+        "2x - 3y^2 = 1"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "How many solutions can a linear equation in two variables have?",
+      "options": [
+        "Zero",
+        "Exactly one",
+        "Exactly two",
+        "Infinitely many"
+      ],
+      "correct_option_index": 3
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "Which point lies on the line represented by the equation 2x + y = 7?",
+      "options": [
+        "(1, 4)",
+        "(2, 3)",
+        "(3, 2)",
+        "(0, 8)"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "The graph of the equation x = 5 is a line that is:",
+      "options": [
+        "Parallel to the x-axis",
+        "Parallel to the y-axis",
+        "Passing through the origin",
+        "Slanted with a slope of 1"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "Find the value of y when x = 2 for the equation 3x - 2y = 2.",
+      "options": [
+        "y = 1",
+        "y = 2",
+        "y = 3",
+        "y = 4"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "What is the slope of the line represented by y = -3x + 5?",
+      "options": [
+        "5",
+        "3",
+        "-3",
+        "-5"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "If the point (k, 2) lies on the line 4x - y = 6, what is the value of k?",
+      "options": [
+        "k = 1",
+        "k = 2",
+        "k = 3",
+        "k = 4"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "The equation of the x-axis is given by:",
+      "options": [
+        "x = 0",
+        "y = 0",
+        "x = y",
+        "x + y = 0"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "Which equation represents a line passing through the origin (0,0)?",
+      "options": [
+        "y = x + 1",
+        "y = 2x",
+        "x + y = 5",
+        "y = 3"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "What is the y-intercept of the line 2x - 3y = 12?",
+      "options": [
+        "-4",
+        "4",
+        "6",
+        "-6"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "Which equation is equivalent to y = 2x - 4?",
+      "options": [
+        "2x + y = 4",
+        "2x - y = 4",
+        "x - 2y = 4",
+        "2x + y = -4"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "What is the x-intercept of the line 5x + 2y = 10?",
+      "options": [
+        "(2, 0)",
+        "(0, 5)",
+        "(5, 0)",
+        "(0, 2)"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "If a line passes through (0, 3) and (2, 3), what is its equation?",
+      "options": [
+        "x = 3",
+        "y = 3",
+        "x = 2",
+        "y = 2"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "The graph of which equation is a vertical line?",
+      "options": [
+        "y = 4",
+        "x = 4",
+        "y = x",
+        "y = x + 4"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "For the equation ax + by + c = 0, which condition must be met for it to be a linear equation in two variables?",
+      "options": [
+        "a = 0, b = 0",
+        "a^2 + b^2 = 0",
+        "a^2 + b^2 > 0",
+        "c = 0"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "Which of these lines has a negative slope?",
+      "options": [
+        "y = 2x + 1",
+        "y = -x + 3",
+        "y = 5",
+        "x = 2"
+      ],
+      "correct_option_index": 1
+    }
+  ],
+  "L1V": [
+    {
+      "node_id": "L1V",
+      "question_text": "Solve for $x$ in the equation $4x - 7 = 13$.",
+      "options": [
+        "$x = 1.5$",
+        "$x = 5$",
+        "$x = 6$",
+        "$x = 20$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "What is the value of $y$ if $3(y - 2) = 15$?",
+      "options": [
+        "$y = 3$",
+        "$y = 5$",
+        "$y = 7$",
+        "$y = 17$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "Find the value of $n$ in $\frac{n}{4} + 5 = 9$.",
+      "options": [
+        "$n = 1$",
+        "$n = 16$",
+        "$n = 36$",
+        "$n = 56$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "Solve for $x$: $5x + 8 = 2x - 7$.",
+      "options": [
+        "$x = -5$",
+        "$x = -3$",
+        "$x = 3$",
+        "$x = 5$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "Which value of $p$ satisfies the equation $2(3p - 4) = 4(p + 1)$?",
+      "options": [
+        "$p = 2$",
+        "$p = 4$",
+        "$p = 6$",
+        "$p = 8$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "Solve for $a$ in the equation $\frac{2a - 3}{5} = 3$.",
+      "options": [
+        "$a = 6$",
+        "$a = 9$",
+        "$a = 12$",
+        "$a = 18$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "Find the solution to $0.5x + 2 = 0.2x + 5$.",
+      "options": [
+        "$x = 1$",
+        "$x = 5$",
+        "$x = 10$",
+        "$x = 15$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "What is the value of $x$ in $\frac{x}{2} - \frac{x}{3} = 2$?",
+      "options": [
+        "$x = 6$",
+        "$x = 10$",
+        "$x = 12$",
+        "$x = 24$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "Solve for $k$: $3(k + 2) - 5 = 2(k - 1) + 4$.",
+      "options": [
+        "$k = 1$",
+        "$k = 3$",
+        "$k = 5$",
+        "$k = 7$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "If $4x - (2x + 5) = 9$, what is the value of $x$?",
+      "options": [
+        "$x = 2$",
+        "$x = 4$",
+        "$x = 7$",
+        "$x = 14$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "Solve for $m$: $\frac{3}{4}m - 2 = \frac{1}{2}m + 1$.",
+      "options": [
+        "$m = 4$",
+        "$m = 8$",
+        "$m = 12$",
+        "$m = 16$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "Find $x$ if $2(x - 3) = 3x - (x + 5)$.",
+      "options": [
+        "$x = 0$",
+        "$x = 1$",
+        "$x = -1$",
+        "No solution"
+      ],
+      "correct_option_index": 3
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "Solve for $w$ in $\frac{w + 3}{2} = \frac{2w - 1}{3}$.",
+      "options": [
+        "$w = 7$",
+        "$w = 9$",
+        "$w = 11$",
+        "$w = 13$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "What is the value of $x$ if $5x - 3(x - 2) = 2(x + 3)$?",
+      "options": [
+        "$x = 0$",
+        "$x = 1$",
+        "Infinitely many solutions",
+        "No solution"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "Solve for $y$: $\frac{y}{3} + \frac{y}{2} = 5$.",
+      "options": [
+        "$y = 6$",
+        "$y = 5$",
+        "$y = 3$",
+        "$y = 1$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "Find $x$ in the equation $4(2x - 3) = 8x - 12$.",
+      "options": [
+        "$x = 0$",
+        "$x = 1$",
+        "Infinitely many solutions",
+        "No solution"
+      ],
+      "correct_option_index": 2
+    }
+  ],
+  "AE": [
+    {
+      "node_id": "AE",
+      "question_text": "Evaluate $3x - 5$ when $x = 4$.",
+      "options": [
+        "$7$",
+        "$12$",
+        "$9$",
+        "$17$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "AE",
+      "question_text": "Evaluate $2a^2 + 3b$ when $a = 3$ and $b = -1$.",
+      "options": [
+        "$15$",
+        "$21$",
+        "$12$",
+        "$18$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "AE",
+      "question_text": "What is the value of $x^2 - 2x + 1$ when $x = 5$?",
+      "options": [
+        "$11$",
+        "$16$",
+        "$21$",
+        "$26$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "AE",
+      "question_text": "Evaluate $4m - n$ when $m = 2$ and $n = 3$.",
+      "options": [
+        "$5$",
+        "$11$",
+        "$9$",
+        "$8$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "AE",
+      "question_text": "If $y = 3x + 2$, what is $y$ when $x = -1$?",
+      "options": [
+        "$-1$",
+        "$1$",
+        "$5$",
+        "$-5$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "AE",
+      "question_text": "Evaluate $\\frac{a+b}{2}$ when $a = 10$ and $b = 6$.",
+      "options": [
+        "$4$",
+        "$8$",
+        "$16$",
+        "$3$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "AE",
+      "question_text": "What is the value of $p^2 - q^2$ when $p = 5$ and $q = 3$?",
+      "options": [
+        "$16$",
+        "$4$",
+        "$34$",
+        "$64$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "AE",
+      "question_text": "Evaluate $3(x + y)$ when $x = 2$ and $y = 4$.",
+      "options": [
+        "$10$",
+        "$14$",
+        "$18$",
+        "$24$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "AE",
+      "question_text": "If $f(x) = x^2 + 4x$, what is $f(-2)$?",
+      "options": [
+        "$-4$",
+        "$4$",
+        "$12$",
+        "$0$"
+      ],
+      "correct_option_index": 3
+    },
+    {
+      "node_id": "AE",
+      "question_text": "Evaluate $5ab - 2c$ when $a = 2$, $b = 3$, and $c = 4$.",
+      "options": [
+        "$22$",
+        "$30$",
+        "$34$",
+        "$8$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "AE",
+      "question_text": "What is the value of $2x^3$ when $x = -1$?",
+      "options": [
+        "$2$",
+        "$-2$",
+        "$6$",
+        "$-6$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "AE",
+      "question_text": "Evaluate $\\frac{3x^2 - 1}{x + 2}$ when $x = 3$.",
+      "options": [
+        "$26/5$",
+        "$4$",
+        "$5.2$",
+        "$5$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "AE",
+      "question_text": "Which expression has a value of $0$ when $x = 2$?",
+      "options": [
+        "$x^2 - 4$",
+        "$x^2 + 4$",
+        "$x + 2$",
+        "$2x - 6$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "AE",
+      "question_text": "Evaluate $|2x - 7|$ when $x = 1$.",
+      "options": [
+        "$-5$",
+        "$5$",
+        "$9$",
+        "$-9$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "AE",
+      "question_text": "If $g(x) = 2x^2 - 3x + 1$, what is $g(0)$?",
+      "options": [
+        "$0$",
+        "$1$",
+        "$-1$",
+        "$6$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "AE",
+      "question_text": "Evaluate $\\sqrt{a^2 + b^2}$ when $a = 3$ and $b = 4$.",
+      "options": [
+        "$5$",
+        "$7$",
+        "$25$",
+        "$12$"
+      ],
+      "correct_option_index": 0
+    }
+  ],
+  "RPP": [
+    {
+      "node_id": "RPP",
+      "question_text": "A fruit bowl contains 3 apples and 5 oranges. What is the ratio of apples to the total number of pieces of fruit?",
+      "options": [
+        "3:5",
+        "3:8",
+        "5:8",
+        "8:3"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "If a recipe requires 2 cups of flour for every 3 cups of sugar, how many cups of flour are needed for 12 cups of sugar?",
+      "options": [
+        "4",
+        "6",
+        "8",
+        "18"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "What is 25% of 80?",
+      "options": [
+        "10",
+        "15",
+        "20",
+        "25"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "Which of the following ratios is equivalent to 4:6?",
+      "options": [
+        "2:4",
+        "6:8",
+        "8:12",
+        "10:14"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "A car travels 150 miles in 3 hours. What is the unit rate in miles per hour?",
+      "options": [
+        "40",
+        "45",
+        "50",
+        "55"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "Express the fraction 4/5 as a percentage.",
+      "options": [
+        "40%",
+        "60%",
+        "80%",
+        "85%"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "A store offers a discount of 10% on a \u20b150 item. How much is the discount?",
+      "options": [
+        "\u20b15",
+        "\u20b110",
+        "\u20b140",
+        "\u20b145"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "If 7 out of 20 students in a class wear glasses, what percentage of the class wears glasses?",
+      "options": [
+        "7%",
+        "14%",
+        "35%",
+        "70%"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "A bag contains blue and red marbles in a ratio of 2:3. If there are 10 blue marbles, how many red marbles are there?",
+      "options": [
+        "12",
+        "15",
+        "20",
+        "25"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "Which of the following is equivalent to 0.6?",
+      "options": [
+        "6%",
+        "60%",
+        "600%",
+        "1/6"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "A printer can print 20 pages in 4 minutes. How many pages can it print in 1 minute?",
+      "options": [
+        "4",
+        "5",
+        "6",
+        "8"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "What is the ratio of 15 minutes to 1 hour simplified?",
+      "options": [
+        "1:4",
+        "1:3",
+        "15:1",
+        "1:60"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "If a shirt costs \u20b120 and the tax is 5%, what is the total cost of the shirt?",
+      "options": [
+        "\u20b120.05",
+        "\u20b121.00",
+        "\u20b125.00",
+        "\u20b120.50"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "A survey showed that 40% of people prefer tea. If 200 people were surveyed, how many prefer tea?",
+      "options": [
+        "40",
+        "60",
+        "80",
+        "120"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "Which ratio is greater: 2:3 or 3:5?",
+      "options": [
+        "2:3",
+        "3:5",
+        "They are equal",
+        "Cannot be determined"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "If 5 pencils cost \u20b12.00, how much do 8 pencils cost at the same rate?",
+      "options": [
+        "\u20b13.00",
+        "\u20b13.20",
+        "\u20b13.50",
+        "\u20b14.00"
+      ],
+      "correct_option_index": 1
+    }
+  ],
+  "RER": [
+    {
+      "node_id": "RER",
+      "question_text": "Which expression is equivalent to $x^{1/3}$?",
+      "options": [
+        "$\\sqrt{x}$",
+        "$\\sqrt[3]{x}$",
+        "$x^3$",
+        "$3x$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Simplify the expression $16^{1/2}$.",
+      "options": [
+        "4",
+        "8",
+        "32",
+        "256"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Evaluate $8^{2/3}$.",
+      "options": [
+        "4",
+        "16",
+        "24",
+        "64"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Which of the following is equivalent to $\\sqrt[4]{x^3}$?",
+      "options": [
+        "$x^{4/3}$",
+        "$x^{3/4}$",
+        "$3x^4$",
+        "$x^{1/12}$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Simplify $x^{1/2} \\cdot x^{1/4}$.",
+      "options": [
+        "$x^{1/8}$",
+        "$x^{1/6}$",
+        "$x^{3/4}$",
+        "$x^{2/4}$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Evaluate $27^{-1/3}$.",
+      "options": [
+        "-3",
+        "1/3",
+        "9",
+        "-9"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Which expression represents $\\frac{1}{\\sqrt{x^5}}$ using rational exponents?",
+      "options": [
+        "$x^{-5/2}$",
+        "$x^{5/2}$",
+        "$x^{-2/5}$",
+        "$x^{2/5}$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Simplify $(x^{2/3})^3$.",
+      "options": [
+        "$x^{2/9}$",
+        "$x^2$",
+        "$x^5$",
+        "$x^6$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Evaluate $100^{3/2}$.",
+      "options": [
+        "300",
+        "150",
+        "1000",
+        "10000"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Which of the following is equivalent to $\\sqrt{8}$?",
+      "options": [
+        "$2\\sqrt{2}$",
+        "$4\\sqrt{2}$",
+        "$2\\sqrt{4}$",
+        "$8\\sqrt{2}$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Simplify $\\frac{x^{5/2}}{x^{1/2}}$.",
+      "options": [
+        "$x^2$",
+        "$x^3$",
+        "$x^{5/4}$",
+        "$x^4$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "RER",
+      "question_text": "What is the value of $64^{1/6}$?",
+      "options": [
+        "4",
+        "3",
+        "2",
+        "1"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Rewrite $\\sqrt[5]{x^2}$ using rational exponents.",
+      "options": [
+        "$x^{5/2}$",
+        "$x^{2/5}$",
+        "$x^{10}$",
+        "$x^{3}$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Simplify $(x^4 y^8)^{1/4}$.",
+      "options": [
+        "$x y^2$",
+        "$x^4 y^2$",
+        "$x y^4$",
+        "$x^{16} y^{32}$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Evaluate $16^{-3/4}$.",
+      "options": [
+        "8",
+        "-8",
+        "1/8",
+        "-1/8"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Which expression is equal to $x^{0.5}$?",
+      "options": [
+        "$x^2$",
+        "$\\sqrt{x}$",
+        "$x/2$",
+        "$1/x$"
+      ],
+      "correct_option_index": 1
+    }
+  ],
+  "PE": [
+    {
+      "node_id": "PE",
+      "question_text": "Which of the following is a polynomial equation of degree $3$?",
+      "options": [
+        "$2x^2 + 5x - 3 = 0$",
+        "$x^3 - 4x + 1 = 0$",
+        "$x^4 - 2x^2 + 1 = 0$",
+        "$3x + 5 = 0$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PE",
+      "question_text": "What is the standard form of the polynomial equation $(x-2)(x+3) = 0$?",
+      "options": [
+        "$x^2 - x - 6 = 0$",
+        "$x^2 + x - 6 = 0$",
+        "$x^2 - 5x + 6 = 0$",
+        "$x^2 + x + 6 = 0$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PE",
+      "question_text": "Find the roots of the equation $x(x-5) = 0$.",
+      "options": [
+        "$x = 0$ and $x = 5$",
+        "$x = 0$ and $x = -5$",
+        "$x = 1$ and $x = 5$",
+        "$x = 5$ only"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PE",
+      "question_text": "What are the roots of the polynomial equation $x^2 - 9 = 0$?",
+      "options": [
+        "$3$",
+        "$-3$",
+        "$3$ and $-3$",
+        "$9$ and $-9$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "PE",
+      "question_text": "Using the Factor Theorem, if $P(2) = 0$, which of the following is a factor of the polynomial $P(x)$?",
+      "options": [
+        "$(x+2)$",
+        "$(x-2)$",
+        "$(2x+1)$",
+        "$(x-1)$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PE",
+      "question_text": "How many real roots does the equation $x^2 + 4 = 0$ have?",
+      "options": [
+        "$0$",
+        "$1$",
+        "$2$",
+        "$4$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PE",
+      "question_text": "Solve for the roots of $x^2 - 5x + 6 = 0$.",
+      "options": [
+        "$x = 1, 6$",
+        "$x = 2, 3$",
+        "$x = -2, -3$",
+        "$x = -1, -6$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PE",
+      "question_text": "What is the degree of the polynomial equation $(x^2 - 1)(x + 2) = 0$?",
+      "options": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "PE",
+      "question_text": "Find the roots of $(x-1)^2(x+4) = 0$.",
+      "options": [
+        "$x = 1$ (multiplicity 2), $x = -4$",
+        "$x = 1, x = -4$",
+        "$x = -1, x = 4$",
+        "$x = 1, x = -1, x = 4$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PE",
+      "question_text": "Which value of $x$ makes the equation $x^3 - 8 = 0$ true?",
+      "options": [
+        "$x = 8$",
+        "$x = 4$",
+        "$x = 2$",
+        "$x = -2$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "PE",
+      "question_text": "If $x = -3$ is a root of $x^2 + kx - 9 = 0$, what is the value of $k$?",
+      "options": [
+        "$0$",
+        "$3$",
+        "$-3$",
+        "$6$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PE",
+      "question_text": "What is the sum of the roots of the equation $x^2 - 7x + 10 = 0$?",
+      "options": [
+        "$5$",
+        "$10$",
+        "$7$",
+        "$-7$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "PE",
+      "question_text": "Which of these is a root of $x^3 - 2x^2 - x + 2 = 0$?",
+      "options": [
+        "$0$",
+        "$2$",
+        "$3$",
+        "$4$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PE",
+      "question_text": "Factor the polynomial $x^3 + x^2 - 6x = 0$ completely to find its roots.",
+      "options": [
+        "$x(x-2)(x+3) = 0$",
+        "$x(x+2)(x-3) = 0$",
+        "$x(x-2)(x-3) = 0$",
+        "$(x^2+1)(x-6) = 0$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PE",
+      "question_text": "According to the Rational Root Theorem, which of the following is a possible root of $2x^3 + x - 1 = 0$?",
+      "options": [
+        "$2$",
+        "$1$",
+        "$\frac{1}{2}$",
+        "$-2$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "PE",
+      "question_text": "What is the product of the roots of $x^2 - 5x + 6 = 0$?",
+      "options": [
+        "$5$",
+        "$-5$",
+        "$6$",
+        "$-6$"
+      ],
+      "correct_option_index": 2
+    }
+  ],
+  "PD": [
+    {
+      "node_id": "PD",
+      "question_text": "What is the quotient when $x^2 + 5x + 6$ is divided by $x + 2$?",
+      "options": [
+        "$x + 1$",
+        "$x + 2$",
+        "$x + 3$",
+        "$x + 4$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "PD",
+      "question_text": "Divide $4x^2 - 9$ by $2x - 3$.",
+      "options": [
+        "$2x - 3$",
+        "$2x + 3$",
+        "$4x + 3$",
+        "$2x + 9$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PD",
+      "question_text": "Using synthetic division, what is the remainder when $x^3 - 2x^2 + x - 5$ is divided by $x - 1$?",
+      "options": [
+        "$-5$",
+        "$-4$",
+        "$-3$",
+        "$0$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PD",
+      "question_text": "When $2x^2 + 7x + 3$ is divided by $x + 3$, what is the result?",
+      "options": [
+        "$2x + 1$",
+        "$2x - 1$",
+        "$x + 3$",
+        "$2x + 3$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PD",
+      "question_text": "Find the remainder when $P(x) = x^2 - 4x + 4$ is divided by $x - 2$.",
+      "options": [
+        "$4$",
+        "$2$",
+        "$1$",
+        "$0$"
+      ],
+      "correct_option_index": 3
+    },
+    {
+      "node_id": "PD",
+      "question_text": "Divide $x^3 + 27$ by $x + 3$.",
+      "options": [
+        "$x^2 + 3x + 9$",
+        "$x^2 - 3x + 9$",
+        "$x^2 - 9$",
+        "$x^2 + 9$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PD",
+      "question_text": "If $x^2 + 8x + 16$ is divided by $x + 4$, what is the quotient?",
+      "options": [
+        "$x + 4$",
+        "$x - 4$",
+        "$x + 8$",
+        "$x - 8$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PD",
+      "question_text": "Which expression is the remainder when $3x^2 - 5x + 2$ is divided by $x - 1$?",
+      "options": [
+        "$1$",
+        "$0$",
+        "$2$",
+        "$-1$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PD",
+      "question_text": "Divide $x^3 - x^2 - x - 2$ by $x - 2$. What is the quotient?",
+      "options": [
+        "$x^2 + x + 1$",
+        "$x^2 - x + 1$",
+        "$x^2 + 2x + 1$",
+        "$x^2 - 2x + 1$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PD",
+      "question_text": "What is the remainder when $2x^3 - 3x^2 + 4x - 5$ is divided by $x + 1$?",
+      "options": [
+        "$-14$",
+        "$-10$",
+        "$-5$",
+        "$0$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PD",
+      "question_text": "Perform the division $(x^2 - 7x + 12) \\div (x - 3)$.",
+      "options": [
+        "$x + 4$",
+        "$x - 4$",
+        "$x + 3$",
+        "$x - 3$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PD",
+      "question_text": "If $f(x) = x^4 - 1$ is divided by $x - 1$, what is the remainder?",
+      "options": [
+        "$0$",
+        "$1$",
+        "$-1$",
+        "$2$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PD",
+      "question_text": "Divide $6x^2 + 7x - 3$ by $2x + 3$.",
+      "options": [
+        "$3x - 1$",
+        "$3x + 1$",
+        "$2x - 3$",
+        "$3x - 3$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PD",
+      "question_text": "When $x^3 - 6x^2 + 11x - 6$ is divided by $x - 1$, the quotient is:",
+      "options": [
+        "$x^2 - 5x + 6$",
+        "$x^2 + 5x + 6$",
+        "$x^2 - 7x + 6$",
+        "$x^2 + 7x + 6$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PD",
+      "question_text": "Find the remainder when $5x^3 - 2x^2 + 3x - 1$ is divided by $x - 2$.",
+      "options": [
+        "$37$",
+        "$38$",
+        "$40$",
+        "$42$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PD",
+      "question_text": "Divide $x^4 - 16$ by $x - 2$. What is the remainder?",
+      "options": [
+        "$0$",
+        "$8$",
+        "$16$",
+        "$32$"
+      ],
+      "correct_option_index": 0
+    }
+  ],
+  "PO": [
+    {
+      "node_id": "PO",
+      "question_text": "What is the sum of $(3x^2 - 4x + 5)$ and $(2x^2 + 7x - 1)$?",
+      "options": [
+        "$5x^2 + 3x + 4$",
+        "$5x^2 - 3x + 6$",
+        "$5x^2 + 11x + 4$",
+        "$6x^2 + 3x + 4$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Subtract $(5a^2 - 2a)$ from $(8a^2 + 4a - 3)$.",
+      "options": [
+        "$3a^2 + 6a - 3$",
+        "$3a^2 + 2a - 3$",
+        "$13a^2 + 2a - 3$",
+        "$3a^2 - 6a + 3$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Find the product of $(2x + 3)(x - 5)$.",
+      "options": [
+        "$2x^2 - 7x - 15$",
+        "$2x^2 + 13x - 15$",
+        "$2x^2 - 13x - 15$",
+        "$2x^2 + 7x - 15$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Expand the square of the binomial $(3x - 4)^2$.",
+      "options": [
+        "$9x^2 - 16$",
+        "$9x^2 + 16$",
+        "$9x^2 - 12x + 16$",
+        "$9x^2 - 24x + 16$"
+      ],
+      "correct_option_index": 3
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Simplify the expression $2x(3x^2 - 5x + 4)$.",
+      "options": [
+        "$6x^3 - 10x^2 + 8x$",
+        "$6x^2 - 10x + 8$",
+        "$5x^3 - 7x^2 + 6x$",
+        "$6x^3 - 5x + 4$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Divide $(12x^3 - 8x^2 + 4x)$ by $4x$.",
+      "options": [
+        "$3x^2 - 2x + 1$",
+        "$3x^2 - 2x + 4x$",
+        "$3x^2 - 8x^2 + 4x$",
+        "$3x^3 - 2x^2 + x$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PO",
+      "question_text": "What is the product of $(x + 6)(x - 6)$?",
+      "options": [
+        "$x^2 + 36$",
+        "$x^2 - 36$",
+        "$x^2 + 12x - 36$",
+        "$x^2 - 12x - 36$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Evaluate $(x + 2)(x^2 - 2x + 4)$.",
+      "options": [
+        "$x^3 + 8$",
+        "$x^3 - 8$",
+        "$x^3 + 4x^2 - 8$",
+        "$x^3 + 2x^2 + 8$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Simplify $(4x^2 - 3x + 2) - (2x^2 - 5x - 6)$.",
+      "options": [
+        "$2x^2 - 8x - 4$",
+        "$2x^2 + 2x + 8$",
+        "$6x^2 + 2x - 4$",
+        "$2x^2 - 2x + 8$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Find the result of $(x - 3)^3$.",
+      "options": [
+        "$x^3 - 27$",
+        "$x^3 - 9x^2 + 27x - 27$",
+        "$x^3 - 3x^2 + 9x - 27$",
+        "$x^3 + 9x^2 - 27x + 27$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Multiply $(2x + 1)(3x^2 - x + 5)$.",
+      "options": [
+        "$6x^3 + x^2 + 9x + 5$",
+        "$6x^3 + x^2 + 5x + 5$",
+        "$6x^3 - 2x^2 + 10x + 5$",
+        "$6x^3 + 5x^2 + 9x + 5$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Divide $(x^2 + 5x + 6)$ by $(x + 2)$.",
+      "options": [
+        "$x + 3$",
+        "$x - 3$",
+        "$x + 2$",
+        "$x - 2$"
+      ],
+      "correct_option_index": 0
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Simplify $(3xy^2)( -2x^2y^3)$.",
+      "options": [
+        "$-6x^2y^5$",
+        "$-6x^3y^5$",
+        "$6x^3y^6$",
+        "$-6x^3y^6$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PO",
+      "question_text": "What is the perimeter of a rectangle with sides $(2x + 3)$ and $(x + 5)$?",
+      "options": [
+        "$3x + 8$",
+        "$6x + 16$",
+        "$2x^2 + 13x + 15$",
+        "$4x + 16$"
+      ],
+      "correct_option_index": 1
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Find the area of a square with a side length of $(x - 4)$.",
+      "options": [
+        "$x^2 - 16$",
+        "$x^2 + 16$",
+        "$x^2 - 8x + 16$",
+        "$x^2 - 4x + 16$"
+      ],
+      "correct_option_index": 2
+    },
+    {
+      "node_id": "PO",
+      "question_text": "If $P(x) = 2x^2 - x + 5$, what is $P(-2)$?",
+      "options": [
+        "$15$",
+        "$11$",
+        "$19$",
+        "$3$"
+      ],
+      "correct_option_index": 0
+    }
+  ]
+}
