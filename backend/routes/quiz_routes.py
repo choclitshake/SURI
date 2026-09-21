@@ -25,8 +25,6 @@ from backend.competency_utils import (
     upsert_status,
     mark_prerequisites_mastered,
     find_next_upward,
-    get_status,
-    get_chain,
 )
 from backend.progress_utils import compute_and_save_session_progress
 from backend.models.schemas import (
@@ -447,13 +445,24 @@ async def finish_quiz(body: QuizFinishRequest, student=Depends(get_current_stude
         mastery_score = passed_count / total_problems if total_problems > 0 else 0.0
         passed = passed_count >= PASS_THRESHOLD
 
+        # Fetch every problem's steps_json in ONE query instead of once per
+        # problem per loop (was up to 2 queries × problem count: one here,
+        # one again below inside the transaction).
+        problem_rows = await conn.fetch(
+            "SELECT id, steps_json FROM practice_problems WHERE id = ANY($1)",
+            problem_ids,
+        )
+        steps_by_pid = {
+            row["id"]: json.loads(row["steps_json"])
+            for row in problem_rows
+        }
+
         # Count total correct steps
         total_steps = 0
         total_correct = 0
         for pid in problem_ids:
-            prob = await conn.fetchrow("SELECT steps_json FROM practice_problems WHERE id = $1", pid)
-            if prob:
-                steps = json.loads(prob["steps_json"])
+            steps = steps_by_pid.get(pid)
+            if steps:
                 total_steps += len(steps)
                 wrong_step_indices = {e["step_index"] for e in step_errors if e["problem_id"] == pid}
                 total_correct += len(steps) - len(wrong_step_indices)
@@ -466,10 +475,9 @@ async def finish_quiz(body: QuizFinishRequest, student=Depends(get_current_stude
             )
 
             for pid in problem_ids:
-                prob = await conn.fetchrow("SELECT steps_json FROM practice_problems WHERE id = $1", pid)
-                if not prob:
+                steps = steps_by_pid.get(pid)
+                if not steps:
                     continue
-                steps = normalize_steps(json.loads(prob["steps_json"]))
                 n_steps = len(steps)
                 wrong_indices = {e["step_index"] for e in step_errors if e["problem_id"] == pid}
                 correct_count = n_steps - len(wrong_indices)
@@ -601,19 +609,16 @@ async def _run_progression(
 
             next_node = await find_next_upward(conn, student_id, node_id, topic_entry_node)
 
-            chain = get_chain(topic_entry_node)
-            all_statuses = []
-            for n in chain:
-                s = await get_status(conn, student_id, n)
-                all_statuses.append(s["status"] if s else "unresolved")
-            all_mastered = all(s == "mastered" for s in all_statuses)
+            # Single batched read gives mastered/total counts directly —
+            # no per-node get_status loop needed to check all_mastered.
+            progress = await compute_and_save_session_progress(conn, session_id, student_id, topic_entry_node)
+            all_mastered = progress["mastered_in_chain"] == progress["total_in_chain"]
 
             if all_mastered or next_node is None:
                 await conn.execute(
                     "UPDATE sessions SET completed = 1, last_active_at = $1 WHERE id = $2",
                     now_iso, session_id,
                 )
-                await compute_and_save_session_progress(conn, session_id, student_id, topic_entry_node)
                 return {**base, "topic_complete": True}
 
             await upsert_status(conn, student_id, next_node, "in_progress", "practice")
@@ -621,7 +626,6 @@ async def _run_progression(
                 "UPDATE sessions SET current_node = $1, last_active_at = $2 WHERE id = $3",
                 next_node, now_iso, session_id,
             )
-            await compute_and_save_session_progress(conn, session_id, student_id, topic_entry_node)
             return {
                 **base,
                 "next_node_id": next_node,

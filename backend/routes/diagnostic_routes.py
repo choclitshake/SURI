@@ -13,7 +13,7 @@ from backend.models.schemas import (
     DiagnosticSkipRequest,
 )
 from backend.graph import GRAPH, get_prerequisite_path
-from backend.competency_utils import get_chain, upsert_status, get_status
+from backend.competency_utils import get_chain, upsert_status, get_statuses, batch_upsert_statuses
 from backend.progress_utils import compute_and_save_session_progress
 
 router = APIRouter(prefix="/api/diagnostic", tags=["diagnostic"])
@@ -82,9 +82,12 @@ async def skip_diagnostic(
 
         async with conn.transaction():
             if chain:
-                await upsert_status(conn, student_id, chain[0], "in_progress", "skipped")
-                for node_id in chain[1:]:
-                    await upsert_status(conn, student_id, node_id, "unresolved", "skipped")
+                entries = [(student_id, chain[0], "in_progress", "skipped")]
+                entries += [
+                    (student_id, node_id, "unresolved", "skipped")
+                    for node_id in chain[1:]
+                ]
+                await batch_upsert_statuses(conn, entries)
 
             now_iso = datetime.now(timezone.utc).isoformat()
             await conn.execute(
@@ -162,10 +165,15 @@ async def submit_diagnostic(
                     # Node was never assessed (e.g. student got all correct before reaching it)
                     await upsert_status(conn, student_id, node_id, "unresolved", "diagnostic")
 
+                        # One round trip for the whole chain instead of one per node
+            # per loop below — the writes just happened in this same
+            # transaction, so this read sees them.
+            statuses_map = await get_statuses(conn, student_id, chain)
+
             # Find the deepest unresolved node as the learning gap
             gap_node = None
             for node_id in reversed(chain):
-                row = await get_status(conn, student_id, node_id)
+                row = statuses_map.get(node_id)
                 if row and row["status"] == "unresolved":
                     gap_node = node_id
                     break
@@ -174,7 +182,7 @@ async def submit_diagnostic(
             mastered_nodes = []
             unresolved_nodes = []
             for node_id in chain:
-                row = await get_status(conn, student_id, node_id)
+                row = statuses_map.get(node_id)
                 s = row["status"] if row else None
                 src = row["source"] if row else None
                 node_statuses.append({

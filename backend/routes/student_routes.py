@@ -60,66 +60,107 @@ async def get_student_progress(
 
     conn = await get_db()
     try:
+        # Get all sessions for this student.
         session_rows = await conn.fetch(
             """
-            SELECT * FROM sessions
+            SELECT *
+            FROM sessions
             WHERE student_id = $1
             ORDER BY last_active_at DESC
             """,
             student_id,
         )
+
         active_sessions = []
         completed_sessions = []
+
+        # Build all chains first (no DB work) so we can fetch every
+        # competency_status row needed, for every session, in one query.
+        session_chains = {}
+        all_chain_nodes = set()
 
         for session_row in session_rows:
             topic_entry_node = session_row["topic_entry_node"]
             if topic_entry_node not in ENTRY_NODES:
                 continue
-            current_node = session_row["current_node"]
             chain = get_chain(topic_entry_node)
-            total_in_chain = len(chain)
+            session_chains[session_row["id"]] = chain
+            all_chain_nodes.update(chain)
 
-            if chain:
-                status_rows = await conn.fetch(
-                    """
-                    SELECT node_id, status, source FROM competency_status
-                    WHERE student_id = $1 AND node_id = ANY($2)
-                    """,
-                    student_id, chain,
-                )
-            else:
-                status_rows = []
+        # Fetch ALL competency statuses needed by all sessions in one query.
+        status_by_node = {}
+
+        if all_chain_nodes:
+            status_rows = await conn.fetch(
+                """
+                SELECT node_id, status, source
+                FROM competency_status
+                WHERE student_id = $1
+                  AND node_id = ANY($2)
+                """,
+                student_id,
+                list(all_chain_nodes),
+            )
+
+            for row in status_rows:
+                status_by_node[row["node_id"]] = {
+                    "status": row["status"],
+                    "source": row["source"],
+                }
+
+        # Build each session using the already-fetched statuses.
+        for session_row in session_rows:
+            topic_entry_node = session_row["topic_entry_node"]
+
+            if topic_entry_node not in ENTRY_NODES:
+                continue
+
+            current_node = session_row["current_node"]
+            chain = session_chains.get(session_row["id"])
+            if chain is None:
+                continue
+            total_in_chain = len(chain)
 
             mastered_nodes = []
             in_progress_nodes = []
             unresolved_nodes = []
 
-            for row in status_rows:
-                nid = row["node_id"]
+            for nid in chain:
+                row = status_by_node.get(nid)
+
+                if not row:
+                    continue
+
                 item = {
                     "node_id": nid,
                     "node_label": GRAPH[nid]["label"],
                     "source": row["source"],
                 }
+
                 if row["status"] == "mastered":
                     mastered_nodes.append(item)
                 elif row["status"] == "in_progress":
                     in_progress_nodes.append(item)
                 elif row["status"] == "unresolved":
-                    unresolved_nodes.append({**item})
+                    unresolved_nodes.append(item)
 
             diagnostic_count = sum(
-                1 for n in mastered_nodes if n["source"] == "diagnostic"
+                1
+                for n in mastered_nodes
+                if n["source"] == "diagnostic"
             )
+
             practice_count = sum(
                 1
                 for n in mastered_nodes
                 if n["source"] in ("practice", "implied")
             )
 
-            completion_percentage = round(
-                len(mastered_nodes) / total_in_chain * 100, 1
-            ) if total_in_chain > 0 else 0.0
+            completion_percentage = (
+                round(len(mastered_nodes) / total_in_chain * 100, 1)
+                if total_in_chain > 0
+                else 0.0
+            )
 
             session_dict = dict(session_row)
             session_dict.update({
@@ -141,8 +182,17 @@ async def get_student_progress(
             else:
                 active_sessions.append(session_dict)
 
-        session_ids = [s["id"] for s in active_sessions] + [s["id"] for s in completed_sessions]
+        # Fetch misconception history once.
+        session_ids = [
+            s["id"]
+            for s in active_sessions
+        ] + [
+            s["id"]
+            for s in completed_sessions
+        ]
+
         misconception_history = []
+
         if session_ids:
             misc_rows = await conn.fetch(
                 """
@@ -154,10 +204,13 @@ async def get_student_progress(
                 """,
                 session_ids,
             )
+
             for row in misc_rows:
                 mapped = row["mapped_node_id"]
+
                 if mapped not in GRAPH:
                     continue
+
                 misconception_history.append({
                     "node_id": mapped,
                     "node_label": GRAPH[mapped]["label"],
@@ -170,5 +223,6 @@ async def get_student_progress(
             "completed_sessions": completed_sessions,
             "misconception_history": misconception_history,
         }
+
     finally:
         await release_db(conn)
