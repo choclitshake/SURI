@@ -15,6 +15,8 @@ from backend.competency_utils import (
     upsert_status,
     mark_prerequisites_mastered,
     find_next_upward,
+    get_status,
+    get_chain,
 )
 from backend.progress_utils import compute_and_save_session_progress
 from backend.models.schemas import ProgressionDecideRequest
@@ -152,14 +154,14 @@ async def decide_progression(
                     conn, student_id, node_id, topic_entry_node
                 )
 
-                # Single batched read gives us mastered/total counts directly —
-                # no need to re-loop the chain node-by-node to check all_mastered.
-                progress = await compute_and_save_session_progress(
-                    conn, session_id, student_id, topic_entry_node
-                )
-                all_mastered = progress["mastered_in_chain"] == progress["total_in_chain"]
+                chain = get_chain(topic_entry_node)
+                all_statuses = []
+                for n in chain:
+                    s = await get_status(conn, student_id, n)
+                    all_statuses.append(s['status'] if s else 'unresolved')
+                all_mastered = all(s == 'mastered' for s in all_statuses)
 
-                if all_mastered or next_node is None:
+                if all_mastered:
                     await conn.execute(
                         """
                         UPDATE sessions
@@ -167,6 +169,22 @@ async def decide_progression(
                         WHERE id = $2
                         """,
                         now_iso, session_id,
+                    )
+                    await compute_and_save_session_progress(
+                        conn, session_id, student_id, topic_entry_node
+                    )
+                    return {**base_response, "topic_complete": True}
+                elif next_node is None:
+                    await conn.execute(
+                        """
+                        UPDATE sessions
+                        SET completed = 1, last_active_at = $1
+                        WHERE id = $2
+                        """,
+                        now_iso, session_id,
+                    )
+                    await compute_and_save_session_progress(
+                        conn, session_id, student_id, topic_entry_node
                     )
                     return {**base_response, "topic_complete": True}
 
@@ -180,6 +198,9 @@ async def decide_progression(
                     WHERE id = $3
                     """,
                     next_node, now_iso, session_id,
+                )
+                await compute_and_save_session_progress(
+                    conn, session_id, student_id, topic_entry_node
                 )
                 return {
                     **base_response,

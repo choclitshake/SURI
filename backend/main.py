@@ -37,41 +37,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Add this to main.py, right after `app = FastAPI(...)` and before the
-# CORS middleware. It logs how long each request took INSIDE your server —
-# this tells you whether the slowness is server/DB-side, or somewhere
-# between the browser and your server (network, proxy, cold start).
-
-import time
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("timing")
-
-
-@app.middleware("http")
-async def log_request_time(request, call_next):
-    start = time.perf_counter()
-    response = await call_next(request)
-    duration_ms = (time.perf_counter() - start) * 1000
-    logger.info(f"{request.method} {request.url.path} → {duration_ms:.0f}ms")
-    response.headers["X-Process-Time-Ms"] = f"{duration_ms:.0f}"
-    return response
-
-
-# How to use this:
-# 1. Restart the server, hit the slow endpoints from the frontend.
-# 2. Watch your server console. If it prints e.g. "GET /api/students/.../progress → 45ms",
-#    the server did its job in 45ms — the 3-5s the USER experiences is happening
-#    somewhere OUTSIDE this process (network, reverse proxy, frontend, cold start).
-# 3. If it prints something like "→ 3200ms", the delay IS inside this process —
-#    now check whether it's spent acquiring a DB connection or running queries
-#    (add print(time.perf_counter()) around get_db()/conn.fetch() calls in the
-#    specific route to narrow it down further).
-# 4. Also try GET /api/graph/<any_valid_node_id>/chain — it does ZERO database
-#    calls. If even this is slow according to the middleware log, the problem
-#    isn't your queries at all, it's something in FastAPI/uvicorn startup,
-#    middleware, or how the server is being run.
 # CORS — allow Next.js dev server
 app.add_middleware(
     CORSMiddleware,
