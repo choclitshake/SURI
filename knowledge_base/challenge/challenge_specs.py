@@ -18,9 +18,10 @@ from topic_specs import GLOBAL_RULES  # noqa: E402
 
 # The PDF file names in slm_pdfs do not match their contents (e.g. grade7_linear_equations_one_var.pdf is the
 # Special Products module), so topic_specs.pdfs_for would ground a node on the wrong lesson. This map is by the
-# module title printed inside each PDF. Gaps: there is no systems-of-equations module (SLE falls back to the
-# linear-equation modules), no quadratic-formula/discriminant module (QE has factoring and square roots only),
-# and no Grade 10 polynomial-equations module (PE uses the factor-theorem and polynomial-division modules).
+# module title printed inside each PDF. The g8_q1_m14/m16 (systems), g9_q1_m5/m6 (quadratic formula, nature of
+# roots) and g10_q2_m2 (polynomial functions) modules were added from DepEd Tambayan to fill gaps in slm_pdfs.
+# Remaining gap: no Grade 10 module on solving polynomial equations by name (PE uses polynomial functions,
+# the factor theorem and polynomial division).
 SLM_PDFS = {
     "FD": ["grade6_fractions_addition_subtraction.pdf", "grade6_fractions_division.pdf",
            "grade6_fractions_multiplication.pdf"],
@@ -35,11 +36,12 @@ SLM_PDFS = {
     "FP": ["grade8_factoring_gcf.pdf", "grade8_factoring_difference_squares.pdf"],
     "L2V": ["grade8_slope_intercept.pdf", "grade8_linear_equations_two_var.pdf",
             "grade8_systems_equations_algebraic.pdf", "grade8_systems_equations_graphing.pdf"],
-    "SLE": ["grade8_systems_equations_algebraic.pdf", "grade8_slope_intercept.pdf"],
-    "QE": ["grade9_quadratic_equations_intro.pdf", "grade9_quadratic_formula.pdf", "grade9_discriminant_roots.pdf"],
+    "SLE": ["grade8_q1_m16_solving_systems.pdf", "grade8_q1_m14_illustrating_systems.pdf"],
+    "QE": ["grade9_quadratic_equations_intro.pdf", "grade9_discriminant_roots.pdf", "grade9_q1_m5_quadratic_formula.pdf",
+           "grade9_q1_m6_nature_of_roots.pdf"],
     "RER": ["grade9_operations_radicals.pdf", "grade9_radical_equations.pdf", "grade9_rational_exponents.pdf",
             "grade9_rational_exponents_advanced.pdf"],
-    "PE": ["grade10_polynomial_graphs.pdf", "grade10_polynomial_roots.pdf"],
+    "PE": ["grade10_q2_m2_polynomial_functions.pdf", "grade10_polynomial_graphs.pdf", "grade10_polynomial_roots.pdf"],
 }
 
 
