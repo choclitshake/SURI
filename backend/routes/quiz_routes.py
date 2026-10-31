@@ -40,6 +40,8 @@ from backend.models.schemas import (
     QuizFinishResponse,
 )
 
+from backend.problem_sampling import sample_mixed
+
 import google.generativeai as genai
 
 router = APIRouter(prefix="/api/quiz", tags=["quiz"])
@@ -56,6 +58,19 @@ TIMER_MS = {
     "algebra": 60_000,
 }
 DEFAULT_TIMER_MS = 60_000
+
+# Challenge problems chain more reasoning per step, so they get longer timers.
+CHALLENGE_TIMER_MS = {
+    "variable_identification": 90_000,
+    "algebra": 75_000,
+}
+
+
+def step_timer_ms(step_type: str, difficulty: str = "standard") -> int:
+    """Timer for one step; used for both the countdown and point calculation."""
+    if difficulty == "challenge":
+        return CHALLENGE_TIMER_MS.get(step_type, DEFAULT_TIMER_MS)
+    return TIMER_MS.get(step_type, DEFAULT_TIMER_MS)
 
 
 # ── Normalization (copied from practice_routes for isolation) ────────────────
@@ -153,7 +168,7 @@ async def start_quiz(body: QuizStartRequest, student=Depends(get_current_student
             raise HTTPException(status_code=404, detail="Session not found")
 
         rows = await conn.fetch(
-            "SELECT id, node_id, problem_expr, steps_json, word_problem_text, step_extras_json "
+            "SELECT id, node_id, problem_expr, steps_json, word_problem_text, step_extras_json, difficulty "
             "FROM practice_problems WHERE node_id = $1",
             node_id,
         )
@@ -164,7 +179,7 @@ async def start_quiz(body: QuizStartRequest, student=Depends(get_current_student
                 detail={"error": "no_quiz_content", "node_id": node_id},
             )
 
-        sampled = random.sample(list(rows), PRACTICE_SET_SIZE)
+        sampled = sample_mixed([dict(r) for r in rows], total=PRACTICE_SET_SIZE, challenge=2)
         problem_ids = [r["id"] for r in sampled]
 
         problems_out = []
@@ -194,7 +209,7 @@ async def start_quiz(body: QuizStartRequest, student=Depends(get_current_student
                     "operation_description": step.get("operation_description", ""),
                     "mapped_node_id": step.get("mapped_node_id", node_id),
                     "choices": choices,
-                    "timer_ms": TIMER_MS.get(step_type, DEFAULT_TIMER_MS),
+                    "timer_ms": step_timer_ms(step_type, r.get("difficulty", "standard")),
                 })
 
             problems_out.append({
@@ -245,7 +260,7 @@ async def submit_step(body: QuizSubmitStepRequest, student=Depends(get_current_s
             raise HTTPException(status_code=404, detail="Quiz session not found")
 
         prob = await conn.fetchrow(
-            "SELECT steps_json FROM practice_problems WHERE id = $1",
+            "SELECT steps_json, difficulty FROM practice_problems WHERE id = $1",
             body.problem_id,
         )
         if not prob:
@@ -262,7 +277,7 @@ async def submit_step(body: QuizSubmitStepRequest, student=Depends(get_current_s
 
         # Timeouts must reach error recording so final grading counts them wrong.
         correct = submitted is not None and check_correct(submitted, correct_value)
-        total_time_ms = TIMER_MS.get(step.get("step_type", "algebra"), DEFAULT_TIMER_MS)
+        total_time_ms = step_timer_ms(step.get("step_type", "algebra"), prob.get("difficulty", "standard"))
 
         if correct:
             new_streak = current_streak + 1

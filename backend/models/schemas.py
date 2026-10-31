@@ -251,7 +251,7 @@ class QuizStepWithChoices(BaseModel):
     operation_description: str
     mapped_node_id: str
     choices: list[str]   # 4 items: correct + 3 distractors, shuffled
-    timer_ms: int        # 20000 for variable_identification, 30000 for algebra
+    timer_ms: int        # per-step countdown; see step_timer_ms in quiz_routes
 
 
 class QuizProblem(BaseModel):
