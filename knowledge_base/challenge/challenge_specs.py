@@ -120,17 +120,17 @@ SPECS = {
         "notes": "Quiz answers are a number or an expanded expression."},
     "L1V": {"kinds": [
         ("consecutive odd or even integers with a condition", BOTH, False),
-        ("coins or bills of two types with a total", BOTH, False),
-        ("perimeter with sides given in relation to each other", BOTH, False),
+        ("coins or bills of two types with a total", MULTI, False),
+        ("perimeter with sides given in relation to each other", REVERSE, False),
         ("work backwards from a think-of-a-number puzzle", BACK, False),
         ("a phone plan with a fee plus a rate: find the usage", BACK, False),
-        ("an age problem (at most one)", BOTH, False),
+        ("an age problem (at most one)", BACK, False),
     ], "contexts": ["sari-sari store", "phone load", "garden", "canteen", "school fair"],
         "notes": "One variable, a linear equation. At most 1 age problem."},
     "SP": {"kinds": [
         ("the area of a border or frame (outer area minus inner area)", MULTI, False),
         ("a square garden enlarged by n on each side: find the extra area", MULTI, False),
-        ("use a special product to compute mentally (e.g. 49 x 51)", REVERSE, False),
+        ("use a special product to compute mentally (e.g. 49 x 51)", PATTERN, False),
         ("which expansion is correct (spot the error)", ERROR, True),
         ("the area of a figure with binomial sides", MULTI, False),
     ], "contexts": ["garden", "picture frame", "tiles", "floor", "school fair"],
@@ -146,7 +146,7 @@ SPECS = {
     "FP": {"kinds": [
         ("from a rectangle's area polynomial, find possible side lengths", REVERSE, False),
         ("factor completely in 2 stages (GCF, then a special pattern)", MULTI, False),
-        ("use factoring to compute mentally (e.g. 53^2 - 47^2)", REVERSE, False),
+        ("use factoring to compute mentally (e.g. 53^2 - 47^2)", PATTERN, False),
         ("which trinomial is NOT factorable over the integers", ERROR, True),
         ("a missing coefficient that makes a trinomial factorable", REVERSE, False),
     ], "contexts": ["garden", "floor", "tiles", "poster", "school fair"],
@@ -161,10 +161,10 @@ SPECS = {
         "notes": "Equation answers use y = mx + b."},
     "SLE": {"kinds": [
         ("two ticket prices with total tickets and total revenue", BOTH, False),
-        ("two-digit number puzzles (digit sum and reversal)", BOTH, False),
+        ("two-digit number puzzles (digit sum and reversal)", REVERSE, False),
         ("mixture or coin mix with friendly numbers", BOTH, False),
-        ("boat or wind with and against the current (only if the excerpt shows rate problems)", BOTH, False),
-        ("two notebook and pen purchases", BOTH, False),
+        ("boat or wind with and against the current (only if the excerpt shows rate problems)", COMPARE, False),
+        ("two notebook and pen purchases", MULTI, False),
         ("an age problem (at most one)", BOTH, False),
     ], "contexts": ["school fair", "canteen", "bookstore", "coin bank", "jeepney"],
         "notes": "Integer solutions; the prompt must say which value is x and which is y."},
@@ -243,4 +243,6 @@ def kinds_for(node_id: str, mcq: bool) -> list:
 
 for _node in IN_SCOPE:
     assert len(kinds_for(_node, False)) >= 6, f"{_node} needs at least 6 typeable kinds"
+    assert len({k[1] for k in kinds_for(_node, False)}) >= 3, f"{_node} needs 3 patterns among typeable kinds"
+    assert len({k[1] for k in kinds_for(_node, True)}) >= 3
 assert set(SLM_PDFS) == set(IN_SCOPE)

@@ -163,8 +163,12 @@ class Gemini:
             usage = getattr(resp, "usage_metadata", None)
             self.limiter.record(getattr(usage, "total_token_count", None) or est)
             text = resp.text or ""
+            if not text.strip():
+                print("    empty response, retrying", flush=True)
+                time.sleep(BACKOFF[0])
+                continue
             os.makedirs(RAW_DIR, exist_ok=True)
             with open(cache, "w", encoding="utf-8", newline="\n") as f:
                 f.write(text)
             return text
-        raise RuntimeError("unreachable")
+        raise RuntimeError("Gemini kept returning empty responses")

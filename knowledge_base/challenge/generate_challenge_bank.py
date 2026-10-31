@@ -156,7 +156,7 @@ def expected_values(v, check: dict):
             if abs(v.residual(eq, sol)) > 1e-6:
                 raise EvalError(f"solution does not satisfy {eq}")
         names = check.get("answer_vars") or sorted(sol)
-        return [sol[n] for n in names]
+        return [float(v.eval(n, sol)) for n in names]
     raise EvalError(f"unsupported check kind {kind!r}")
 
 
@@ -169,8 +169,8 @@ def check_matches(v, check: dict, text: str):
         if kind == "expr":
             return expr_matches(v, check, text), "expression comparison"
         want = expected_values(v, check)
-    except EvalError as exc:
-        return False, f"check failed: {exc}"
+    except (EvalError, KeyError, TypeError, ValueError) as exc:
+        return False, f"check failed: {exc!r}"
     got = numbers_in(v, text)
     if got is None:
         return False, f"cannot parse {text!r}"
@@ -255,6 +255,13 @@ The problem is solved in 4 to {MAX_STEPS} typed steps. Each step in `all_steps` 
   "blank_expression" (the line with ___ where the student types), "correct_value" (SHORT and typeable: a number, a simple
   expression or an equation; never a phrase), "operation_description", "mapped_node_id" (one of: {', '.join(sorted(GRAPH))}).
 Start with 1-2 "variable_identification" steps (name the unknown, write the equation or system), then "algebra" steps.
+EVERY step's "blank_expression" MUST contain exactly one ___ in the place the student types, and must NOT already show the
+correct_value. Example steps for "2x + 7 = 35":
+  {{"step_type": "variable_identification", "instruction": "Let x be the number. Write the equation.", "blank_expression": "___ = 35", "correct_value": "2*x + 7"}}
+  {{"step_type": "algebra", "instruction": "Subtract 7 from both sides.", "blank_expression": "2*x = ___", "correct_value": "28"}}
+  {{"step_type": "algebra", "instruction": "Divide both sides by 2.", "blank_expression": "x = ___", "correct_value": "14"}}
+A variable_identification step may instead use "blank_expression": "Let x = ___" with correct_value naming the quantity as a short symbol or expression.
+Use 4 to 8 steps; split the reasoning so each step has one small move.
 The LAST step's correct_value must equal `answer`. Do not put the answer or the steps in `word_problem`.
 Use plain text math in correct_value (e.g. 2*x + 3 = 11, x = 4) so it can be typed on a keyboard.
 `problem_expr` is the equation or system a student would write; for a system write "eq1, eq2".
@@ -390,6 +397,18 @@ def gen_quiz(gem: Gemini, node_id: str, topup: bool = False):
         jobs = [(i, kinds[i % len(kinds)]) for i in range(QUIZ_CANDIDATES) if i >= len(cands)]
     v = Verifier()
     try:
+        for item in cands:
+            if item.get("pre_drop") and not item.get("extras") and not item.get("error"):
+                if quiz_core_checks(item, v, node_id):
+                    continue
+                item.pop("pre_drop")
+                steps = run_mathsteps(item["problem_expr"].split(",")[0])
+                raw_x = gem.call("extras-" + item["cand_id"], extras_prompt(item, json.dumps(steps)), max_output_tokens=4096)
+                try:
+                    item["extras"] = parse_gemini_json(raw_x)
+                except Exception as exc:
+                    item["pre_drop"] = [f"extras unparseable: {exc}"]
+                save_json(cand_path("quiz", node_id), cands)
         for idx, kind in jobs:
             cid = f"quiz-{node_id}-{idx:02d}"
             raw = gem.call(cid, quiz_prompt(node_id, kind, excerpt), max_output_tokens=4096)
@@ -428,6 +447,11 @@ def norm_text(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", re.sub(r"\$", "", str(s).lower())).strip()
 
 
+def norm_math(s: str) -> str:
+    """Equality key for answers/options: keeps operators (2*x + 4 differs from 2*x - 4)."""
+    return re.sub(r"[\s$]|\\left|\\right", "", str(s).lower())
+
+
 def big_numbers(text: str) -> set:
     return {n for n in re.findall(r"\d+(?:\.\d+)?", str(text)) if "." in n or len(n) >= 2}
 
@@ -449,8 +473,21 @@ def answer_leaks(prompt: str, answer_texts: list) -> bool:
     return any(re.search(rf"(?<![\d.]){re.escape(n)}(?![\d.])", prompt) for n in nums)
 
 
+def canon_kind(node_id: str, is_diag: bool, kind) -> tuple:
+    """Match a (possibly reworded) kind to the nearest spec kind -> (kind, pattern) or (None, None)."""
+    best, score = None, 0.0
+    for k in kinds_for(node_id, is_diag):
+        r = difflib.SequenceMatcher(None, norm_text(kind), norm_text(k[0])).ratio()
+        if r > score:
+            best, score = k, r
+    return (best[0], best[1]) if best and score >= 0.55 else (None, None)
+
+
 def common_checks(c: dict, node_id: str, is_diag: bool) -> list:
     reasons = []
+    kind, pattern = canon_kind(node_id, is_diag, c.get("kind", ""))
+    if kind:
+        c["kind"], c["pattern"] = kind, pattern  # the spec's pattern, not the model's free text
     if not str(c.get("slm_concept", "")).strip():
         reasons.append("missing slm_concept")
     rel = c.get("relationships")
@@ -458,8 +495,7 @@ def common_checks(c: dict, node_id: str, is_diag: bool) -> list:
         reasons.append("fewer than 2 stated relationships")
     if not str(c.get("context", "")).strip():
         reasons.append("missing context")
-    valid_kinds = {k[0] for k in kinds_for(node_id, is_diag)}
-    if c.get("kind") not in valid_kinds:
+    if not kind:
         reasons.append("kind is not one of the node's specs")
     text = c.get("question_text") if is_diag else c.get("word_problem")
     if not text or not english_ok(str(text)):
@@ -482,7 +518,7 @@ def diag_core_checks(c: dict, v, node_id: str, existing: list) -> list:
         return reasons + ["options must be 4 non-empty strings"]
     if not isinstance(idx, int) or not 0 <= idx <= 3:
         return reasons + ["bad correct_option_index"]
-    if len({norm_text(o) for o in opts}) != 4:
+    if len({norm_math(o) for o in opts}) != 4:
         reasons.append("duplicate options")
     mcq_only = next((k[2] for k in kinds_for(node_id, True) if k[0] == c.get("kind")), False)
     if isinstance(c.get("check"), dict):
@@ -522,7 +558,7 @@ def quiz_core_checks(c: dict, v, node_id: str) -> list:
         if not s["correct_value"] or len(s["correct_value"]) > 40 or re.search(r"[A-Za-z]{2,}", words):
             reasons.append(f"step {s['step_index']} correct_value is not short and typeable")
         if s["mapped_node_id"] is None:
-            reasons.append(f"step {s['step_index']} has an unknown mapped_node_id")
+            s["mapped_node_id"] = node_id  # same fallback as generate_practice.validate_and_fix
         if "___" not in s["blank_expression"]:
             reasons.append(f"step {s['step_index']} blank_expression has no ___")
     if reasons:
@@ -562,10 +598,10 @@ def extras_checks(c: dict) -> list:
             reasons.append(f"step {s['step_index']} has no extras")
             continue
         d = [str(x).strip() for x in e.get("distractors", [])]
-        correct = norm_text(s["correct_value"])
-        if len(d) != 3 or len({norm_text(x) for x in d}) != 3 or not all(d):
+        correct = norm_math(s["correct_value"])
+        if len(d) != 3 or len({norm_math(x) for x in d}) != 3 or not all(d):
             reasons.append(f"step {s['step_index']} needs 3 distinct non-empty distractors")
-        elif any(norm_text(x) == correct or norm_text(x) in vague for x in d):
+        elif any(norm_math(x) == correct or norm_text(x) in vague for x in d):
             reasons.append(f"step {s['step_index']} has a distractor equal to the answer or vague")
         if not str(e.get("hint", "")).strip():
             reasons.append(f"step {s['step_index']} has no hint")
@@ -595,7 +631,7 @@ def blind_solve(gem: Gemini, bank: str, node_id: str, items: list) -> dict:
         batch = items[b:b + 6]
         prompt = (blind_diag_prompt if bank == "diag" else blind_quiz_prompt)(batch)
         tag = f"blind-{bank}-{node_id}-{hashlib.sha256(prompt.encode()).hexdigest()[:10]}"
-        raw = gem.call(tag, prompt, max_output_tokens=2048, model=BLIND_MODEL, temperature=0.0)
+        raw = gem.call(tag, prompt, max_output_tokens=4096, model=BLIND_MODEL, temperature=0.0)
         try:
             for d in parse_gemini_json(raw):
                 out[str(d.get("id"))] = str(d.get("answer", ""))
