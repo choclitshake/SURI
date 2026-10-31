@@ -14,7 +14,37 @@ sys.path.insert(0, os.path.join(HERE, "..", ".."))
 sys.path.insert(0, os.path.join(HERE, "..", "playground"))
 
 from backend.graph import GRAPH, ENTRY_NODES  # noqa: E402
-from topic_specs import GLOBAL_RULES, pdfs_for  # noqa: E402,F401
+from topic_specs import GLOBAL_RULES  # noqa: E402
+
+# The PDF file names in slm_pdfs do not match their contents (e.g. grade7_linear_equations_one_var.pdf is the
+# Special Products module), so topic_specs.pdfs_for would ground a node on the wrong lesson. This map is by the
+# module title printed inside each PDF. Gaps: there is no systems-of-equations module (SLE falls back to the
+# linear-equation modules), no quadratic-formula/discriminant module (QE has factoring and square roots only),
+# and no Grade 10 polynomial-equations module (PE uses the factor-theorem and polynomial-division modules).
+SLM_PDFS = {
+    "FD": ["grade6_fractions_addition_subtraction.pdf", "grade6_fractions_division.pdf",
+           "grade6_fractions_multiplication.pdf"],
+    "RPP": ["grade6_decimals_operations.pdf", "grade6_ratio_proportion.pdf", "grade6_percent.pdf",
+            "grade6_rate_speed_distance.pdf"],
+    "OI": ["grade7_operations_integers.pdf", "grade7_absolute_value_integers.pdf"],
+    "LE": ["grade9_simplifying_radicals.pdf"],
+    "AE": ["grade7_algebraic_expressions.pdf", "grade7_solving_equations.pdf"],
+    "L1V": ["grade7_polynomial_multiplication.pdf", "grade7_special_products.pdf", "grade7_solving_equations.pdf"],
+    "SP": ["grade7_linear_equations_one_var.pdf"],
+    "PO": ["grade7_evaluating_expressions.pdf"],
+    "FP": ["grade8_factoring_gcf.pdf", "grade8_factoring_difference_squares.pdf"],
+    "L2V": ["grade8_slope_intercept.pdf", "grade8_linear_equations_two_var.pdf",
+            "grade8_systems_equations_algebraic.pdf", "grade8_systems_equations_graphing.pdf"],
+    "SLE": ["grade8_systems_equations_algebraic.pdf", "grade8_slope_intercept.pdf"],
+    "QE": ["grade9_quadratic_equations_intro.pdf", "grade9_quadratic_formula.pdf", "grade9_discriminant_roots.pdf"],
+    "RER": ["grade9_operations_radicals.pdf", "grade9_radical_equations.pdf", "grade9_rational_exponents.pdf",
+            "grade9_rational_exponents_advanced.pdf"],
+    "PE": ["grade10_polynomial_graphs.pdf", "grade10_polynomial_roots.pdf"],
+}
+
+
+def pdfs_for(node_id: str) -> list:
+    return SLM_PDFS[node_id]
 
 
 def _in_scope() -> list:
@@ -165,6 +195,36 @@ SPECS = {
         "notes": "All roots are integers; ask for ALL solutions."},
 }
 
+# Extra typeable kinds, so every node has enough distinct kinds for a quiz set (5 problems, no kind twice).
+EXTRA_KINDS = {
+    "FD": [("a fraction of an amount is spent, then a decimal share of the rest: find what is left", MULTI),
+           ("find the missing fraction that completes a total", REVERSE)],
+    "OI": [("find the integer that makes two integer expressions equal", REVERSE),
+           ("an average of integer temperatures over several days with one day missing", REVERSE),
+           ("a walk along a number line with forward and backward moves: find the missing move", BACK)],
+    "LE": [("a product of powers with different bases rewritten with one common base", MULTI),
+           ("a quantity multiplied by the same factor several times, found as a power", PATTERN),
+           ("find the base when the power and the result are given", REVERSE)],
+    "AE": [("evaluate a formula given in words for two cases, then find the difference", MULTI),
+           ("find the value of the variable that makes an expression equal a given amount", REVERSE),
+           ("combine like terms from a perimeter description, then evaluate", MULTI)],
+    "SP": [("find the missing term that makes a binomial square", REVERSE),
+           ("find the value of k so a special product has no middle term", REVERSE)],
+    "PO": [("subtract one polynomial from another, then evaluate at a value", MULTI),
+           ("a profit polynomial from revenue and cost, then evaluate", BOTH)],
+    "FP": [("find the missing term that makes a binomial a difference of squares", REVERSE),
+           ("factor out a negative common factor, then finish factoring", MULTI)],
+    "L2V": [("find the x-intercept in a context", MULTI),
+            ("the rate of change and the starting value from two table entries", BOTH)],
+    "PE": [("find a coefficient given that a number is a root", REVERSE),
+           ("solve a polynomial equation after factoring by grouping in a context", MULTI)],
+    "RER": [("evaluate a rational exponent after simplifying the radicand", MULTI),
+            ("the volume of a cube whose edge is a simplified radical", MULTI),
+            ("a cube root of a product that must be simplified inside a context", MULTI)],
+}
+for _node, _extra in EXTRA_KINDS.items():
+    SPECS[_node]["kinds"].extend((text, pattern, False) for text, pattern in _extra)
+
 for _node, _spec in SPECS.items():
     _spec["grade"] = GRAPH[_node]["grade"]
     _spec["label"] = GRAPH[_node]["label"]
@@ -179,3 +239,8 @@ assert "PD" not in SPECS
 def kinds_for(node_id: str, mcq: bool) -> list:
     """Kinds usable for a bank: all for diagnostic (mcq), typeable ones for the quiz."""
     return [k for k in SPECS[node_id]["kinds"] if mcq or not k[2]]
+
+
+for _node in IN_SCOPE:
+    assert len(kinds_for(_node, False)) >= 6, f"{_node} needs at least 6 typeable kinds"
+assert set(SLM_PDFS) == set(IN_SCOPE)
