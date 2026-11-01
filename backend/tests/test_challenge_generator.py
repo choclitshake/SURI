@@ -261,6 +261,34 @@ class QuizValidationTests(unittest.TestCase):
         item["all_steps"] = item["all_steps"] * 3
         self.assertTrue(any("steps" in r for r in gen.quiz_core_checks(item, self.v, "L1V")))
 
+    def _extras(self, item, step, distractors, hint="Think about the operation."):
+        item["extras"] = {str(i): {"distractors": ["1", "2", "3"], "hint": "h"} for i in range(4)}
+        item["extras"][str(step)] = {"distractors": distractors, "hint": hint}
+        return gen.extras_checks(item, self.v)
+
+    def test_distractor_equal_in_value_is_rejected(self):
+        item = _quiz()
+        item["all_steps"][3]["correct_value"] = "14"
+        self.assertTrue(any("equal in value" in r for r in self._extras(item, 3, ["28/2", "2", "3"])))
+        self.assertTrue(any("equal in value" in r for r in self._extras(item, 3, ["7*2", "2", "3"])))
+
+    def test_hint_that_reveals_the_answer_is_rejected(self):
+        item = _quiz()
+        item["all_steps"][1]["correct_value"] = "2*x + 7"
+        self.assertTrue(any("hint reveals" in r for r in self._extras(item, 1, ["x + 7", "2*x - 7", "x + 14"],
+                                                                      hint="Write 2x + 7 on the left.")))
+
+    def test_distractors_must_match_the_answer_format(self):
+        item = _quiz()
+        item["all_steps"][3]["correct_value"] = "14"
+        self.assertTrue(any("different format" in r for r in self._extras(item, 3, ["x = 7", "20", "3"])))
+
+    def test_author_self_talk_is_rejected(self):
+        item = _quiz()
+        item["extras"] = {str(i): {"distractors": ["1", "2", "3"], "hint": "h"} for i in range(4)}
+        item["extras"]["3"]["hint"] = "Wait, let's try the pair 3 and 4."
+        self.assertTrue(any("self-talk" in r for r in gen.extras_checks(item, self.v)))
+
     def test_extras_checks(self):
         item = _quiz()
         item["extras"] = {str(i): {"distractors": ["1", "2", "3"], "hint": "h"} for i in range(4)}

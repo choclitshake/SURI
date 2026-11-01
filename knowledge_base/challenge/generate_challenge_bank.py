@@ -624,6 +624,11 @@ def quiz_core_checks(c: dict, v, node_id: str) -> list:
         cv, be = s["correct_value"], s["blank_expression"]
         if "___" not in be and "?" not in be and cv and be.count(cv) == 1:
             s["blank_expression"] = be.replace(cv, "___")  # the model left the answer in place: blank it out
+        if s["blank_expression"].count("___") == 1:
+            left, right = s["blank_expression"].split("___")
+            if left.count("(") != left.count(")") or right.count("(") != right.count(")"):
+                # the practice page splits the line at the blank, so a blank inside sqrt(...) or ^(...) cannot render
+                reasons.append(f"step {s['step_index']} blank sits inside a bracketed group")
         if "___" not in s["blank_expression"]:
             reasons.append(f"step {s['step_index']} blank_expression has no ___")
     if reasons:
@@ -650,11 +655,42 @@ def quiz_core_checks(c: dict, v, node_id: str) -> list:
     return reasons
 
 
-def extras_checks(c: dict) -> list:
+SELF_TALK = re.compile(r"\b(wait|hmm|oops|let me|let's (?:try|use|see|check|assume)|actually,|i think|correction)\b", re.I)
+
+
+def leak_key(s: str) -> str:
+    """Comparison key for 'does the hint contain the answer': ignores spacing, $, *, \\cdot and braces."""
+    return re.sub(r"[\s${}*]|\\cdot", "", str(s).lower())
+
+
+def value_of(v, text: str):
+    """Numeric value of an answer/expression/equation at SCOPE, or None when it cannot be evaluated."""
+    try:
+        parts = split_top(to_ascii(_expand_letters(text)))
+        vals = [_side_value(v, p) for p in parts]
+        return vals[0] if len(vals) == 1 else tuple(vals)
+    except Exception:
+        return None
+
+
+def same_value(a, b) -> bool:
+    if a is None or b is None:
+        return False
+    if isinstance(a, tuple) or isinstance(b, tuple):
+        return isinstance(a, tuple) and isinstance(b, tuple) and len(a) == len(b) and \
+            all(close_enough(x, y) for x, y in zip(a, b))
+    return close_enough(a, b)
+
+
+def extras_checks(c: dict, v=None) -> list:
     reasons = []
     extras = c.get("extras")
     if not isinstance(extras, dict):
         return ["no extras"]
+    prose = [c.get("word_problem", "")] + [s["instruction"] for s in c["all_steps"]] + \
+            [str(e.get("hint", "")) for e in extras.values() if isinstance(e, dict)]
+    if any(SELF_TALK.search(str(t)) for t in prose):
+        reasons.append("contains author self-talk (wait / let's try / ...)")
     vague = {"n/a", "na", "cannot be determined", "cannot determine", "not possible", "undefined", "none",
              "not applicable", "indeterminate", "unknown", "error", "invalid", "does not exist"}
     for s in c["all_steps"]:
@@ -668,8 +704,18 @@ def extras_checks(c: dict) -> list:
             reasons.append(f"step {s['step_index']} needs 3 distinct non-empty distractors")
         elif any(norm_math(x) == correct or norm_text(x) in vague for x in d):
             reasons.append(f"step {s['step_index']} has a distractor equal to the answer or vague")
-        if not str(e.get("hint", "")).strip():
+        else:
+            if v is not None:  # a distractor that means the same as the answer is a second right answer
+                want = value_of(v, s["correct_value"])
+                if any(same_value(want, value_of(v, x)) for x in d):
+                    reasons.append(f"step {s['step_index']} has a distractor equal in value to the answer")
+            if any(("=" in x) != ("=" in s["correct_value"]) for x in d):
+                reasons.append(f"step {s['step_index']} has distractors in a different format than the answer")
+        hint = str(e.get("hint", "")).strip()
+        if not hint:
             reasons.append(f"step {s['step_index']} has no hint")
+        elif len(leak_key(s["correct_value"])) >= 3 and leak_key(s["correct_value"]) in leak_key(hint):
+            reasons.append(f"step {s['step_index']} hint reveals the answer")
     return reasons
 
 
@@ -678,15 +724,21 @@ def blind_diag_prompt(batch: list) -> str:
     for c in batch:
         opts = "\n".join(f"   {'ABCD'[i]}. {o}" for i, o in enumerate(c["options"]))
         blocks.append(f'- id "{c["cand_id"]}"\n  {c["question_text"]}\n{opts}')
-    return ("Answer each multiple-choice math question. Give ONLY the letter of the correct option.\n\n" +
-            "\n".join(blocks) + '\n\nReturn ONLY a JSON array of {"id": "...", "answer": "A"}.')
+    return ("Answer each multiple-choice math question by solving it yourself. For each, list EVERY option letter that is "
+            "mathematically correct (usually exactly one). Set well_posed to false if the question is ambiguous, lacks "
+            "information, asks for something no option gives, or has no correct option.\n\n" +
+            "\n".join(blocks) +
+            '\n\nReturn ONLY a JSON array of {"id": "...", "correct": ["B"], "well_posed": true}.')
 
 
 def blind_quiz_prompt(batch: list) -> str:
     blocks = [f'- id "{c["cand_id"]}"\n  {c["word_problem"]}' for c in batch]
     return ("Solve each math problem carefully. Give ONLY the final answer, short, with no units or words "
-            "(a number, an expression, or a solution set).\n\n" + "\n".join(blocks) +
-            '\n\nReturn ONLY a JSON array of {"id": "...", "answer": "..."}. Escape every backslash in the JSON.')
+            "(a number, an expression, or a solution set; if the problem asks for several quantities give all of them "
+            "separated by commas). Set well_posed to false if the problem is ambiguous, lacks information, or has "
+            "more than one valid answer.\n\n" + "\n".join(blocks) +
+            '\n\nReturn ONLY a JSON array of {"id": "...", "answer": "...", "well_posed": true}. '
+            'Escape every backslash in the JSON.')
 
 
 def blind_solve(gem: Gemini, bank: str, node_id: str, items: list) -> dict:
@@ -705,7 +757,7 @@ def blind_solve(gem: Gemini, bank: str, node_id: str, items: list) -> dict:
             return  # a single item that still comes back empty gets no blind answer and is dropped
         try:
             for d in parse_gemini_json(raw):
-                out[str(d.get("id"))] = str(d.get("answer", ""))
+                out[str(d.get("id"))] = d
         except Exception:
             pass
 
@@ -761,6 +813,7 @@ def validate_node(gem: Gemini, bank: str, node_id: str):
         return
     target, cap = (DIAG_KEEP, DIAG_CAP_PER_KIND) if bank == "diag" else (QUIZ_KEEP, QUIZ_CAP_PER_KIND)
     existing = existing_questions(node_id) if bank == "diag" else []
+    sibling_questions = [c["question_text"] for c in approved("diag", node_id)] if bank == "quiz" else []
     v = Verifier()
     survivors, dropped = [], []
     try:
@@ -769,7 +822,14 @@ def validate_node(gem: Gemini, bank: str, node_id: str):
                 dropped.append({"id": c["cand_id"], "reasons": [c.get("error") or "; ".join(c["pre_drop"])]})
                 continue
             reasons = diag_core_checks(c, v, node_id, existing) if bank == "diag" else \
-                quiz_core_checks(c, v, node_id) + extras_checks(c)
+                quiz_core_checks(c, v, node_id) + extras_checks(c, v)
+            if bank == "quiz" and not reasons:  # a quiz problem must not recycle the numbers of a diagnostic item
+                for q in sibling_questions:
+                    if numbers_overlap(str(c["word_problem"]), q):
+                        reasons.append("near-duplicate of a diagnostic item for this node")
+                        break
+            if bank == "diag" and SELF_TALK.search(str(c.get("question_text", "")) + " ".join(map(str, c.get("options", [])))):
+                reasons.append("contains author self-talk (wait / let's try / ...)")
             if reasons:
                 dropped.append({"id": c["cand_id"], "reasons": reasons})
             else:
@@ -778,12 +838,14 @@ def validate_node(gem: Gemini, bank: str, node_id: str):
         checked = []
         for c in survivors:
             got = blind.get(c["cand_id"])
-            if bank == "diag":
-                ok = got is not None and got.strip()[:1].upper() == "ABCD"[c["correct_option_index"]]
-            elif got is None:
+            well_posed = isinstance(got, dict) and got.get("well_posed") is not False
+            if not isinstance(got, dict):
                 ok = False
+            elif bank == "diag":
+                letters = [str(x).strip().upper()[:1] for x in (got.get("correct") or [got.get("answer", "")])]
+                ok = well_posed and letters == ["ABCD"[c["correct_option_index"]]]
             else:
-                ok = check_matches(v, c["check"], got)[0]
+                ok = well_posed and check_matches(v, c["check"], str(got.get("answer", "")))[0]
             if ok:
                 c["verified_by"] = "blind only" if c.get("blind_only") else "check+blind"
                 checked.append(c)

@@ -34,12 +34,20 @@ class ValueTests(unittest.TestCase):
 
 
 class BlankTests(unittest.TestCase):
-    def test_blank_becomes_single_question_mark_in_one_span(self):
-        self.assertEqual(to_blank("2*x = ___"), "$2x = ?$")
-        self.assertEqual(to_blank("___ = 35"), "$? = 35$")
+    def test_blank_sits_outside_math_spans(self):
+        self.assertEqual(to_blank("2*x = ___"), "$2x =$ ?")
+        self.assertEqual(to_blank("___ = 35"), "? $= 35$")
+        self.assertEqual(to_blank("2*(w + ___ + w) = 50"), "$2(w +$ ? $+ w) = 50$")
+        self.assertEqual(to_blank("___"), "?")
+
+    def test_each_half_is_balanced_so_the_practice_page_needs_no_repair(self):
+        for src in ("2*x = ___", "___ = 35", "2*(w + ___ + w) = 50", "x = ___"):
+            before, after = to_blank(src).split("?")
+            self.assertEqual(before.count("$") % 2, 0, src)
+            self.assertEqual(after.count("$") % 2, 0, src)
 
     def test_words_go_in_text(self):
-        self.assertEqual(to_blank("Most expensive = ___"), "$\\text{Most expensive} = ?$")
+        self.assertEqual(to_blank("Most expensive = ___"), "$\\text{Most expensive} =$ ?")
 
     def test_needs_exactly_one_blank(self):
         with self.assertRaises(ValueError):
@@ -60,6 +68,14 @@ class ProseTests(unittest.TestCase):
 
     def test_converts_existing_spans(self):
         self.assertEqual(katexify_prose("Find $2*x + 3$."), "Find $2x + 3$.")
+
+    def test_underscore_cue_in_prose_is_kept_and_allowed(self):
+        text = "Write the equation $2x + 7 =$ ___ in the box."
+        self.assertEqual(katexify_prose(text), text)
+        self.assertTrue(outside_math_is_clean(text))
+
+    def test_underscore_cue_inside_math_is_escaped(self):
+        self.assertEqual(katexify_prose("Fill in $x = ___$."), "Fill in $x = \\_\\_\\_$.")
 
     def test_wraps_bare_latex_commands(self):
         self.assertEqual(katexify_prose("Package A by \\frac{1}{20}"), "Package A by $\\frac{1}{20}$")

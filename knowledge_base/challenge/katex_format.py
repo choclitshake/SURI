@@ -83,6 +83,8 @@ def _conv(s: str) -> str:
 def ascii_to_katex(text: str) -> str:
     """mathjs-style text -> LaTeX (no surrounding $). Words become \\text{...}."""
     s = str(text).strip().replace("$", "")
+    # a run of underscores inside math (an instruction cue like ___) must be escaped or KaTeX throws
+    s = re.sub(r"(?<!\\)_{2,}", lambda m: "\\_" * len(m.group(0)), s)
     texts = []
 
     def hold(m):
@@ -121,11 +123,23 @@ def to_value(text: str) -> str:
 
 
 def to_blank(text: str) -> str:
-    """blank_expression: one math span with a single ? for the blank."""
+    """blank_expression: math spans around a single ? that sits OUTSIDE any $...$ span.
+
+    The practice page splits the string at the blank and rebalances dollars; a blank inside a span that starts
+    or ends at the string edge leaves a lone "$" and renders as "$$". With the blank outside, both halves are
+    balanced as they are. The quiz page turns the ? into escaped underscores, which is fine outside math too.
+    """
     s = str(text).replace("___", "?")
     if s.count("?") != 1:
         raise ValueError(f"blank_expression needs exactly one blank: {text!r}")
-    return "$" + ascii_to_katex(s) + "$"
+    left, right = (part.strip() for part in s.split("?"))
+    out = []
+    if left:
+        out.append("$" + ascii_to_katex(left) + "$")
+    out.append("?")
+    if right:
+        out.append("$" + ascii_to_katex(right) + "$")
+    return " ".join(out)
 
 
 _MATH_TOKEN = re.compile(r"^[()\d.a-z^*/+\-=]+$")
@@ -210,4 +224,5 @@ def outside_math_is_clean(text: str) -> bool:
     if str(text).count("$") % 2:
         return False
     outside = re.sub(r"\$[^$]*\$", "", str(text))
+    outside = re.sub(r"_{3,}", "", outside)  # ___ in instruction prose is an intentional visual cue for the blank
     return not re.search(r"[*^]|\\frac|\\sqrt|_", outside)
