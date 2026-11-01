@@ -55,6 +55,7 @@ RUNNER_JS = os.path.join(ROOT, "mathsteps_runner", "runner.js")
 DIAG_CANDIDATES, DIAG_KEEP, DIAG_CAP_PER_KIND = 12, 8, 2
 QUIZ_CANDIDATES, QUIZ_KEEP, QUIZ_CAP_PER_KIND = 7, 5, 1
 CAP_PER_CONTEXT = 2
+BLIND_ONLY_CAP = 4  # diagnostic items verified only by the blind solve (statement options, spot-the-error)
 MIN_PATTERNS = 3
 MAX_STEPS = 8
 SLM_CAP = 12000
@@ -523,7 +524,7 @@ def canon_kind(node_id: str, is_diag: bool, kind) -> tuple:
         r = difflib.SequenceMatcher(None, norm_text(kind), norm_text(k[0])).ratio()
         if r > score:
             best, score = k, r
-    return (best[0], best[1]) if best and score >= 0.55 else (None, None)
+    return (best[0], best[1]) if best and score >= 0.45 else (None, None)
 
 
 def common_checks(c: dict, node_id: str, is_diag: bool) -> list:
@@ -557,24 +558,32 @@ def diag_core_checks(c: dict, v, node_id: str, existing: list) -> list:
     reasons = common_checks(c, node_id, True)
     opts = c.get("options")
     idx = c.get("correct_option_index")
+    if isinstance(idx, str) and idx.strip():
+        idx = "ABCD".index(idx.strip().upper()) if idx.strip().upper() in "ABCD" and len(idx.strip()) == 1 \
+            else (int(idx) if idx.strip().isdigit() else idx)
+    if isinstance(idx, float) and idx.is_integer():
+        idx = int(idx)
     if not (isinstance(opts, list) and len(opts) == 4 and all(str(o).strip() for o in opts)):
         return reasons + ["options must be 4 non-empty strings"]
-    if not isinstance(idx, int) or not 0 <= idx <= 3:
+    if not isinstance(idx, int) or isinstance(idx, bool) or not 0 <= idx <= 3:
         return reasons + ["bad correct_option_index"]
+    c["correct_option_index"] = idx
     if len({norm_math(o) for o in opts}) != 4:
         reasons.append("duplicate options")
-    mcq_only = next((k[2] for k in kinds_for(node_id, True) if k[0] == c.get("kind")), False)
+    c["blind_only"] = False
     if isinstance(c.get("check"), dict):
         if c["check"].get("kind") == "manual":
-            if not mcq_only:
-                reasons.append("manual check only allowed for MCQ-only kinds")
+            c["blind_only"] = True  # statement-style options: verified by the blind solve, flagged in the review
         else:
-            for i, o in enumerate(opts):
-                ok, why = check_matches(v, c["check"], o)
-                if i == idx and not ok:
-                    reasons.append(f"correct option fails check ({why})")
-                if i != idx and ok:
-                    reasons.append(f"distractor {i} also satisfies the check")
+            results = [check_matches(v, c["check"], o) for o in opts]
+            if all(not ok and "cannot parse" in why for ok, why in results):
+                c["blind_only"] = True  # options are statements ("Package A by 2 pesos"), not numbers
+            else:
+                for i, (ok, why) in enumerate(results):
+                    if i == idx and not ok:
+                        reasons.append(f"correct option fails check ({why})")
+                    if i != idx and ok:
+                        reasons.append(f"distractor {i} also satisfies the check")
     q = str(c.get("question_text", ""))
     if answer_leaks(q, [opts[idx]]):
         reasons.append("question contains the answer")
@@ -597,11 +606,14 @@ def quiz_core_checks(c: dict, v, node_id: str) -> list:
     if not any(s["step_type"] == "variable_identification" for s in steps):
         reasons.append("no variable_identification step")
     for s in steps:
-        words = re.sub(r"\[a-zA-Z]+|sqrt|nthRoot", "", s["correct_value"])
+        words = re.sub(r"\\[a-zA-Z]+|sqrt|nthRoot", "", s["correct_value"])
         if not s["correct_value"] or len(s["correct_value"]) > 40 or re.search(r"[A-Za-z]{2,}", words):
             reasons.append(f"step {s['step_index']} correct_value is not short and typeable")
         if s["mapped_node_id"] is None:
             s["mapped_node_id"] = node_id  # same fallback as generate_practice.validate_and_fix
+        cv, be = s["correct_value"], s["blank_expression"]
+        if "___" not in be and "?" not in be and cv and be.count(cv) == 1:
+            s["blank_expression"] = be.replace(cv, "___")  # the model left the answer in place: blank it out
         if "___" not in s["blank_expression"]:
             reasons.append(f"step {s['step_index']} blank_expression has no ___")
     if reasons:
@@ -706,6 +718,8 @@ def select_kept(survivors: list, target: int, kind_cap: int, node_id: str) -> tu
             why = "context used twice already"
         elif is_age and ages >= 1:
             why = "second age problem"
+        elif c.get("blind_only") and sum(1 for k in kept if k.get("blind_only")) >= BLIND_ONLY_CAP:
+            why = f"more than {BLIND_ONLY_CAP} blind-only items"
         elif any(difflib.SequenceMatcher(None, norm_text(c.get("question_text") or c.get("word_problem")),
                                          norm_text(k.get("question_text") or k.get("word_problem"))).ratio() > 0.8
                  or numbers_overlap(str(c.get("question_text") or c.get("word_problem")),
@@ -752,7 +766,7 @@ def validate_node(gem: Gemini, bank: str, node_id: str):
             else:
                 ok = check_matches(v, c["check"], got)[0]
             if ok:
-                c["verified_by"] = "check+blind" if c["check"].get("kind") != "manual" else "blind only"
+                c["verified_by"] = "blind only" if c.get("blind_only") else "check+blind"
                 checked.append(c)
             else:
                 dropped.append({"id": c["cand_id"], "reasons": [f"blind solve disagrees (got {got!r})"]})

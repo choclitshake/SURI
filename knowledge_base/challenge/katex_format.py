@@ -62,10 +62,16 @@ def _conv(s: str) -> str:
                 j = _match(s, i + 1)
                 out.append("^{" + _conv(s[i + 2:j]) + "}")
                 i = j + 1
+            elif i + 1 < len(s) and s[i + 1] == "{":
+                j = s.index("}", i + 1)  # already LaTeX: keep the braces
+                out.append("^{" + _conv(s[i + 2:j]) + "}")
+                i = j + 1
             else:
                 m = re.match(r"[-+]?\d+(?:\.\d+)?|[a-z]", s[i + 1:])
                 if not m:
-                    raise ValueError("bad exponent")
+                    out.append("^")  # unknown exponent form: leave it; check_final flags raw math
+                    i += 1
+                    continue
                 out.append("^{" + m.group(0) + "}")
                 i += 1 + len(m.group(0))
         else:

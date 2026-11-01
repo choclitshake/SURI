@@ -166,9 +166,28 @@ class DiagnosticValidationTests(unittest.TestCase):
         reasons = gen.diag_core_checks(item, self.v, "FD", [])
         self.assertTrue(any("age problem" in r for r in reasons))
 
-    def test_manual_check_requires_mcq_only_kind(self):
-        reasons = gen.diag_core_checks(_diag(check={"kind": "manual"}), self.v, "L1V", [])
-        self.assertTrue(any("manual check" in r for r in reasons))
+    def test_manual_check_is_accepted_but_flagged_blind_only(self):
+        item = _diag(check={"kind": "manual"})
+        self.assertEqual(gen.diag_core_checks(item, self.v, "L1V", []), [])
+        self.assertTrue(item["blind_only"])
+
+    def test_statement_options_are_blind_only(self):
+        item = _diag(options=["Package A by 2 pesos", "Package B by 2 pesos", "They cost the same", "Neither"],
+                     check={"kind": "eval", "expr": "5 + 3"})
+        self.assertEqual(gen.diag_core_checks(item, self.v, "L1V", []), [])
+        self.assertTrue(item["blind_only"])
+
+    def test_letter_answer_index_is_normalised(self):
+        item = _diag(correct_option_index="A")
+        self.assertEqual(gen.diag_core_checks(item, self.v, "L1V", []), [])
+        self.assertEqual(item["correct_option_index"], 0)
+
+    def test_blind_only_items_are_capped_in_the_kept_set(self):
+        cands = [{"cand_id": f"c{i}", "kind": f"kind{i}", "pattern": f"p{i % 3}", "context": f"ctx{i}",
+                  "blind_only": True, "question_text": WORDS[i] + " " + WORDS[i + 1] + " " + WORDS[i + 2]}
+                 for i in range(6)]
+        kept, _ = gen.select_kept(cands, 8, 2, "FD")
+        self.assertEqual(len(kept), gen.BLIND_ONLY_CAP)
 
     def test_missing_relationships_fail(self):
         reasons = gen.diag_core_checks(_diag(relationships=["only one"]), self.v, "L1V", [])
