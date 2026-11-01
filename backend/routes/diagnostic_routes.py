@@ -38,6 +38,7 @@ def _load_probes() -> dict:
 PROBES: dict = _load_probes()
 
 QUESTIONS_PER_NODE = 4
+CHALLENGE_PER_NODE = 1  # of the QUESTIONS_PER_NODE, this many come from challenge probes
 PASS_THRESHOLD = 3  # >= 3/4 (75%) = mastered
 FAIL_WRONG_LIMIT = QUESTIONS_PER_NODE - PASS_THRESHOLD + 1  # 2 wrong = 3/4 unreachable
 
@@ -46,13 +47,27 @@ FAIL_WRONG_LIMIT = QUESTIONS_PER_NODE - PASS_THRESHOLD + 1  # 2 wrong = 3/4 unre
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _probe_order(session_id: str, node_id: str, n: int) -> list[int]:
-    """Return a deterministic, session-specific shuffled order of probe indices."""
+def _probe_order(session_id: str, node_id: str, probes: list[dict]) -> list[int]:
+    """Return a deterministic, session-specific order of probe indices.
+
+    The first QUESTIONS_PER_NODE positions hold standard probes plus
+    CHALLENGE_PER_NODE challenge probes (at a seeded position); the rest follow
+    shuffled so the wrap-around still works. Probes without "difficulty" are standard.
+    """
     seed = int(hashlib.md5(f"{session_id}:{node_id}".encode()).hexdigest(), 16)
     rng = random.Random(seed)
-    indices = list(range(n))
-    rng.shuffle(indices)
-    return indices
+    standard = [i for i, p in enumerate(probes) if p.get("difficulty", "standard") != "challenge"]
+    challenge = [i for i, p in enumerate(probes) if p.get("difficulty") == "challenge"]
+    rng.shuffle(standard)
+    rng.shuffle(challenge)
+
+    n_challenge = min(CHALLENGE_PER_NODE, len(challenge))
+    n_standard = min(QUESTIONS_PER_NODE - n_challenge, len(standard))
+    head = standard[:n_standard] + challenge[:n_challenge]
+    rng.shuffle(head)
+    rest = standard[n_standard:] + challenge[n_challenge:]
+    rng.shuffle(rest)
+    return head + rest
 
 
 # ---------------------------------------------------------------------------
@@ -299,7 +314,7 @@ async def get_diagnostic_probe(session_id: str, student=Depends(get_current_stud
             }
 
         # Use a session-seeded deterministic order to avoid repeating probes
-        order = _probe_order(session_id, current_node, len(probes_list))
+        order = _probe_order(session_id, current_node, probes_list)
         probe_idx = order[answered_count % len(probes_list)]
         selected_probe = probes_list[probe_idx]
 
