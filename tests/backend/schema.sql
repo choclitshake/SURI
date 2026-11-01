@@ -71,7 +71,8 @@ CREATE TABLE practice_problems (
     steps_json TEXT NOT NULL,
     word_problem_text TEXT,
     created_at TEXT NOT NULL,
-    step_extras_json TEXT DEFAULT NULL
+    step_extras_json TEXT DEFAULT NULL,
+    difficulty TEXT NOT NULL DEFAULT 'standard'  -- 'standard' | 'challenge' (quiz/practice sampling, challenge timers)
 );
 
 CREATE TABLE practice_attempts (
