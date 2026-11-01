@@ -284,7 +284,7 @@ Return ONLY a JSON array of {n} objects with keys:
 Escape every backslash in the JSON (write \\\\frac for \\frac)."""
 
 
-def quiz_prompt(node_id: str, kind: tuple, excerpt: str) -> str:
+def quiz_prompt(node_id: str, kind: tuple, excerpt: str, context: str = "") -> str:
     spec = SPECS[node_id]
     return f"""You are an expert mathematics teacher writing ONE CHALLENGE practice problem for Filipino K-12 (DepEd) students on: {spec['label']} (Grade {spec['grade']}).
 
@@ -293,6 +293,7 @@ SLM EXCERPT (the only source of methods you may use):
 
 ASSIGNED KIND: {kind[0]}
 ASSIGNED PATTERN: {kind[1]}
+{('ASSIGNED CONTEXT: set the problem in this context (set `context` to it): ' + context) if context else ''}
 {spec_block(node_id, [kind])}
 {common_rules(node_id)}
 The final answer must be ONE short typeable result (a number, an expression, or a solution set / ordered pair), with no units or words.
@@ -462,7 +463,9 @@ def gen_quiz(gem: Gemini, node_id: str, topup: bool = False):
                 save_json(cand_path("quiz", node_id), cands)
         for idx, kind in jobs:
             cid = f"quiz-{node_id}-{idx:02d}"
-            raw = gem.call(cid, quiz_prompt(node_id, kind, excerpt), max_output_tokens=4096)
+            contexts = SPECS[node_id]["contexts"]
+            raw = gem.call(cid, quiz_prompt(node_id, kind, excerpt, contexts[idx % len(contexts)]),
+                           max_output_tokens=4096)
             try:
                 item = parse_gemini_json(raw)
                 if isinstance(item, list):
