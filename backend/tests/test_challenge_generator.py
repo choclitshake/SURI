@@ -67,6 +67,23 @@ class RateLimiterTests(unittest.TestCase):
         self.assertFalse(is_daily_quota("RESOURCE_EXHAUSTED: per minute quota"))
 
 
+class ParserTests(unittest.TestCase):
+    def test_valid_escapes_are_kept(self):
+        # the file holds a correctly escaped backslash pair; the parsed value has one backslash
+        self.assertEqual(gen.parse_gemini_json(r'{"a": "$\\sqrt{3}$"}'), {"a": r"$\sqrt{3}$"})
+
+    def test_lone_backslash_is_repaired(self):
+        self.assertEqual(gen.parse_gemini_json(r'{"a": "x \( y"}')["a"], r"x \( y")
+
+    def test_bare_arithmetic_in_arrays_becomes_a_number(self):
+        raw = '{"roots": [\n 1,\n -1 - sqrt(3),\n 2\n]}'
+        data = gen.parse_gemini_json(raw)
+        self.assertAlmostEqual(data["roots"][1], -1 - 3 ** 0.5)
+
+    def test_code_fences_are_stripped(self):
+        self.assertEqual(gen.parse_gemini_json('```json\n{"a": 1}\n```'), {"a": 1})
+
+
 class AnswerCheckTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

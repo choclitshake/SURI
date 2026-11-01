@@ -154,7 +154,9 @@ class Gemini:
                 if is_daily_quota(msg):
                     raise StopRun("Gemini daily quota exhausted") from exc
                 transient = any(t in msg for t in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "500"))
-                if not transient or attempt == len(BACKOFF):
+                if transient and attempt == len(BACKOFF):
+                    raise StopRun("Gemini is still unavailable after retries (503/429)") from exc
+                if not transient:
                     raise
                 delay = retry_delay(msg) or BACKOFF[attempt]
                 print(f"    transient error, retrying in {delay:.0f}s ({attempt + 1}/{len(BACKOFF)})", flush=True)

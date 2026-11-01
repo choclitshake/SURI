@@ -38,7 +38,7 @@ from katex_format import (  # noqa: E402
 from pg_common import BLIND_MODEL, ROOT, load_json, save_json  # noqa: E402
 
 from backend.graph import GRAPH  # noqa: E402
-from generate_playground import parse_gemini_json  # noqa: E402
+from generate_playground import parse_gemini_json as _shared_parse  # noqa: E402
 from pdf_text import grounding_text  # noqa: E402
 from validate_playground import _NOT_ENGLISH, EvalError, Verifier, close_enough  # noqa: E402
 
@@ -70,11 +70,47 @@ CHECK_FORMATS = """\
 Use ONE of:
   {"kind": "eval",   "expr": "3*12 - 4"}                                   (the answer is that number)
   {"kind": "solve",  "eq": "x + (x+4) + 2*x = 40", "variable": "x", "roots": [9], "answer_expr": "2*x"}
-        (every root must satisfy eq; answer_expr is optional and gives the quantity actually asked for, in terms of the variable)
+        (roots are plain decimal numbers in JSON, e.g. -2.7320508, never expressions; every root must satisfy eq; answer_expr is optional and gives the quantity actually asked for, in terms of the variable)
   {"kind": "system", "eqs": ["x + y = 10", "2*x + 3*y = 26"], "solution": {"x": 4, "y": 6}, "answer_vars": ["x", "y"]}
   {"kind": "expr",   "expr": "x^2 + 5*x + 6", "vars": ["x"]}              (the answer is an expression equal to this)"""
 CHECK_MANUAL = '''
   {"kind": "manual"}                                                       (ONLY for MCQ-only kinds, e.g. spot the error)'''
+
+
+def parse_gemini_json(raw: str):
+    """Parse a model response. Lone backslashes (LaTeX the model forgot to escape) are fixed without
+    touching valid escape pairs, which the shared parser's repair would corrupt."""
+    text = raw.strip()
+    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text).strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    # valid escapes are matched (and kept) pairwise; only a lone backslash is doubled
+    fixed = re.sub(r'\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4})|\\', lambda m: m.group(0) if len(m.group(0)) > 1 else "\\\\", text)
+    for candidate in (fixed, _evaluate_bare_numbers(fixed)):
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+    return _shared_parse(raw)
+
+
+def _evaluate_bare_numbers(text: str) -> str:
+    """Turn array elements the model wrote as arithmetic (e.g. -1 - sqrt(3),) into decimal numbers."""
+    import math
+
+    def repl(m):
+        expr = m.group(2)
+        try:
+            value = eval(expr.replace("sqrt", "math.sqrt"), {"__builtins__": {}, "math": math})  # noqa: S307
+            return f"{m.group(1)}{value!r}{m.group(3)}"
+        except Exception:
+            return m.group(0)
+
+    # only lines made solely of digits, + - * / ( ) . spaces and sqrt, containing an operator or sqrt
+    return re.sub(r"(?m)^(\s*)([-+0-9.()* /]*(?:sqrt\([-+0-9.* /()]*\)[-+0-9.()* /]*)+|[-+]?[0-9.]+(?:\s*[-+*/]\s*[0-9.()]+)+)(,?\s*)$",
+                  repl, text)
 
 
 # --- text -> numbers ---------------------------------------------------------------------
@@ -963,6 +999,7 @@ def main():
                 validate_node(gem, "quiz", node_id)
     except StopRun as stop:
         print(f"\nSTOPPED: {stop}. Re-run the same command to resume; finished work is cached in {WORK}.")
+        sys.exit(1)  # non-zero so a chained command does not carry on with missing candidates
 
 
 if __name__ == "__main__":
