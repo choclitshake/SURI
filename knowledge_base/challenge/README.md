@@ -142,6 +142,22 @@ A full run for 14 nodes is roughly 250 calls, about 30 to 40 minutes.
    Run the migration and the seed only after agreeing it with the backend developer, because other people use the
    same database.
 
+## Current coverage
+
+First release: 89 diagnostic probes and 24 quiz problems (targets were 8 per node and 5 per node). Items were
+verified by code, re-solved blind by a second model, and audited independently; about 77 candidates were rejected
+(`review_decisions.json` records why). The runtime falls back to standard items where a node is short.
+
+| Node | Challenge probes (of 8) | Challenge quiz problems (of 5) |
+| :--- | :--- | :--- |
+| FD / RPP / OI | 5 / 8 / 8 | 1 / 2 / 5 |
+| LE / AE / L1V / SP | 7 / 3 / 6 / 7 | 1 / 2 / 2 / **0** |
+| PO / FP / L2V / SLE | 8 / 8 / 8 / 5 | **0** / 1 / 2 / 3 |
+| QE / RER / PE | 5 / 6 / 5 | 2 / 2 / 1 |
+
+To add more, run `quiz --topup` / `diagnostic --topup` for the short nodes (the shortfall is computed after review
+rejections), then `validate`, `review` and `export`. Expect roughly half of new candidates to be rejected by the checks.
+
 ## Runtime behaviour
 
 - **Diagnostic** (`backend/routes/diagnostic_routes.py`): `_probe_order` returns a deterministic, session-seeded order whose
