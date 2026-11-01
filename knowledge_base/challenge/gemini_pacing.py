@@ -33,6 +33,10 @@ BACKOFF = [15, 30, 60, 120]
 WINDOW_S = 60.0
 
 
+class EmptyResponse(RuntimeError):
+    """Every retry of one prompt came back empty."""
+
+
 class StopRun(Exception):
     """Stop cleanly: the daily quota or the local call budget is used up."""
 
@@ -167,10 +171,11 @@ class Gemini:
             text = resp.text or ""
             if not text.strip():
                 print("    empty response, retrying", flush=True)
+                temperature = min(temperature + 0.3, 1.0)  # a deterministic empty answer would repeat forever
                 time.sleep(BACKOFF[0])
                 continue
             os.makedirs(RAW_DIR, exist_ok=True)
             with open(cache, "w", encoding="utf-8", newline="\n") as f:
                 f.write(text)
             return text
-        raise RuntimeError("Gemini kept returning empty responses")
+        raise EmptyResponse("Gemini kept returning empty responses")

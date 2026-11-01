@@ -31,7 +31,7 @@ sys.path.insert(0, HERE)
 from challenge_specs import (  # noqa: E402
     AGE_NODES, CHALLENGE_NOTES, GLOBAL_RULES, IN_SCOPE, SPECS, kinds_for, pdfs_for,
 )
-from gemini_pacing import Gemini, StopRun, calls_today  # noqa: E402
+from gemini_pacing import EmptyResponse, Gemini, StopRun, calls_today  # noqa: E402
 from katex_format import (  # noqa: E402
     ascii_to_katex, katexify_prose, outside_math_is_clean, to_blank, to_value,
 )
@@ -689,16 +689,25 @@ def blind_quiz_prompt(batch: list) -> str:
 def blind_solve(gem: Gemini, bank: str, node_id: str, items: list) -> dict:
     """{cand_id: blind answer} in batches of about 6, cached per batch."""
     out = {}
-    for b in range(0, len(items), 6):
-        batch = items[b:b + 6]
+
+    def solve(batch):
         prompt = (blind_diag_prompt if bank == "diag" else blind_quiz_prompt)(batch)
         tag = f"blind-{bank}-{node_id}-{hashlib.sha256(prompt.encode()).hexdigest()[:10]}"
-        raw = gem.call(tag, prompt, max_output_tokens=4096, model=BLIND_MODEL, temperature=0.0)
+        try:
+            raw = gem.call(tag, prompt, max_output_tokens=4096, model=BLIND_MODEL, temperature=0.0)
+        except EmptyResponse:
+            if len(batch) > 1:  # one awkward item can blank the whole batch: retry them one at a time
+                for single in batch:
+                    solve([single])
+            return  # a single item that still comes back empty gets no blind answer and is dropped
         try:
             for d in parse_gemini_json(raw):
                 out[str(d.get("id"))] = str(d.get("answer", ""))
         except Exception:
             pass
+
+    for b in range(0, len(items), 6):
+        solve(items[b:b + 6])
     return out
 
 
