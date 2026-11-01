@@ -138,12 +138,26 @@ def _is_math_token(tok: str) -> bool:
     return bool(letters) or any(c in _OPS for c in core)
 
 
+_LATEX_CMD = re.compile(r"\\frac\{[^{}]*\}\{[^{}]*\}|\\sqrt(?:\[\d+\])?\{[^{}]*\}")
+_SUBSCRIPT = re.compile(r"\b([A-Za-z])_([A-Za-z]{2,})\b")
+
+
+def _wrap_latex(piece: str) -> str:
+    """Wrap bare \\frac{}{} / \\sqrt{} and names like A_total (-> A_{\\text{total}}) in $...$."""
+    piece = _LATEX_CMD.sub(lambda m: "$" + m.group(0) + "$", piece)
+    return _SUBSCRIPT.sub(lambda m: "$" + m.group(1) + "_{\\text{" + m.group(2) + "}}$", piece)
+
+
 def katexify_prose(text: str) -> str:
     """Wrap bare math in prose with $...$ and convert $...$ spans that still hold mathjs syntax."""
     out = []
     for piece in re.split(r"(\$[^$]+\$)", str(text)):
         if piece.startswith("$") and piece.endswith("$") and len(piece) > 1:
             out.append("$" + ascii_to_katex(piece[1:-1]) + "$")
+            continue
+        wrapped = _wrap_latex(piece)
+        if wrapped != piece:  # LaTeX written without dollars: wrap it, then process the new spans
+            out.append(katexify_prose(wrapped))
             continue
         parts = re.split(r"(\s+)", piece)
         idx = [k for k, w in enumerate(parts) if w.strip()]

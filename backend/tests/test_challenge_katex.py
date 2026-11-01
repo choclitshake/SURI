@@ -61,6 +61,15 @@ class ProseTests(unittest.TestCase):
     def test_converts_existing_spans(self):
         self.assertEqual(katexify_prose("Find $2*x + 3$."), "Find $2x + 3$.")
 
+    def test_wraps_bare_latex_commands(self):
+        self.assertEqual(katexify_prose("Package A by \\frac{1}{20}"), "Package A by $\\frac{1}{20}$")
+        self.assertEqual(katexify_prose("Find \\sqrt{12} now"), "Find $\\sqrt{12}$ now")
+
+    def test_subscript_names_become_math(self):
+        out = katexify_prose("Let A_total be the area.")
+        self.assertEqual(out, "Let $A_{\\text{total}}$ be the area.")
+        self.assertTrue(outside_math_is_clean(out))
+
     def test_idempotent(self):
         once = katexify_prose("Let x be the width. Then 2*(w + 5) = 50.")
         self.assertEqual(katexify_prose(once), once)

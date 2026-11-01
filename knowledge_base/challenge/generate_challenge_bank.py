@@ -806,16 +806,36 @@ def validate_node(gem: Gemini, bank: str, node_id: str):
 
 # --- stored (KaTeX) forms ----------------------------------------------------------------
 
-SCOPE = {"x": 3, "y": 5, "w": 7, "n": 4, "a": 2, "b": 6}
+# every single-letter variable gets a distinct small value, so any expression the model wrote can be evaluated
+SCOPE = {c: (i * 3) % 7 + 2 for i, c in enumerate("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")}
+
+
+def _expand_letters(s: str) -> str:
+    """kx -> k*x, so implicit products of variables survive to_ascii (which drops multi-letter words)."""
+    return re.sub(r"(?<![A-Za-z\\])(?!sqrt|nthRoot)([A-Za-z]{2,4})(?![A-Za-z(])",
+                  lambda m: "*".join(m.group(1)), str(s))
+
+
+def _side_value(v, text: str):
+    """Value of an expression, or of lhs - rhs for an equation, at SCOPE."""
+    if "=" in text:
+        lhs, rhs = text.split("=", 1)
+        return v.eval(f"({lhs}) - ({rhs})", SCOPE)
+    return v.eval(text, SCOPE)
 
 
 def roundtrip_ok(v, original: str, final: str) -> bool:
-    """The stored LaTeX must mean the same as the verified original (numbers or expressions)."""
+    """The stored LaTeX must mean the same as the verified original (numbers, expressions, equations, systems)."""
     a, b = numbers_in(v, original), numbers_in(v, final)
     if a is not None and b is not None:
         return same_numbers(a, b)
     try:
-        return close_enough(v.eval(to_ascii(original), SCOPE), v.eval(to_ascii(final), SCOPE))
+        parts_a = split_top(to_ascii(_expand_letters(original)))
+        parts_b = split_top(to_ascii(_expand_letters(final)))
+        if len(parts_a) != len(parts_b):
+            return False
+        return all(x.count("=") == y.count("=") and close_enough(_side_value(v, x), _side_value(v, y))
+                   for x, y in zip(parts_a, parts_b))
     except Exception:
         return False
 
