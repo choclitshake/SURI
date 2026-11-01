@@ -413,6 +413,7 @@ run.bat
 | **Generate Practice Problems** | `python knowledge_base/generate_practice.py` | Combines Gemini with `mathsteps` to scaffold step-by-step problem sets. |
 | **Generate Distractors** | `python knowledge_base/generate_distractors.py` | Generates realistic multiple-choice distractors for diagnostic items. |
 | **Generate Diagnostic Probes** | `python scripts/generate_diagnostic_probes.py` | Compiles diagnostic assessment probes across all graph nodes. |
+| **Generate Challenge Items** | `python knowledge_base/challenge/generate_challenge_bank.py <diagnostic\|quiz\|validate\|review\|export> --nodes L1V,SLE` | Generates, verifies and exports the harder "challenge" diagnostic probes and practice problems. See [`knowledge_base/challenge/README.md`](knowledge_base/challenge/README.md). |
 | **Test Mathsteps Directly** | `node mathsteps_runner/runner.js "2x + 5 = 15"` | Tests equation parsing and step output via command line. |
 | **Integration Smoke Test** | `python scratch/verify_suri.py` | Runs automated end-to-end checks against all API endpoints. |
 
