@@ -64,6 +64,18 @@
     "quiz-PO-14": "hint lists the coefficient computations; near-duplicate of diag-PO-03",
     "quiz-FD-07": "same numbers as diag-FD-19; hint states 12",
     "quiz-RPP-09": "same numbers and structure as diag-RPP-02",
-    "quiz-PE-24": "odd context ('zero-volume theoretical boundary')"
+    "quiz-PE-24": "odd context ('zero-volume theoretical boundary')",
+    "diag-PO-15": "asks for the net gain at x=3 but no option gives that value",
+    "diag-FD-49": "spot-the-error with no stated error; refers to missing context",
+    "diag-FP-27": "near-duplicate of FP-05 (same K=81 template)",
+    "diag-QE-19": "near-duplicate projectile template of QE-15",
+    "quiz-AE-20": "step 1 line reads 3n * n (false): blank value does not fit",
+    "quiz-L1V-17": "step 2 says apply distributive property but the blank just restates the given side",
+    "quiz-SP-05": "step instruction does not match what the blank combines",
+    "quiz-SP-18": "distractors are whole expressions, one equal to the correct line verbatim",
+    "quiz-FP-37": "a and b are symmetric so the step is not unique; hints leak the pair",
+    "quiz-LE-15": "ambiguous 'total population multiplier' (3^4 vs 3^6)",
+    "quiz-L1V-27": "letter distractors are valid alternatives per the hint",
+    "quiz-SP-06": "letter distractors are valid alternatives per the hint"
   }
 }
