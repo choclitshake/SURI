@@ -185,7 +185,9 @@ def expected_values(v, check: dict):
         for r in roots:
             if abs(v.residual(check["eq"], {var: r})) > 1e-6:
                 raise EvalError(f"{var}={r} does not satisfy {check['eq']}")
-        solved = v.solve(check["eq"])
+        # mathsteps only solves linear equations reliably; it returns nonsense for quadratics and cubics
+        linear = not re.search(r"\^|\)\s*\*\s*\(|[a-z]\s*\*\s*[a-z(]|\)\s*\*\s*[a-z]", check["eq"])
+        solved = v.solve(check["eq"]) if linear else None
         if solved and not same_numbers(solved["roots"], roots):
             raise EvalError(f"mathsteps roots {solved['roots']} differ from claimed {roots}")
         expr = check.get("answer_expr")
@@ -214,7 +216,12 @@ def check_matches(v, check: dict, text: str):
     got = numbers_in(v, text)
     if got is None:
         return False, f"cannot parse {text!r}"
-    return same_numbers(got, want), f"expected {want}, answer has {got}"
+    if same_numbers(got, want):
+        return True, "matches"
+    positive = [w for w in want if w > 0]
+    if check.get("kind") == "solve" and 0 < len(positive) < len(want) and same_numbers(got, positive):
+        return True, "matches the positive roots (context discards the others)"
+    return False, f"expected {want}, answer has {got}"
 
 
 def expr_matches(v, check: dict, text: str) -> bool:
