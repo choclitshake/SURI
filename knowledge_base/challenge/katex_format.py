@@ -92,6 +92,11 @@ def ascii_to_katex(text: str) -> str:
         texts.append("\\text{" + word + "}")
         return f"\x00{len(texts) - 1}\x00"
 
+    def keep(m):  # already-converted \text{...} groups stay exactly as they are
+        texts.append(m.group(0))
+        return f"\x00{len(texts) - 1}\x00"
+
+    s = re.sub(r"\\text\{[^{}]*\}", keep, s)
     s = re.sub(r"(?<![\\A-Za-z])[A-Za-z][A-Za-z']+(?:\s+[A-Za-z][A-Za-z']+)*", hold, s)
     s = _conv(s)
     for _ in range(3):
