@@ -108,10 +108,14 @@ class AnswerCheckTests(unittest.TestCase):
         self.assertFalse(gen.check_matches(self.v, check, "9")[0])
 
     def test_context_may_discard_negative_roots(self):
-        check = {"kind": "solve", "eq": "-16*t^2 + 12*t + 9 = 0", "variable": "t", "roots": [-0.375, 1.5]}
-        self.assertTrue(gen.check_matches(self.v, check, "1.5")[0])
-        self.assertTrue(gen.check_matches(self.v, check, "-0.375, 1.5")[0])
+        check = {"kind": "solve", "eq": "t^2 - 5*t - 6 = 0", "variable": "t", "roots": [-1, 6]}
+        self.assertTrue(gen.check_matches(self.v, check, "6")[0])
+        self.assertTrue(gen.check_matches(self.v, check, "-1, 6")[0])
         self.assertFalse(gen.check_matches(self.v, check, "2")[0])
+
+    def test_claimed_roots_must_satisfy_the_equation(self):
+        check = {"kind": "solve", "eq": "-16*t^2 + 12*t + 9 = 0", "variable": "t", "roots": [-0.375, 1.5]}
+        self.assertFalse(gen.check_matches(self.v, check, "1.5")[0])
 
     def test_cubic_is_not_cross_checked_with_mathsteps(self):
         check = {"kind": "solve", "eq": "x*(x + 4)*(x - 2) = 0", "variable": "x", "roots": [0, -4, 2]}
