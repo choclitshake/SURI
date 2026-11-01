@@ -32,6 +32,9 @@ from challenge_specs import (  # noqa: E402
     AGE_NODES, CHALLENGE_NOTES, GLOBAL_RULES, IN_SCOPE, SPECS, kinds_for, pdfs_for,
 )
 from gemini_pacing import Gemini, StopRun, calls_today  # noqa: E402
+from katex_format import (  # noqa: E402
+    ascii_to_katex, katexify_prose, outside_math_is_clean, to_blank, to_value,
+)
 from pg_common import BLIND_MODEL, ROOT, load_json, save_json  # noqa: E402
 
 from backend.graph import GRAPH  # noqa: E402
@@ -249,6 +252,9 @@ ASSIGNED PATTERN: {kind[1]}
 {spec_block(node_id, [kind])}
 {common_rules(node_id)}
 The final answer must be ONE short typeable result (a number, an expression, or a solution set / ordered pair), with no units or words.
+FORMATS: write prose (`word_problem`, each step `instruction`) with every piece of math inside single dollar signs for KaTeX,
+e.g. "Let $x$ be the width. Write $2(x + 5) = 50$." Write `blank_expression`, `correct_value`, `answer`, `problem_expr` and `check`
+in plain mathjs ASCII (explicit *, ^, /, sqrt()); they are converted to KaTeX afterwards. Use ___ for the blank.
 
 The problem is solved in 4 to {MAX_STEPS} typed steps. Each step in `all_steps` has:
   "step_index" (0..n-1), "step_type" ("variable_identification" or "algebra"), "instruction" (short imperative),
@@ -288,7 +294,8 @@ def extras_prompt(c: dict, mathsteps_json: str) -> str:
         "TASK: For EACH step above generate:\n"
         "1. Exactly 3 WRONG but PLAUSIBLE answer choices (distractors): realistic student mistakes (sign error, wrong operation,\n"
         "   off-by-one), in the SAME format as the correct answer, never equal to it, never vague ('N/A', 'cannot determine').\n"
-        "2. A 1-2 sentence HINT that points at the concept or operation without giving away the correct answer.\n\n"
+        "2. A 1-2 sentence HINT that points at the concept or operation without giving away the correct answer;\n"
+        "   put any math in the hint inside $...$ (KaTeX). Write distractors in plain mathjs ASCII like the correct answer.\n\n"
         f"Return ONLY a single JSON object keyed by step index ({keys}), like:\n"
         '{"0": {"distractors": ["wrong1", "wrong2", "wrong3"], "hint": "hint text"}}\n'
         "No markdown, no code fences. Escape every backslash in the JSON."
@@ -728,6 +735,84 @@ def validate_node(gem: Gemini, bank: str, node_id: str):
           + (f"  -> short by {shortfall}; run the generator with --topup" if shortfall else ""))
 
 
+# --- stored (KaTeX) forms ----------------------------------------------------------------
+
+SCOPE = {"x": 3, "y": 5, "w": 7, "n": 4, "a": 2, "b": 6}
+
+
+def roundtrip_ok(v, original: str, final: str) -> bool:
+    """The stored LaTeX must mean the same as the verified original (numbers or expressions)."""
+    a, b = numbers_in(v, original), numbers_in(v, final)
+    if a is not None and b is not None:
+        return same_numbers(a, b)
+    try:
+        return close_enough(v.eval(to_ascii(original), SCOPE), v.eval(to_ascii(final), SCOPE))
+    except Exception:
+        return False
+
+
+def final_option(opt: str) -> str:
+    s = str(opt).strip()
+    if "$" in s:
+        return katexify_prose(s)
+    if not re.search(r"[A-Za-z]{2,}", re.sub(r"\\[a-zA-Z]+", "", s)):
+        return "$" + ascii_to_katex(s) + "$"
+    return katexify_prose(s)
+
+
+def final_diag(c: dict) -> dict:
+    return {"node_id": c["node_id"], "question_text": katexify_prose(c["question_text"]),
+            "options": [final_option(o) for o in c["options"]],
+            "correct_option_index": c["correct_option_index"], "difficulty": "challenge"}
+
+
+def final_quiz(c: dict) -> dict:
+    """The practice_problems row fields exactly as they will be stored (KaTeX conventions)."""
+    steps, extras = [], {}
+    for s in c["all_steps"]:
+        steps.append({
+            "step_index": s["step_index"], "step_type": s["step_type"],
+            "instruction": katexify_prose(s["instruction"]),
+            "blank_expression": to_blank(s["blank_expression"]),
+            "correct_value": to_value(s["correct_value"]),
+            "operation_description": katexify_prose(s["operation_description"]),
+            "mapped_node_id": s["mapped_node_id"],
+        })
+        e = c["extras"][str(s["step_index"])]
+        extras[str(s["step_index"])] = {
+            "distractors": [to_value(d) for d in e["distractors"]], "hint": katexify_prose(e["hint"]),
+        }
+    return {"word_problem_text": katexify_prose(c["word_problem"]), "steps": steps, "extras": extras,
+            "answer": to_value(c["answer"])}
+
+
+def check_final(v, c: dict, bank: str) -> list:
+    """Problems with the stored form of an approved item (empty list = fine to export)."""
+    issues = []
+    try:
+        if bank == "diag":
+            f = final_diag(c)
+            texts = [f["question_text"]] + f["options"]
+            for orig, fin in zip(c["options"], f["options"]):
+                if "$" not in str(orig) and c["check"].get("kind") != "manual" and not roundtrip_ok(v, orig, fin):
+                    issues.append(f"option {orig!r} changed meaning as {fin!r}")
+        else:
+            f = final_quiz(c)
+            texts = [f["word_problem_text"]] + [s["instruction"] for s in f["steps"]] + \
+                [e["hint"] for e in f["extras"].values()]
+            for s, o in zip(f["steps"], c["all_steps"]):
+                if s["blank_expression"].count("?") != 1 or "$" in s["correct_value"]:
+                    issues.append(f"step {s['step_index']} blank/value format")
+                if not roundtrip_ok(v, o["correct_value"], s["correct_value"]):
+                    issues.append(f"step {s['step_index']} value {o['correct_value']!r} -> {s['correct_value']!r}")
+        for t in texts:
+            if not outside_math_is_clean(t):
+                issues.append(f"raw math outside $...$: {t[:70]!r}")
+    except Exception as exc:
+        issues.append(f"conversion failed: {exc!r}")
+    return issues
+
+
 # --- review and export -------------------------------------------------------------------
 
 def rejected_ids() -> dict:
@@ -748,17 +833,19 @@ def write_review(nodes: list):
         lines += [f"## {node_id} - {SPECS[node_id]['label']} (Grade {SPECS[node_id]['grade']})", ""]
         for c in approved("diag", node_id):
             letters = "ABCD"
-            lines += [f"### {c['cand_id']}  ({c['kind']} / {c['pattern']} / {c['context']})", "", c["question_text"], ""]
+            f = final_diag(c)
+            lines += [f"### {c['cand_id']}  ({c['kind']} / {c['pattern']} / {c['context']})", "", f["question_text"], ""]
             lines += [f"- {'**' if i == c['correct_option_index'] else ''}{letters[i]}. {o}"
-                      f"{'**' if i == c['correct_option_index'] else ''}" for i, o in enumerate(c["options"])]
+                      f"{'**' if i == c['correct_option_index'] else ''}" for i, o in enumerate(f["options"])]
             lines += ["", f"SLM concept: {c['slm_concept']}  |  verified by: {c.get('verified_by')}", ""]
         for c in approved("quiz", node_id):
+            f = final_quiz(c)
             lines += [f"### {c['cand_id']}  ({c['kind']} / {c['pattern']} / {c['context']})", "",
-                      c["word_problem"], "", f"Expression: `{c['problem_expr']}`  |  Answer: **{c['answer']}**", ""]
-            for s in c["all_steps"]:
-                e = c["extras"].get(str(s["step_index"]), {})
+                      f["word_problem_text"], "", f"Expression: `{c['problem_expr']}`  |  Answer: **`{f['answer']}`**", ""]
+            for s in f["steps"]:
+                e = f["extras"][str(s["step_index"])]
                 lines.append(f"{s['step_index']}. [{s['step_type']}] {s['instruction']} `{s['blank_expression']}` "
-                             f"= **{s['correct_value']}**  | distractors: {e.get('distractors')}  | hint: {e.get('hint')}")
+                             f"= **`{s['correct_value']}`**  | distractors: {e['distractors']}  | hint: {e['hint']}")
             lines += ["", f"SLM concept: {c['slm_concept']}  |  verified by: {c.get('verified_by')}", ""]
     os.makedirs(WORK, exist_ok=True)
     with open(REVIEW_MD, "w", encoding="utf-8", newline="\n") as f:
@@ -771,14 +858,12 @@ def sql_str(s) -> str:
 
 
 def quiz_row(c: dict) -> dict:
-    steps = [{k: s[k] for k in ("step_index", "step_type", "instruction", "blank_expression", "correct_value",
-                                "operation_description", "mapped_node_id")} for s in c["all_steps"]]
-    extras = {k: {"distractors": [str(x) for x in e["distractors"]], "hint": e["hint"]}
-              for k, e in c["extras"].items() if k in {str(s["step_index"]) for s in steps}}
+    f = final_quiz(c)
+    steps, extras = f["steps"], f["extras"]
     return {
         "id": str(uuid.uuid5(uuid.NAMESPACE_URL, f"suri-challenge:{c['node_id']}:{c['problem_expr']}")),
         "node_id": c["node_id"], "problem_expr": c["problem_expr"], "steps_json": steps,
-        "word_problem_text": c["word_problem"], "step_extras_json": extras, "difficulty": "challenge",
+        "word_problem_text": f["word_problem_text"], "step_extras_json": extras, "difficulty": "challenge",
     }
 
 
@@ -787,14 +872,22 @@ def export(nodes: list):
     with open(PROBES_PATH, encoding="utf-8") as f:
         before_text = f.read()
     probes = json.loads(before_text)
+    v = Verifier()
+    try:
+        problems = [(n, c, b) for n in nodes for b in ("diag", "quiz") for c in approved(b, n)]
+        bad = [(c["cand_id"], i) for n, c, b in problems for i in check_final(v, c, b)]
+    finally:
+        v.close()
+    if bad:
+        sys.exit("ERROR: stored KaTeX form has problems; fix the generator or reject these items:\n" +
+                 "\n".join(f"  {cid}: {i}" for cid, i in bad))
     before = {k: [json.dumps(p, sort_keys=True) for p in v] for k, v in probes.items()}
     for node_id in nodes:
         have = {p["question_text"] for p in probes[node_id]}
         for c in approved("diag", node_id):
-            if c["question_text"] in have:
+            if final_diag(c)["question_text"] in have:
                 continue
-            probes[node_id].append({"node_id": node_id, "question_text": c["question_text"], "options": c["options"],
-                                    "correct_option_index": c["correct_option_index"], "difficulty": "challenge"})
+            probes[node_id].append(final_diag(c))
     for node_id, old in before.items():
         assert [json.dumps(p, sort_keys=True) for p in probes[node_id][:len(old)]] == old, f"{node_id} existing probes changed"
     assert "PD" not in nodes
