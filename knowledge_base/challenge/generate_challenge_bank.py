@@ -814,12 +814,16 @@ def validate_node(gem: Gemini, bank: str, node_id: str):
     target, cap = (DIAG_KEEP, DIAG_CAP_PER_KIND) if bank == "diag" else (QUIZ_KEEP, QUIZ_CAP_PER_KIND)
     existing = existing_questions(node_id) if bank == "diag" else []
     sibling_questions = [c["question_text"] for c in approved("diag", node_id)] if bank == "quiz" else []
+    rejected = rejected_ids()
     v = Verifier()
     survivors, dropped = [], []
     try:
         for c in cands:
             if c.get("error") or c.get("pre_drop"):
                 dropped.append({"id": c["cand_id"], "reasons": [c.get("error") or "; ".join(c["pre_drop"])]})
+                continue
+            if c["cand_id"] in rejected:  # rejected in review: never counts toward the set, so a top-up replaces it
+                dropped.append({"id": c["cand_id"], "reasons": [f"rejected in review: {rejected[c['cand_id']]}"]})
                 continue
             reasons = diag_core_checks(c, v, node_id, existing) if bank == "diag" else \
                 quiz_core_checks(c, v, node_id) + extras_checks(c, v)
@@ -830,6 +834,8 @@ def validate_node(gem: Gemini, bank: str, node_id: str):
                         break
             if bank == "diag" and SELF_TALK.search(str(c.get("question_text", "")) + " ".join(map(str, c.get("options", [])))):
                 reasons.append("contains author self-talk (wait / let's try / ...)")
+            if not reasons:  # it must also convert cleanly to the stored KaTeX form
+                reasons = [f"stored form: {i}" for i in check_final(v, c, bank)]
             if reasons:
                 dropped.append({"id": c["cand_id"], "reasons": reasons})
             else:
