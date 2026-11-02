@@ -235,7 +235,7 @@ async def test_TC55_get_probe_selects_unrepeated_question(client, db):
     completed = await client.get(f"/api/diagnostic/{done}/probe", headers=student["headers"])
     missing = await client.get(f"/api/diagnostic/{UNKNOWN_SESSION}/probe", headers=student["headers"])
 
-    expected_idx = _probe_order(session_id, "FD", len(PROBES["FD"]))[1]
+    expected_idx = _probe_order(session_id, "FD", PROBES["FD"])[1]
     body = res.json()
     assert res.status_code == 200
     assert body["node_id"] == "FD" and body["questions_answered"] == 1

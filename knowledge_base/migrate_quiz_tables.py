@@ -49,6 +49,20 @@ async def migrate():
         else:
             print("[SKIP] step_extras_json already exists.")
 
+        # 1b. Add difficulty to practice_problems ('standard' | 'challenge')
+        row = await conn.fetchrow(
+            """
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name='practice_problems' AND column_name='difficulty';
+            """
+        )
+        if not row:
+            await conn.execute("ALTER TABLE practice_problems ADD COLUMN difficulty TEXT NOT NULL DEFAULT 'standard'")
+            print("[OK] Added difficulty column to practice_problems.")
+        else:
+            print("[SKIP] difficulty already exists.")
+
         # 2. Create quiz_sessions table
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS quiz_sessions (

@@ -60,7 +60,8 @@ CREATE TABLE IF NOT EXISTS practice_problems (
     steps_json TEXT NOT NULL,
     word_problem_text TEXT,
     created_at TEXT NOT NULL,
-    step_extras_json TEXT
+    step_extras_json TEXT,
+    difficulty TEXT NOT NULL DEFAULT 'standard'
 );
 
 CREATE TABLE IF NOT EXISTS practice_attempts (

@@ -175,6 +175,66 @@
         "$x = 4$"
       ],
       "correct_option_index": 0
+    },
+    {
+      "node_id": "QE",
+      "question_text": "The product of two consecutive positive integers is $132$. Find the smaller integer $x$.",
+      "options": [
+        "$10$",
+        "$11$",
+        "$12$",
+        "$13$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "QE",
+      "question_text": "Maria constructs a rectangular window frame. The area of the window is $315$ square centimeters, and its length is $6$ cm more than its width $x$. What is the width of the window in centimeters?",
+      "options": [
+        "$12$",
+        "$15$",
+        "$18$",
+        "$21$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "QE",
+      "question_text": "A rectangular floor has an area of $84$ square meters. Its perimeter is $38$ meters. If the width is $x$, which quadratic equation in standard form represents the condition?",
+      "options": [
+        "$x^{2} - 19x + 84 = 0$",
+        "$x^{2} + 19x + 84 = 0$",
+        "$2x^{2} - 38x + 84 = 0$",
+        "$x^{2} - 38x + 84 = 0$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "QE",
+      "question_text": "A rectangular bulletin board has a width of $4$ meters and a height of $2$ meters. A wooden frame of uniform width $x$ meters is built around it. If the total area of the board including the frame is $24$ square meters, what is the width $x$ of the frame?",
+      "options": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "QE",
+      "question_text": "A basketball is thrown upward from a platform. Its height $H$ in meters after $t$ seconds is given by the equation $H = -16t^{2} + 24t + 16$. How many seconds does it take for the ball to hit the ground where $H = 0$?",
+      "options": [
+        "$2$",
+        "$1.5$",
+        "$2.5$",
+        "$3$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
     }
   ],
   "FP": [
@@ -353,6 +413,102 @@
         "$(x + 3)(x + 3 - y^2)$"
       ],
       "correct_option_index": 0
+    },
+    {
+      "node_id": "FP",
+      "question_text": "To compute the value of $64^{2} - 36^{2}$ mentally without direct multiplication, a student uses the difference of two squares pattern $(a^{2} - b^{2}) = (a + b)(a - b)$. What is the resulting factored expression before final multiplication?",
+      "options": [
+        "$(64 + 36)(64 - 36)$",
+        "$(64 - 36)(64 - 36)$",
+        "$(64 + 36)(64 + 36)$",
+        "$64(64 - 36)$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Which of the following quadratic trinomials cannot be factored over the integers using the standard methods discussed in the modules?",
+      "options": [
+        "$x^{2} + 7x + 10$",
+        "$x^{2} - 8x - 20$",
+        "$x^{2} + 3x + 7$",
+        "$25y^{2} - 100y + 100$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "FP",
+      "question_text": "What integer value should replace $k$ in the expression $x^{2} + \\text{kx} - 20$ so that the trinomial can be factored into two binomials with integer coefficients, given that one of the factors is $(x - 5)$?",
+      "options": [
+        "$1$",
+        "$-1$",
+        "$4$",
+        "$-4$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "FP",
+      "question_text": "An expression is given as $16x^{4} - k$. What term must replace $k$ so that the binomial becomes a difference of two squares that can be factored completely into $(4x^{2} + 9)(2x + 3)(2x - 3)$?",
+      "options": [
+        "$9$",
+        "$18$",
+        "$81$",
+        "$36$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Find the missing term $M$ such that $16x^{2} - M$ can be factored into $(4x + 7)(4x - 7)$.",
+      "options": [
+        "$7$",
+        "$14$",
+        "$28$",
+        "$49$"
+      ],
+      "correct_option_index": 3,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "FP",
+      "question_text": "A school garden has a rectangular area represented by the polynomial $x^{2} + 13x + 42$ square meters. If the width of the garden is $x + 6$ meters, what is the length of the garden in meters?",
+      "options": [
+        "$x + 6$",
+        "$x + 7$",
+        "$x + 8$",
+        "$x + 13$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "FP",
+      "question_text": "Factor completely the expression $-3x^{2} + 12$.",
+      "options": [
+        "$-3(x + 2)(x - 2)$",
+        "$3(x + 2)(x - 2)$",
+        "$-3(x - 2)^{2}$",
+        "$3(x^{2} - 4)$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "FP",
+      "question_text": "A poster board has an area of $x^{2} - 11x + 30$ square inches. If the length is $x - 5$ inches, what is the width of the poster board in inches?",
+      "options": [
+        "$x - 6$",
+        "$x - 5$",
+        "$x + 6$",
+        "$x + 5$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
     }
   ],
   "SP": [
@@ -531,6 +687,90 @@
         "$x^4 + 1$"
       ],
       "correct_option_index": 0
+    },
+    {
+      "node_id": "SP",
+      "question_text": "A square garden has a side length of $x$ meters. When each side is enlarged by $7$ meters, what is the total expanded area of the garden in square meters?",
+      "options": [
+        "$x^{2} + 49$",
+        "$x^{2} + 14x + 49$",
+        "$x^{2} + 7x + 49$",
+        "$2x + 14$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "SP",
+      "question_text": "A rectangular concrete walkway surrounds a flower bed. The outer length and width are given by the binomial product $(3x + 2)(x + 5)$. What is the expanded polynomial representing the total area?",
+      "options": [
+        "$3x^{2} + 10$",
+        "$3x^{2} + 17x + 10$",
+        "$3x^{2} + 15x + 10$",
+        "$3x^{2} + 7x + 10$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "SP",
+      "question_text": "A school framing project requires calculating the area of a picture frame border. The total outer area is represented by $(4x + 3)(4x - 3)$. What is the simplified expression for this area?",
+      "options": [
+        "$16x^{2} - 9$",
+        "$16x^{2} + 9$",
+        "$16x^{2} - 24x - 9$",
+        "$4x^{2} - 9$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "SP",
+      "question_text": "An algebraic tile layout representing a square binomial has the terms $x^{2} + 10x + k$. What value must $k$ have for this expression to be the exact square of a binomial?",
+      "options": [
+        "$5$",
+        "$10$",
+        "$25$",
+        "$100$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Compute mentally using the square of a binomial pattern: what is the expanded numerical value of $31^{2}$ by viewing it as $(30 + 1)^{2}$?",
+      "options": [
+        "$901$",
+        "$961$",
+        "$931$",
+        "$911$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "SP",
+      "question_text": "Ana is designing a square flower garden in her backyard. The length of one side is represented by $2x + 5$ meters. When she expands the garden by increasing the side length, she writes the area expression as $(2x + 5)^{2} = 4x^{2} + 10x + 25$. Her teacher points out an error in her expansion. Which of the following shows the correct expansion of Ana's original garden area?",
+      "options": [
+        "$4x^{2} + 10x + 25$",
+        "$4x^{2} + 20x + 25$",
+        "$2x^{2} + 20x + 25$",
+        "$4x^{2} + 25$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "SP",
+      "question_text": "A floor tiling design is modeled by the product $(x + 4)(x^{2} - 4x + 16)$. Using the special product for the sum of cubes, what is the resulting expanded polynomial?",
+      "options": [
+        "$x^{3} + 64$",
+        "$x^{3} - 64$",
+        "$x^{3} + 16x + 64$",
+        "$x^{3} + 4x^{2} + 64$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
     }
   ],
   "LE": [
@@ -709,6 +949,90 @@
         "$x^{-3}y^{-6}$"
       ],
       "correct_option_index": 0
+    },
+    {
+      "node_id": "LE",
+      "question_text": "A rectangular storage box used in a sari-sari store has a length of $2^{4}$ centimeters and a width of $2^{3}$ centimeters. If its area is expressed in the form $2^{x}$, what is the missing exponent $x$?",
+      "options": [
+        "$7$",
+        "$12$",
+        "$1$",
+        "$43$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "LE",
+      "question_text": "To prepare a school garden plot, the area is planned using different power dimensions. If the total area is given by the product $4^{3} \\cdot 2^{4}$, and this is rewritten entirely with a base of $2$, what is the resulting exponent?",
+      "options": [
+        "$7$",
+        "$10$",
+        "$12$",
+        "$14$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "LE",
+      "question_text": "In an experiment, a student simplifies the expression $(3^{2})^{x}$ and finds it equals $3^{8}$. What is the missing value of the exponent $x$?",
+      "options": [
+        "$4$",
+        "$6$",
+        "$10$",
+        "$16$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "LE",
+      "question_text": "A student simplifies the expression $(2x^{2})^{3}$ and writes the steps below. In which step did the student make an error?\nStep 1: Apply the Power of a Product Rule to get $2^{3}(x^{2})^{3}$.\nStep 2: Evaluate $2^{3}$ as $6$.\nStep 3: Apply the Power Rule to $(x^{2})^{3}$ to get $x^{6}$.\nStep 4: Combine to get $6x^{6}$.",
+      "options": [
+        "Step 1",
+        "Step 2",
+        "Step 3",
+        "Step 4"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "LE",
+      "question_text": "Compare two storage boxes in a sari-sari store. Box A has a capacity of $4^{3}$ cubic units, and Box B has a capacity of $8^{2}$ cubic units. Which statement is true about their capacities?",
+      "options": [
+        "Box A is larger than Box B",
+        "Box B is larger than Box A",
+        "Box A is equal to Box B",
+        "Box A is double the size of Box B"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "LE",
+      "question_text": "In a garden experiment, the number of petals on a specific flower follows the rule $x^{4} = 81$. If $x$ represents the number of leaves on a stem, what is the value of $x$?",
+      "options": [
+        "$2$",
+        "$3$",
+        "$9$",
+        "$27$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "LE",
+      "question_text": "A teacher writes an equation on the board for a quiz: $b^{5} \\cdot b^{x} = b^{11}$. What number must replace $x$ to make the statement true?",
+      "options": [
+        "$55$",
+        "$6$",
+        "$16$",
+        "$5$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
     }
   ],
   "OI": [
@@ -887,6 +1211,102 @@
         "$16$"
       ],
       "correct_option_index": 0
+    },
+    {
+      "node_id": "OI",
+      "question_text": "A student plays a math game. They start with a certain number of points. In the first round, they lose 15 points. In the second round, they gain 20 points. Their final score is 5 points. What was their starting score?",
+      "options": [
+        "$-10$",
+        "$0$",
+        "$10$",
+        "$20$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "OI",
+      "question_text": "The temperature in Baguio was 18 degrees Celsius at noon. By 6:00 PM, it dropped by 5 degrees. By midnight, it dropped by another 7 degrees. What was the temperature at midnight?",
+      "options": [
+        "$6$",
+        "$10$",
+        "$12$",
+        "$30$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "OI",
+      "question_text": "In a 20-item quiz, each correct answer is worth 5 points, and each wrong answer is a penalty of 3 points. Maria answered 15 items correctly and the rest incorrectly. What is her final score?",
+      "options": [
+        "$60$",
+        "$65$",
+        "$75$",
+        "$90$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "OI",
+      "question_text": "A sequence follows the rule: each term is the previous term multiplied by -2. If the first term is 3, what is the fourth term?",
+      "options": [
+        "$-12$",
+        "$12$",
+        "$-24$",
+        "$24$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "OI",
+      "question_text": "Find the integer $x$ that makes the following equation true: $x \\div (-4) = 12$.",
+      "options": [
+        "$-48$",
+        "$3$",
+        "$-3$",
+        "$48$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "OI",
+      "question_text": "A hiker starts at 0 on a number line. They walk forward 10 steps, then backward 15 steps, then forward 8 steps. What is their final position?",
+      "options": [
+        "$2$",
+        "$3$",
+        "$5$",
+        "$18$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "OI",
+      "question_text": "A basketball player's net score in a series of games was -12. If they earned $+8$, -5, and $+4$ in the first three games, what was their score in the fourth game?",
+      "options": [
+        "$-19$",
+        "$-15$",
+        "$-12$",
+        "$-9$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "OI",
+      "question_text": "A diver is at 5 meters below sea level. They descend another 10 meters and then ascend 4 meters. What is their final elevation relative to sea level?",
+      "options": [
+        "$-11$",
+        "$-19$",
+        "$1$",
+        "$19$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
     }
   ],
   "FD": [
@@ -1065,6 +1485,66 @@
         "$2.5$"
       ],
       "correct_option_index": 2
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Maria works in her vegetable garden. She spent $\\frac{2}{7}$ hour on Saturday and $\\frac{3}{7}$ hour on Sunday. If she needs to work a total of $\\frac{6}{7}$ hour for the entire weekend, what fraction of an hour does she still need to work on Monday?",
+      "options": [
+        "$\\frac{1}{7}$",
+        "$\\frac{2}{7}$",
+        "$\\frac{3}{7}$",
+        "$\\frac{5}{7}$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "FD",
+      "question_text": "A ribbon was cut into pieces. After giving away $\\frac{2}{5}$ of the original length and then $\\frac{1}{3}$ of the remaining length to classmates, 12 meters of ribbon are left. What was the original length of the ribbon in meters?",
+      "options": [
+        "$18$",
+        "$24$",
+        "$30$",
+        "$36$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Chef Jose uses $3\\frac{1}{2}$ kilograms of potatoes for a catering event. He scales the potato requirement by multiplying it by $1\\frac{1}{2}$. He then divides the resulting total amount of potatoes equally among $2$ large cooking pots. How many kilograms of potatoes are in each pot?",
+      "options": [
+        "$\\frac{21}{8}$",
+        "$\\frac{15}{8}$",
+        "$\\frac{7}{4}$",
+        "$\\frac{27}{8}$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Ana has a ribbon of length $4 \\frac{1}{2}$ meters. She cuts off $\\frac{2}{5}$ meters of the ribbon to tie a box and another $1 \\frac{1}{4}$ meters to make a bow. What is the length of the leftover ribbon in meters?",
+      "options": [
+        "$\\frac{57}{20}$",
+        "$\\frac{29}{10}$",
+        "$\\frac{11}{4}$",
+        "$\\frac{59}{20}$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "FD",
+      "question_text": "Teacher Rosa bought a roll of cloth measuring $4 \\frac{1}{2}$ meters. She used $1 \\frac{2}{5}$ rolls (meaning $1 \\frac{2}{5}$ meters of the cloth) to sew pillow cases, and then used another $\\frac{3}{4}$ meter to make table napkins. What is the total length of cloth left from the roll in meters?",
+      "options": [
+        "$\\frac{47}{20}$",
+        "$\\frac{9}{4}$",
+        "$\\frac{51}{20}$",
+        "$\\frac{23}{10}$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
     }
   ],
   "SLE": [
@@ -1243,6 +1723,66 @@
         "None"
       ],
       "correct_option_index": 1
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "At a school fair, a student bought 5 notebooks and 3 pens for 130 pesos. A classmate bought 2 notebooks and 3 pens for 70 pesos. Let $x$ be the cost of one notebook and $y$ be the cost of one pen in pesos. What is the value of $x$?",
+      "options": [
+        "$15$",
+        "$20$",
+        "$25$",
+        "$30$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "A sari-sari store owner has coins in a jar. There are 15 coins in total consisting of 5-peso coins ($x$) and 10-peso coins ($y$). The total value of the coins is 100 pesos. How many 5-peso coins ($x$) are in the jar?",
+      "options": [
+        "$5$",
+        "$8$",
+        "$10$",
+        "$12$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "A cinema sells adult tickets ($x$) for 200 pesos and student tickets ($y$) for 150 pesos. A group of 10 people paid a total of 1800 pesos. How many student tickets ($y$) were sold?",
+      "options": [
+        "$2$",
+        "$4$",
+        "$6$",
+        "$8$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "The sum of two numbers $x$ and $y$ is 20. If 2 times $x$ equals $y$ plus 4, what is the value of $x$?",
+      "options": [
+        "$6$",
+        "$7$",
+        "$8$",
+        "$9$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "SLE",
+      "question_text": "Two numbers $x$ and $y$ have a difference of 4. If the sum of 3 times $x$ and 2 times $y$ is 22, what is the value of $y$?",
+      "options": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
     }
   ],
   "L2V": [
@@ -1421,6 +1961,102 @@
         "x = 2"
       ],
       "correct_option_index": 1
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "A student savings account balance increases steadily over time. At week $2$, the savings is $300$ pesos, and at week $5$, the savings is $600$ pesos. Assuming this growth follows a linear equation, what will be the savings at week $9$?",
+      "options": [
+        "$800$",
+        "$900$",
+        "$1000$",
+        "$1100$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "Which of the following linear equations in slope-intercept form correctly represents a phone load plan that charges a base fee of $40$ pesos plus $12$ pesos for every $1$ gigabyte of data $x$?",
+      "options": [
+        "$y = 40x + 12$",
+        "$y = 12x + 40$",
+        "$12x - y = 40$",
+        "$40x + y = 12$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "An internet cafe charges users according to the linear equation $4x - 3y = 24$, where $x$ represents extra printing pages and $y$ represents gaming hours. What is the $x$-intercept of this line, which represents the number of pages printed when gaming hours are zero?",
+      "options": [
+        "$4$",
+        "$6$",
+        "$8$",
+        "$12$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "A delivery service tracks two data points for package delivery fees: sending a $2$-kg package costs $110$ pesos, and sending a $6$-kg package costs $230$ pesos. Using these two points to determine the linear relationship, what is the rate of change (slope) per kilogram?",
+      "options": [
+        "$20$",
+        "$30$",
+        "$40$",
+        "$55$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "Two water-filling stations offer different pricing models for total gallons $x$ and total cost $y$ in pesos. Station A uses the equation $y = 10x + 50$, and Station B uses the equation $y = 15x + 30$. At how many gallons do both stations charge the exact same total cost?",
+      "options": [
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "In a school canteen project, the relationship between the number of snacks sold ($x$) and the profit ($y$) is described by the linear equation $y = 25x - 100$. What does the $y$-intercept of this equation represent in this context?",
+      "options": [
+        "The profit per snack sold",
+        "The initial loss or starting investment before selling any snacks",
+        "The total number of snacks sold when profit is zero",
+        "The maximum profit possible"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "A sari-sari store sells packs of biscuits. The relationship between the number of packs sold $x$ and the remaining stock $y$ is given by the linear equation $3x + 2y = 48$. If a specific transaction results in selling a number of packs such that the y-coordinate representing the remaining stock is $k$, and the point $(6, k)$ lies on this line, what is the value of $k$?",
+      "options": [
+        "$10$",
+        "$12$",
+        "$15$",
+        "$18$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "L2V",
+      "question_text": "A student's school project expenses follow a linear relationship. Buying $2$ binders costs $150$ pesos, and buying $5$ binders costs $330$ pesos. If the trend continues, what will be the total cost for $8$ binders?",
+      "options": [
+        "$450$",
+        "$480$",
+        "$510$",
+        "$540$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
     }
   ],
   "L1V": [
@@ -1599,6 +2235,78 @@
         "No solution"
       ],
       "correct_option_index": 2
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "The sum of three consecutive even integers is 66. What is the largest of these three integers?",
+      "options": [
+        "$20$",
+        "$22$",
+        "$24$",
+        "$26$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "A sari-sari store owner has 20 coins consisting of 5-peso and 10-peso coins. If the total value of these coins is 145 pesos, how many 10-peso coins does she have?",
+      "options": [
+        "$7$",
+        "$8$",
+        "$9$",
+        "$12$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "A rectangular garden has a length that is 3 meters longer than its width. If the perimeter of the garden is 34 meters, what is the width of the garden in meters?",
+      "options": [
+        "$5$",
+        "$7$",
+        "$10$",
+        "$14$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "Think of a number. Double it, then subtract 7. If the result is 15, what is the original number?",
+      "options": [
+        "$4$",
+        "$9$",
+        "$11$",
+        "$22$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "A phone plan costs 200 pesos per month plus 5 pesos for every extra text message sent. If a student's bill for the month was 380 pesos, how many extra text messages were sent?",
+      "options": [
+        "$30$",
+        "$36$",
+        "$40$",
+        "$76$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "L1V",
+      "question_text": "A canteen sells two types of snacks: small packs for 10 pesos and large packs for 25 pesos. If they sold 50 packs in total for 800 pesos, how many large packs were sold?",
+      "options": [
+        "$15$",
+        "$20$",
+        "$25$",
+        "$30$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
     }
   ],
   "AE": [
@@ -1777,6 +2485,42 @@
         "$12$"
       ],
       "correct_option_index": 0
+    },
+    {
+      "node_id": "AE",
+      "question_text": "Ana worked $m$ hours finishing her homework in mathematics. She worked $p$ hours less on her homework in science. Later, she added $2$ hours to her total study time. If $m = 5$ and $p = 2$, what is the total number of hours she worked on both subjects combined after the addition?",
+      "options": [
+        "$8$",
+        "$10$",
+        "$12$",
+        "$14$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "AE",
+      "question_text": "Consider the polynomial expression $x^{3} - 3x - 4$. If you evaluate it at $x = 2$ and then add the value obtained when evaluated at $x = 0$, what is the resulting sum?",
+      "options": [
+        "$-6$",
+        "$-4$",
+        "$-2$",
+        "$0$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "AE",
+      "question_text": "Mark saves $p$ pesos in his weekly allowance for $3$ weeks, and then saves $16p$ pesos in $4$ months. If he receives an additional bonus of $50$ pesos, write the expression for his total money and evaluate it when $p = 10$ pesos.",
+      "options": [
+        "$140$",
+        "$190$",
+        "$240$",
+        "$290$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
     }
   ],
   "RPP": [
@@ -1955,6 +2699,102 @@
         "PHP 4.00"
       ],
       "correct_option_index": 1
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "A toy car costs 500 pesos. The store offers a $20\\%$ discount, then later adds a $20\\%$ markup on the discounted price. What is the final price of the toy?",
+      "options": [
+        "$480$",
+        "$500$",
+        "$520$",
+        "$540$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "A jeepney travels the first $20$ km in $30$ minutes and the next $40$ km in $90$ minutes. What is the average speed in km per hour for the entire trip?",
+      "options": [
+        "$20$",
+        "$30$",
+        "$40$",
+        "$60$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "In a school, $50\\%$ of students are in the junior level. If $20\\%$ of those junior students are in the honor section, what percentage of the total school population is in the junior honor section?",
+      "options": [
+        "$5$",
+        "$10$",
+        "$15$",
+        "$25$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "A worker can paint 3 walls in 4 hours. If he needs to paint 15 walls, how many hours will it take him assuming the rate remains constant?",
+      "options": [
+        "$12$",
+        "$15$",
+        "$20$",
+        "$25$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "A shopkeeper has a stock of 200 shirts. He sells $40\\%$ of them on Monday and $25\\%$ of the remaining shirts on Tuesday. How many shirts are left?",
+      "options": [
+        "$80$",
+        "$90$",
+        "$110$",
+        "$120$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "If a jeepney can fit 16 passengers in 4 rows of seats, how many passengers can fit in 10 rows if the seating density is the same?",
+      "options": [
+        "$32$",
+        "$36$",
+        "$40$",
+        "$44$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "A canteen sells juice at 15 pesos per glass. If they offer a 'buy 4, get 1 free' deal, what is the effective price per glass if you buy 5 glasses?",
+      "options": [
+        "$10$",
+        "$11$",
+        "$12$",
+        "$13$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "RPP",
+      "question_text": "In a class, the ratio of boys to girls is $3:4$. If there are 12 more girls than boys, how many students are in the class in total?",
+      "options": [
+        "$48$",
+        "$60$",
+        "$72$",
+        "$84$"
+      ],
+      "correct_option_index": 3,
+      "difficulty": "challenge"
     }
   ],
   "RER": [
@@ -2133,6 +2973,78 @@
         "$1/x$"
       ],
       "correct_option_index": 1
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Maria wants to construct a square garden plot in her backyard with an area of $75$ square meters. What is the exact side length of the garden in simplest radical form?",
+      "options": [
+        "$5\\sqrt{3}$",
+        "$3\\sqrt{5}$",
+        "$25\\sqrt{3}$",
+        "$15\\sqrt{5}$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Find the missing exponent $m$ in the rational exponent equation $x^{\\frac{3}{4}} \\cdot x^{m} = x^{2}$ given that all variables represent positive real numbers.",
+      "options": [
+        "$\\frac{5}{4}$",
+        "$\\frac{11}{4}$",
+        "$\\frac{8}{3}$",
+        "$\\frac{3}{2}$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "RER",
+      "question_text": "A metal craftsman builds a decorative cube whose edge length is represented by $2\\sqrt{3}$ meters. What is the total volume of this cube in simplest form?",
+      "options": [
+        "$24\\sqrt{3}$",
+        "$12\\sqrt{3}$",
+        "$24$",
+        "$18\\sqrt{3}$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Compare two radical expressions used for floor tiles: Expression A is $\\sqrt{48}$ and Expression B is $3\\sqrt{12}$. Which statement correctly describes their relationship?",
+      "options": [
+        "Expression B is greater than Expression A",
+        "Expression A is greater than Expression B",
+        "Both expressions are completely equal",
+        "Expression A is twice Expression B"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "RER",
+      "question_text": "Simplify the complex rational expression $\\frac{(x^{-\\frac{1}{2}} y^{2})^{-\\frac{5}{4}}}{x^{2} y^{\\frac{1}{2}}}$ and write it with positive exponents assuming $x, y > 0$.",
+      "options": [
+        "$\\frac{1}{x^{\\frac{11}{8}} y^{3}}$",
+        "$\\frac{x^{\\frac{11}{8}}}{y^{3}}$",
+        "$x^{\\frac{11}{8}} y^{3}$",
+        "$\\frac{1}{x^{\\frac{5}{8}} y^{\\frac{5}{2}}}$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "RER",
+      "question_text": "In a cooperative geometry task, Ana rationalizes the denominator of $\\frac{4}{3\\sqrt{2x}}$ where $x > 0$. Which of the following is her correct simplified result?",
+      "options": [
+        "$\\frac{2\\sqrt{2x}}{3x}$",
+        "$\\frac{4\\sqrt{2x}}{3x}$",
+        "$\\frac{2\\sqrt{x}}{3}$",
+        "$\\frac{2x\\sqrt{2}}{3}$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
     }
   ],
   "PE": [
@@ -2311,6 +3223,66 @@
         "$-6$"
       ],
       "correct_option_index": 2
+    },
+    {
+      "node_id": "PE",
+      "question_text": "Maria thinks of a number puzzle where a mystery number $x$ satisfies the cubic equation $x^{3} - 6x^{2} + 5x + 12 = 0$. Using the Factor Theorem, she tests $x = 4$ and finds that it is a root. By factoring or synthetic division to find the remaining factors, what are all the solutions to Maria's equation?",
+      "options": [
+        "$x = -1, x = 3, x = 4$",
+        "$x = -4, x = -3, x = 1$",
+        "$x = -3, x = 1, x = 4$",
+        "$x = -1, x = 4, x = 5$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "PE",
+      "question_text": "A polynomial equation $x^{3} - 2x^{2} - 5x + 6 = 0$ models a certain physical measurement in a garden design. If it is known that $x = -2$ is one of the roots of this equation, find all the real roots by dividing the polynomial and solving the resulting quotient.",
+      "options": [
+        "$x = -3, x = -2, x = 1$",
+        "$x = -2, x = 1, x = 3$",
+        "$x = -2, x = 2, x = 3$",
+        "$x = -1, x = 2, x = 3$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "PE",
+      "question_text": "A school cooperative models its total profit in thousands of pesos for $t$ years of operation using the polynomial equation $P(t) = t^{3} - 6t^{2} + 11t - 6 = 0$. Based on the realistic constraints of operating a business, how many positive real root years represent periods when the cooperative breaks even ($P(t) = 0$)?",
+      "options": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$0$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "PE",
+      "question_text": "During an experiment in a school science laboratory, students analyze the polynomial equation modeling a chemical reaction's concentration levels: $x^{3} + 3x^{2} - 4x - 12 = 0$. By grouping terms or applying the factor theorem, what are all the solutions to this equation?",
+      "options": [
+        "$-3, -2, 2$",
+        "$-2, 2, 3$",
+        "$-3, 2$",
+        "$-3, -2, 3$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "PE",
+      "question_text": "A craftsman designs a wooden block where the volume is represented by $V(x) = x^{3} - 7x^{2} + 14x - 8$. If one of the dimensions is fixed by a linear factor corresponding to $x = 1$, what are all the possible values of $x$ that satisfy $V(x) = 0$?",
+      "options": [
+        "$1, 2, 4$",
+        "$1, 4$",
+        "$2, 4$",
+        "$-1, -2, -4$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
     }
   ],
   "PD": [
@@ -2667,6 +3639,102 @@
         "$3$"
       ],
       "correct_option_index": 0
+    },
+    {
+      "node_id": "PO",
+      "question_text": "A school garden shaped as a polygon has four sides with lengths $4x + 3$, $2x - 1$, $5x + 6$, and $3x - 2$. An extra pathway of length $x + 4$ is added along its perimeter. What is the total combined expression for this expanded perimeter?",
+      "options": [
+        "$15x + 10$",
+        "$14x + 6$",
+        "$14x + 10$",
+        "$15x + 6$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "PO",
+      "question_text": "At a sari-sari store, the daily revenue from selling $x$ items is given by $R(x) = 8x^{2} + 12x$, and the total operating cost is given by $C(x) = 3x^{2} - 5x + 7$. If profit is defined as revenue minus cost, find the profit polynomial when $x$ items are sold.",
+      "options": [
+        "$5x^{2} + 7x - 7$",
+        "$5x^{2} + 17x - 7$",
+        "$11x^{2} + 7x + 7$",
+        "$5x^{2} - 17x + 7$"
+      ],
+      "correct_option_index": 1,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Maria adds a certain polynomial to $(5x^{2} - 3x + 4)$ and obtains a sum of $(9x^{2} + 2x - 1)$. What is the missing polynomial?",
+      "options": [
+        "$4x^{2} - 5x - 5$",
+        "$14x^{2} - x + 3$",
+        "$4x^{2} + 5x - 5$",
+        "$4x^{2} + 5x + 3$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "PO",
+      "question_text": "A rectangular piece of cardboard has a total area given by $(7x^{2} + 10x - 3)$. A smaller rectangular cutout with an area of $(2x^{2} - 4x + 1)$ is removed from it. What is the area of the remaining cardboard?",
+      "options": [
+        "$9x^{2} + 6x - 2$",
+        "$5x^{2} + 6x - 4$",
+        "$5x^{2} + 14x - 4$",
+        "$9x^{2} + 14x - 2$"
+      ],
+      "correct_option_index": 2,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "PO",
+      "question_text": "A school fair committee calculates the profit from selling $8x^{3} - 2x^{2} + 2x - 2$ tickets on Saturday and $3x^{2} + 4x + 7$ tickets on Sunday. A student volunteer performs the subtraction to find the difference in ticket sales between the two days, writing: $(8x^{3} - 2x^{2} + 2x - 2) - (3x^{2} + 4x + 7) = 8x^{3} - 2x^{2} + 2x - 2 - 3x^{2} - 4x - 7 = 8x^{3} - 5x^{2} - 2x - 9$. Spot the exact step where the student made an error in applying the rule for subtracting polynomials.",
+      "options": [
+        "The student correctly changed all signs of the subtrahend and arrived at the correct result.",
+        "The student failed to change the sign of every term inside the subtrahend when removing the parentheses.",
+        "The student incorrectly combined the terms $-2x^{2}$ and $-3x^{2}$ into $-5x^{2}$.",
+        "The student incorrectly combined the constant terms $-2$ and $-7$ into $-9$."
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "PO",
+      "question_text": "Maria manages a bakery and bakes $4x^{2} - 2x$ sweet rolls on Monday, but sets aside $6x^{2} - 5x - 2$ spoiled rolls for disposal. To find the net fresh inventory, she subtracts the spoiled rolls from the total baked rolls. What is the resulting polynomial representing her net fresh inventory?",
+      "options": [
+        "$-2x^{2} + 3x + 2$",
+        "$10x^{2} - 7x - 2$",
+        "$2x^{2} - 3x - 2$",
+        "$-2x^{2} - 7x + 2$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "PO",
+      "question_text": "A rectangular floor plan has a width of $3x - 2$ and a length that is expressed as another polynomial. If its total perimeter is represented by $14x + 2$, what expression represents its length?",
+      "options": [
+        "$4x + 3$",
+        "$4x + 5$",
+        "$7x + 1$",
+        "$x + 3$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
+    },
+    {
+      "node_id": "PO",
+      "question_text": "A sports club maintains a rectangular training floor where the total area is represented by $8x^{2} + 10x - 3$ square meters and the base length is $2x + 3$ meters. Using polynomial division to determine the height of the floor, what expression represents this height?",
+      "options": [
+        "$4x - 1$",
+        "$4x + 1$",
+        "$2x - 1$",
+        "$2x + 3$"
+      ],
+      "correct_option_index": 0,
+      "difficulty": "challenge"
     }
   ]
 }
