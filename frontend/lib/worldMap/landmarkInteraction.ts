@@ -1,6 +1,9 @@
 import * as THREE from "three";
 import { LANDMARK_BOUNDS,LANDMARK_SCALE,projectWorldPoint } from "./framing";
 export type DashboardLandmark="keep"|"topics"|"records"|"champions"|"calculator";
+export type LandmarkZone={x:number;y:number;z:number;radius:number;perimeter:number[][]};
+/** The requested factor describes diameter, not radius. */
+export const landmarkZoneRadius=(width:number,depth:number)=>Math.max(width,depth)*1.5/2;
 function hull(points:THREE.Vector2[]){
   const sorted=points.sort((a,b)=>a.x-b.x||a.y-b.y),cross=(o:THREE.Vector2,a:THREE.Vector2,b:THREE.Vector2)=>(a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);
   const half=(p:THREE.Vector2[])=>{const result:THREE.Vector2[]=[];for(const v of p){while(result.length>1&&cross(result[result.length-2],result[result.length-1],v)<=0)result.pop();result.push(v);}return result.slice(0,-1);};

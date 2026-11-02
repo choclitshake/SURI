@@ -25,7 +25,12 @@ during rendering. Garden approaches are compiled around occupied foundations.
 Verify with `test-world-optimization.cjs`, `test-traversal.cjs`, `test-architecture.cjs`,
 `test-walking-paths.cjs`, `test-responsive-camera.cjs`, `test-world-refinement.cjs`, and
 `test-ambient-world.cjs` / `verify-environment.py` in `scripts`. Keyboard navigation uses the existing five
-label buttons; projected building regions add no duplicate accessibility stops.
+label buttons; projected building/circle regions add no duplicate accessibility stops.
+
+Each hover circle has a diameter of 1.5 times its building's longest baked X/Z
+dimension. The scene packet stores the shared center, radius and ground-following
+outline for native pointer input. The circle and nearby scenery glow through
+shared material uniforms; the landmark itself keeps its original materials.
 
 The final scene packet contains GPU-aligned normalized normals/colors, material
 masks, per-island terrain bounds, merged landmark surfaces, six paving meshes,
@@ -55,6 +60,14 @@ For local profiling use `/dashboard?world-profile=benchmark`; normal-cadence
 sampling uses `world-profile=normal`. Optional diagnostic overrides are
 `world-quality=high|balanced|economy` and `world-textures=portable`. These are
 developer diagnostics and do not add product settings or navigation UI.
+
+Static instances and moving actors compact their visible instances against the
+camera frustum. Secondary terrain uses shared-buffer spatial views when regions
+leave the frame, and one merged draw in the overview. Conservative solid boxes
+baked below the actual terrain also hide completely occluded static instances.
+Their orthographic visibility is cached; a different camera direction immediately
+restores those instances. Partial silhouettes are retained. For a diagnostic
+comparison, add `world-culling=off` to a profiling URL.
 
 Ambient life is a separate 434 KiB binary packet (75 KiB gzip) with cached
 merged models, uniform-distance walking/water routes and authored timing.

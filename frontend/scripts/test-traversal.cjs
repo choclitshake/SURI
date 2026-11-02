@@ -59,9 +59,18 @@ for(const [width,height]of [[390,844],[768,1024],[1024,768],[1440,900]])for(cons
     assert(Math.abs(left-Math.min(...pixels.map(p=>p[0])))<1e-6);assert(Math.abs(top-Math.min(...pixels.map(p=>p[1])))<1e-6);
   }
 }
-const glow=JSON.parse(fs.readFileSync(path.join(__dirname,'../public/world-map/architecture/glow.json'))),architecture=JSON.parse(fs.readFileSync(path.join(__dirname,'../public/world-map/architecture/instances.json')));
 assert(maxGrade<.602,'steep terrain receives a supported gradual staircase profile');
-assert.equal(glow.sourceHash,architecture.sourceHash);assert.equal(Object.keys(glow.models).length,5);
-for(const [kind,model] of Object.entries(glow.models)){assert(model.shell.position.length>100);if(kind!=='keep')assert(model.windows.position.length>0);}
-console.log(`PASS: five connected entrances, five supported crossings, 15 baked paths in both tiers, ${worstPenetration.toFixed(3)}m deck interference, max terrain grade ${maxGrade.toFixed(2)}, projected input and five glow meshes.`);
+const {landmarkZoneRadius}=require('../lib/worldMap/landmarkInteraction.ts');assert.equal(landmarkZoneRadius(2,3)*2,4.5,'the 1.5 multiplier applies to diameter');
+for(const tier of ['high','balanced']){
+  const scene=JSON.parse(fs.readFileSync(path.join(__dirname,`../public/world-map/scene/${tier}.json`)));
+  assert.equal(Object.keys(scene.landmarkZones).length,5);
+  for(const kind of w.LANDMARK_SITE_KEYS){
+    const zone=scene.landmarkZones[kind],box=new T.Box3();
+    for(const part of scene.landmarks[kind]){const bounds=scene.geometries[part.geometry].box;box.union(new T.Box3(new T.Vector3().fromArray(bounds),new T.Vector3().fromArray(bounds,3)));}
+    const size=box.getSize(new T.Vector3());assert(Math.abs(zone.radius*2-Math.max(size.x,size.z)*f.LANDMARK_SCALE*1.5)<1e-8,'circle matches the actual longest ground dimension');
+    assert.equal(zone.perimeter.length,64);
+    for(const p of zone.perimeter)assert(Math.abs(Math.hypot(p[0]-zone.x,p[2]-zone.z)-zone.radius)<1e-8,'the complete hover outline follows the visible circle');
+  }
+}
+console.log(`PASS: five connected entrances, five supported crossings, 15 baked paths in both tiers, ${worstPenetration.toFixed(3)}m deck interference, max terrain grade ${maxGrade.toFixed(2)}, projected building input and five sized hover circles.`);
 

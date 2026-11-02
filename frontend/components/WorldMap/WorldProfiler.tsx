@@ -10,11 +10,13 @@ export function recordWorldCommit(name:string){commits[name]=(commits[name]??0)+
 const percentile=(values:number[],fraction:number)=>{if(!values.length)return null;const sorted=[...values].sort((a,b)=>a-b);return Math.round(sorted[Math.min(sorted.length-1,Math.floor(sorted.length*fraction))]*100)/100;};
 function resources(scene:THREE.Scene,environment:THREE.Texture[]){
   const geometries=new Set<THREE.BufferGeometry>(),textures=new Set<THREE.Texture>(environment),materials=new Set<THREE.Material>();
-  let geometryBytes=0,textureBytes=0,instances=0;
+  let geometryBytes=0,textureBytes=0,instances=0,culledInstances=0;
+  const buffers=new Set<ArrayBufferView>();
+  const addBuffer=(array:ArrayBufferView)=>{if(!buffers.has(array)){buffers.add(array);geometryBytes+=array.byteLength;}};
   scene.traverse(object=>{
     const mesh=object as THREE.Mesh;if(!mesh.isMesh)return;
     geometries.add(mesh.geometry);
-    const instanced=mesh as THREE.InstancedMesh;if(instanced.isInstancedMesh){instances+=instanced.count;geometryBytes+=instanced.instanceMatrix.array.byteLength+(instanced.instanceColor?.array.byteLength??0);}
+    const instanced=mesh as THREE.InstancedMesh;if(instanced.isInstancedMesh){instances+=instanced.count;culledInstances+=Math.max(0,(instanced.userData.worldTotalInstances??instanced.count)-instanced.count);addBuffer(instanced.instanceMatrix.array);if(instanced.instanceColor)addBuffer(instanced.instanceColor.array);}
     for(const material of Array.isArray(mesh.material)?mesh.material:[mesh.material]){
       materials.add(material);
       for(const value of Object.values(material))if(value instanceof THREE.Texture)textures.add(value);
@@ -22,12 +24,12 @@ function resources(scene:THREE.Scene,environment:THREE.Texture[]){
     }
   });
   if(scene.environment)textures.add(scene.environment);
-  for(const geometry of geometries){for(const attr of Object.values(geometry.attributes))geometryBytes+=attr.array.byteLength;geometryBytes+=geometry.index?.array.byteLength??0;}
+  for(const geometry of geometries){for(const attr of Object.values(geometry.attributes))addBuffer(attr.array);if(geometry.index)addBuffer(geometry.index.array);}
   for(const texture of textures){
     if(texture instanceof THREE.CompressedTexture)textureBytes+=texture.mipmaps.reduce((sum,mip)=>sum+mip.data.byteLength,0);
     else{const image=texture.image as {width?:number;height?:number}|undefined;textureBytes+=(image?.width??0)*(image?.height??0)*4*(texture.generateMipmaps?4/3:1);}
   }
-  return {sceneGeometries:geometries.size,sceneMaterials:materials.size,instances,nativeCompressedTextures:[...textures].filter(texture=>texture instanceof THREE.CompressedTexture).length,geometryBufferMiB:+(geometryBytes/1048576).toFixed(2),estimatedTextureMiB:+(textureBytes/1048576).toFixed(2)};
+  return {sceneGeometries:geometries.size,sceneMaterials:materials.size,instances,culledInstances,nativeCompressedTextures:[...textures].filter(texture=>texture instanceof THREE.CompressedTexture).length,geometryBufferMiB:+(geometryBytes/1048576).toFixed(2),estimatedTextureMiB:+(textureBytes/1048576).toFixed(2)};
 }
 
 /** Opt-in measurement only: ?world-profile=benchmark drives continuous frames.

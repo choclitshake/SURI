@@ -7,6 +7,7 @@ import { LOCAL_SUN,WATER_LEVEL } from "@/lib/worldMap/environment";
 import { useAmbientAssets,type AmbientAssets } from "./AmbientAssets";
 import { environmentArchitectureMaterial,useEnvironmentTextures } from "./EnvironmentMaterials";
 import { useWorldQuality,useWorldReducedMotion } from "./WorldQuality";
+import { useWorldVisibility } from "./WorldVisibility";
 const noRaycast:THREE.Mesh["raycast"]=()=>{};
 class MotionClock{
   value=0;
@@ -56,11 +57,12 @@ function actorMaterial(person:boolean,time:MotionClock){
   };
   return material;
 }
-type RuntimeActor={actor:AmbientActor;pose:AmbientPose;nextUpdate:number;lastUpdate:number;lastYaw:number;initialized:boolean};
+type RuntimeActor={actor:AmbientActor;pose:AmbientPose;matrix:THREE.Matrix4;color:THREE.Color;nextUpdate:number;lastUpdate:number;lastYaw:number;initialized:boolean};
 /** One dynamic instance matrix per citizen/vessel, GPU joint animation, no
  * React state changes or per-frame objects. Offscreen transforms update at 1 Hz. */
 function ActorBatch({model,assets,time,shadowRef}:{model:VesselKind|"person";assets:AmbientAssets;time:MotionClock;shadowRef:RefObject<THREE.InstancedMesh|null>}){
   const person=model==="person",tier=useWorldQuality(),reduced=useWorldReducedMotion();
+  const visibility=useWorldVisibility(),revision=useRef(-1),slots=useRef<Int32Array|null>(null);
   const ref=useRef<THREE.InstancedMesh>(null);
   const actors=useMemo(()=>assets.actors.filter(a=>a.model===model),[assets,model]);
   const shadowIndices=useMemo(()=>actors.map(a=>assets.actors.indexOf(a)),[actors,assets]);
@@ -69,11 +71,12 @@ function ActorBatch({model,assets,time,shadowRef}:{model:VesselKind|"person";ass
     const g=assets.geometries[assets.models[model]].clone();g.setAttribute("actorGait",new THREE.InstancedBufferAttribute(new Float32Array(actors.length*2),2).setUsage(THREE.DynamicDrawUsage));return g;
   },[assets,model,actors]);
   const material=useMemo(()=>actorMaterial(person,time),[person,time]);
-  const scratch=useMemo(()=>({matrix:new THREE.Matrix4(),quaternion:new THREE.Quaternion(),scale:new THREE.Vector3(),position:new THREE.Vector3(),project:new THREE.Vector3(),axis:new THREE.Vector3(0,1,0),shadowRotation:new THREE.Quaternion(),xRotation:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2)}),[]);
+  const scratch=useMemo(()=>({matrix:new THREE.Matrix4(),sphere:new THREE.Sphere(),quaternion:new THREE.Quaternion(),scale:new THREE.Vector3(),position:new THREE.Vector3(),project:new THREE.Vector3(),axis:new THREE.Vector3(0,1,0),shadowRotation:new THREE.Quaternion(),xRotation:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2)}),[]);
   useLayoutEffect(()=>{
     if(!ref.current)return;
     ref.current.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    runtime.current=actors.map(actor=>({actor,pose:makeAmbientPose(),nextUpdate:0,lastUpdate:0,lastYaw:0,initialized:false}));
+    runtime.current=actors.map(actor=>({actor,pose:makeAmbientPose(),matrix:new THREE.Matrix4(),color:new THREE.Color(actor.tint),nextUpdate:0,lastUpdate:0,lastYaw:0,initialized:false}));
+    slots.current=new Int32Array(actors.length).fill(-1);revision.current=-1;ref.current.userData.worldTotalInstances=actors.length;
     const bounds=new THREE.Box3();for(const actor of actors){for(const p of assets.routes[actor.route].points)bounds.expandByPoint(new THREE.Vector3(...p));}
     bounds.expandByScalar(person?1.4:8);ref.current.boundingSphere=bounds.getBoundingSphere(new THREE.Sphere());
     actors.forEach((a,i)=>ref.current!.setColorAt(i,new THREE.Color(a.tint)));
@@ -83,26 +86,37 @@ function ActorBatch({model,assets,time,shadowRef}:{model:VesselKind|"person";ass
     const mesh=ref.current,shadows=shadowRef.current;if(!mesh||!shadows)return;
     const gait=mesh.geometry.attributes.actorGait as THREE.InstancedBufferAttribute,shadowMotion=shadows.geometry.attributes.shadowMotion as THREE.InstancedBufferAttribute;
     const s=scratch,now=time.value,interval=person?(tier==="economy"?1/15:1/24):1/15;
+    const cameraChanged=revision.current!==(visibility?.revision??0);revision.current=visibility?.revision??0;
     let changed=false;
     for(let i=0;i<runtime.current.length;i++){
-      const entry=runtime.current[i];if(entry.initialized&&(reduced||now<entry.nextUpdate))continue;
+      const entry=runtime.current[i];if(entry.initialized&&(reduced||now<entry.nextUpdate)&&!cameraChanged)continue;
       const a=entry.actor,pose=sampleAmbientActor(a,assets.routes[a.route],reduced?0:now,entry.pose);
       s.project.set(pose.x,pose.y,pose.z).applyMatrix4(mesh.matrixWorld).project(camera);
-      const offscreen=Math.abs(s.project.x)>1.18||Math.abs(s.project.y)>1.18;
-      entry.nextUpdate=now+(offscreen?1:interval);
       let yaw=pose.yaw;
       if(entry.initialized){const difference=Math.atan2(Math.sin(yaw-entry.lastYaw),Math.cos(yaw-entry.lastYaw));yaw=entry.lastYaw+difference*Math.min(1,Math.max(delta,now-entry.lastUpdate)*6);}
       entry.lastYaw=yaw;entry.lastUpdate=now;entry.initialized=true;
       s.quaternion.setFromAxisAngle(s.axis,yaw);s.scale.setScalar(a.scale);
       const bob=person||reduced?0:Math.sin(now*.8+a.offset)*.035;
-      s.position.set(pose.x,pose.y+bob,pose.z);s.matrix.compose(s.position,s.quaternion,s.scale);mesh.setMatrixAt(i,s.matrix);
-      gait.setXY(i,person?pose.gait+i*1.73:a.offset,reduced?0:pose.moving);
+      s.position.set(pose.x,pose.y+bob,pose.z);entry.matrix.compose(s.position,s.quaternion,s.scale);
+      s.sphere.copy(geometry.boundingSphere!).applyMatrix4(entry.matrix);s.sphere.set(s.sphere.center,s.sphere.radius+.2);
+      const offscreen=visibility&&!visibility.disabled?!visibility.frustum.intersectsSphere(s.sphere):Math.abs(s.project.x)>1.18||Math.abs(s.project.y)>1.18;
+      entry.nextUpdate=now+(offscreen?1:interval);
       const height=person?.5:.6,width=person?.55:assets.geometries[assets.models[model]].boundingBox!.getSize(s.scale).x*1.25,length=person?.95:assets.geometries[assets.models[model]].boundingBox!.max.z*2*1.4;
       s.position.set(pose.x-LOCAL_SUN[0]/LOCAL_SUN[1]*height,person?pose.y+.018:WATER_LEVEL+.12,pose.z-LOCAL_SUN[2]/LOCAL_SUN[1]*height);
       if(person)s.shadowRotation.setFromAxisAngle(s.axis,Math.atan2(-LOCAL_SUN[0],-LOCAL_SUN[2]));else s.shadowRotation.copy(s.quaternion);
       s.shadowRotation.multiply(s.xRotation);s.scale.set(width*a.scale,length*a.scale,1);s.matrix.compose(s.position,s.shadowRotation,s.scale);shadows.setMatrixAt(shadowIndices[i],s.matrix);shadowMotion.setXY(shadowIndices[i],person?0:1,pose.moving);changed=true;
     }
-    if(changed){mesh.instanceMatrix.needsUpdate=true;shadows.instanceMatrix.needsUpdate=true;gait.needsUpdate=true;shadowMotion.needsUpdate=true;}
+    let count=0,layoutChanged=false;const order=slots.current;
+    if(order)for(let i=0;i<runtime.current.length;i++){
+      const entry=runtime.current[i];s.sphere.copy(geometry.boundingSphere!).applyMatrix4(entry.matrix);s.sphere.set(s.sphere.center,s.sphere.radius+.2);
+      if(visibility&&!visibility.disabled&&!visibility.frustum.intersectsSphere(s.sphere))continue;
+      if(order[count]!==i){order[count]=i;layoutChanged=true;}count++;
+    }
+    if(order&&(changed||layoutChanged||mesh.count!==count)){
+      for(let j=0;j<count;j++){const i=order[j],entry=runtime.current[i];mesh.setMatrixAt(j,entry.matrix);mesh.setColorAt(j,entry.color);gait.setXY(j,person?entry.pose.gait+i*1.73:entry.actor.offset,reduced?0:entry.pose.moving);}
+      mesh.count=count;mesh.visible=count>0;mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;gait.needsUpdate=true;
+    }
+    if(changed){shadows.instanceMatrix.needsUpdate=true;shadowMotion.needsUpdate=true;}
   });
   return <group name={`ambient-${model}`}>
     <instancedMesh ref={ref} args={[geometry,material,actors.length]} raycast={noRaycast} dispose={null}/>

@@ -8,6 +8,7 @@ import { ENVIRONMENT_BOUNDS } from "@/lib/worldMap/environment";
 import { EnvironmentTextureLoader } from "./EnvironmentTextureLoader";
 import { retainWorldResource } from "./SharedWorldResources";
 import type { Surface } from "@/lib/worldMap/architecture";
+import { finishEnvironmentHighlight } from "./EnvironmentHighlight";
 
 export function useEnvironmentTextures() {
   const supported=useThree(state=>state.gl.extensions.has("WEBGL_compressed_texture_s3tc")&&state.gl.extensions.has("WEBGL_compressed_texture_s3tc_srgb"));
@@ -42,7 +43,11 @@ varying vec3 vBasisX;
 varying vec3 vBasisY;
 varying vec3 vBasisZ;
 vec2 atlasUv(vec2 uv, vec2 tile) {
-  return (clamp(fract(uv),vec2(.004),vec2(.996))+tile)*.5;
+  // Keep the complete minified footprint inside its material tile. A fixed
+  // two-texel border leaks neighboring atlas colors into distant repeats.
+  vec2 footprint=max(abs(dFdx(uv)),abs(dFdy(uv)));
+  vec2 inset=clamp(footprint*1.5+vec2(.003),vec2(.003),vec2(.125));
+  return (clamp(fract(uv),inset,1.-inset)+tile)*.5;
 }
 struct TerrainSurface { vec3 color; vec3 detail; vec3 rma; };
 TerrainSurface terrainSample(vec2 uv,vec2 tile) {
@@ -58,7 +63,7 @@ TerrainSurface terrainSample(vec2 uv,vec2 tile) {
 export function makeTerrainMaterial(textures:Textures,lowDetail:boolean) {
   const material=new THREE.MeshStandardMaterial({roughness:.92,metalness:0});
   if(lowDetail)material.defines={...material.defines,TABLET_TERRAIN:1};
-  material.customProgramCacheKey=()=>`archipelago-pbr-organic-v4-${lowDetail?"tablet":"desktop"}`;
+  material.customProgramCacheKey=()=>`archipelago-pbr-organic-v5-${lowDetail?"tablet":"desktop"}`;
   material.onBeforeCompile=shader=>{
     Object.assign(shader.uniforms,{
       environmentAlbedo:{value:textures.albedo},environmentNormal:{value:textures.normal},
@@ -118,13 +123,13 @@ export function makeTerrainMaterial(textures:Textures,lowDetail:boolean) {
       reflectedLight.indirectDiffuse*=baked.r*mixedRma.g;
       `);
   };
-  return finishWorldMaterial(material,true,"none");
+  return finishEnvironmentHighlight(finishWorldMaterial(material,true,"none"));
 }
 
 const architectureMaterials=new Map<string,THREE.Material>();
 /** Reuses the same atlas for masonry, bark, roofs and foliage microstructure. */
-export function environmentArchitectureMaterial(surface:Surface,textures:Textures,mineral=false,vertexColored=false,baked=false,motion:"none"|"boat"="none") {
-  const key=`${surface}:${mineral?"mineral":"masonry"}:${vertexColored}:${baked}:${motion}`;
+export function environmentArchitectureMaterial(surface:Surface,textures:Textures,mineral=false,vertexColored=false,baked=false,motion:"none"|"boat"="none",highlight=true) {
+  const key=`${surface}:${mineral?"mineral":"masonry"}:${vertexColored}:${baked}:${motion}:${highlight}`;
   const assetKey=`${textures.albedo.uuid}:${key}`;
   const cached=architectureMaterials.get(assetKey);if(cached)return cached;
   if(surface==="leaves"){
@@ -146,7 +151,7 @@ export function environmentArchitectureMaterial(surface:Surface,textures:Texture
         float luma=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(luma),.04)*(.74+grain.r*.36);`);
     };
     canopy.customProgramCacheKey=()=>"world-canopy-diffuse-v1";
-    finishWorldMaterial(canopy,baked,"none",true);architectureMaterials.set(assetKey,retainWorldResource(canopy));return canopy;
+    finishWorldMaterial(canopy,baked,"none",true);if(highlight)finishEnvironmentHighlight(canopy);architectureMaterials.set(assetKey,retainWorldResource(canopy));return canopy;
   }
   const material=new THREE.MeshStandardMaterial({color:surface==="road"?"#aaa18b":"white",roughness:surface==="gold"?.4:surface==="glass"?.3:surface==="iron"?.62:.87,
     metalness:surface==="gold"?.65:surface==="iron"?.78:surface==="glass"?.1:0,
@@ -190,5 +195,6 @@ export function environmentArchitectureMaterial(surface:Surface,textures:Texture
     material.customProgramCacheKey=()=>"world-masonry-v3";
   }
   finishWorldMaterial(material,baked,motion==="boat"?"boat":surface==="cloth"?"cloth":"none");
+  if(highlight)finishEnvironmentHighlight(material);
   architectureMaterials.set(assetKey,retainWorldResource(material));return material;
 }

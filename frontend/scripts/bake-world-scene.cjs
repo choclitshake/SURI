@@ -6,10 +6,11 @@ const w=require('../lib/worldMap/landscape.ts'),{makeArchipelagoTerrain,makeCita
 const {makeStaticLighting}=require('../lib/worldMap/staticLighting.ts');
 const {HARBOR_BOATS}=require('../lib/worldMap/environmentDecor.ts');
 const {LANDMARK_SCALE}=require('../lib/worldMap/framing.ts');
+const {landmarkZoneRadius}=require('../lib/worldMap/landmarkInteraction.ts');
 const {WATER_LEVEL}=require('../lib/worldMap/environment.ts');
 const {createTerrainSampler}=require('../lib/worldMap/walkingPaths.ts'),{makeSettlements,makeVegetation}=require('../lib/worldMap/settlements.ts'),{geometryForShape}=require('../lib/worldMap/primitiveGeometry.ts');
 const root=path.join(__dirname,'../lib/worldMap'),out=path.join(__dirname,'../public/world-map/scene');fs.mkdirSync(out,{recursive:true});
-const sourceFiles=['landscape.ts','terrainGeometry.ts','settlements.ts','architecture.ts','architecturalGeometry.ts','primitiveGeometry.ts','foliageGeometry.ts','traversal.ts','generated/traversal.json','landmarkDesigns.ts','architecturalModules.ts','supportingArchitecture.ts','northernIslands.ts','northernArchitecture.ts','environmentDecor.ts','worldPalette.ts','environment.ts','staticLighting.ts'];
+const sourceFiles=['landscape.ts','terrainGeometry.ts','settlements.ts','architecture.ts','architecturalGeometry.ts','primitiveGeometry.ts','foliageGeometry.ts','traversal.ts','generated/traversal.json','landmarkDesigns.ts','landmarkInteraction.ts','architecturalModules.ts','supportingArchitecture.ts','northernIslands.ts','northernArchitecture.ts','environmentDecor.ts','worldPalette.ts','environment.ts','staticLighting.ts'];
 const hash=crypto.createHash('sha256');for(const file of sourceFiles)hash.update(fs.readFileSync(path.join(root,file),'utf8').replace(/\r\n/g,'\n'));
 const {mergeGeometries}=require('three/examples/jsm/utils/BufferGeometryUtils.js');
 const sourceHash=hash.digest('hex'),architecture=JSON.parse(fs.readFileSync(path.join(out,'../architecture/instances.json'))),paths=JSON.parse(fs.readFileSync(path.join(out,'../traversal/paths.json'))),glow=JSON.parse(fs.readFileSync(path.join(out,'../architecture/glow.json')));
@@ -46,12 +47,37 @@ function merge(pieces){
   const g=new T.BufferGeometry();for(const [key,array,size]of [['position',p,3],['normal',n,3],['uv',uv,2],['color',color,3]])g.setAttribute(key,new T.Float32BufferAttribute(array,size));g.setIndex(idx);if(hasWind)g.setAttribute("windWeight",new T.Float32BufferAttribute(windValues,1));if(hasPhase)g.setAttribute("motionPhase",new T.Float32BufferAttribute(phases,1));return g;
 }
 const serialize=b=>Array.from(b.batches.values()).map(batch=>({shape:batch.shape,surface:batch.surface,pieces:batch.pieces.map(p=>[...p.matrix.toArray(),...p.color.toArray()])}));
+function terrainOccluders(terrain){
+  const cells=new Map(),step=3,p=terrain.attributes.position,indices=terrain.index.array;
+  // The minimum of every overlapping triangle is a lower bound on the whole
+  // cell, not a center-point height estimate. Only dry interior cells qualify.
+  for(let j=0;j<indices.length;j+=3){
+    const ids=[indices[j],indices[j+1],indices[j+2]],xs=ids.map(i=>p.getX(i)),zs=ids.map(i=>p.getZ(i)),height=Math.min(...ids.map(i=>p.getY(i)));
+    for(let x=Math.floor(Math.min(...xs)/step);x<=Math.floor(Math.max(...xs)/step);x++)for(let z=Math.floor(Math.min(...zs)/step);z<=Math.floor(Math.max(...zs)/step);z++){
+      const key=x+':'+z;cells.set(key,Math.min(cells.get(key)??Infinity,height));
+    }
+  }
+  const boxes=[];
+  for(const [key,height]of cells){
+    if(height<1)continue;const [ix,iz]=key.split(':').map(Number),x=ix*step,z=iz*step;
+    if([0,.5,1].some(u=>[0,.5,1].some(v=>w.shoreDistance(x+u*step,z+v*step)<1)))continue;
+    boxes.push([x,-3,z,x+step,height-.16,z+step]);
+  }
+  return boxes;
+}
 for(const low of [false,true]){
   const pack=packer(),terrain=makeArchipelagoTerrain(low),surface=createTerrainSampler(terrain),terrainNames={};
   const secondary=[];
   for(const key of Object.keys(w.ISLANDS)){
     const g=makeArchipelagoTerrain(low,key);g.deleteAttribute('color');
-    if(w.PRIMARY_ISLANDS[key]){light.geometry(g);terrainNames[key]=pack.pack('terrain/'+key,g);g.dispose();}else secondary.push(g);
+    if(w.PRIMARY_ISLANDS[key]){light.geometry(g);terrainNames[key]=pack.pack('terrain/'+key,g);g.dispose();}else{const i=w.ISLANDS[key];g.userData.region=(i.x>=0?1:0)+(i.z>=0?2:0);secondary.push(g);}
+  }
+  secondary.sort((a,b)=>a.userData.region-b.userData.region);
+  const terrainChunks=[];let chunkOffset=0;
+  for(let region=0;region<4;region++){
+    const pieces=secondary.filter(g=>g.userData.region===region);if(!pieces.length)continue;
+    const box=new T.Box3();let count=0;for(const g of pieces){g.computeBoundingBox();box.union(g.boundingBox);count+=g.index.count;}
+    const sphere=box.getBoundingSphere(new T.Sphere());terrainChunks.push({start:chunkOffset,count,box:[...box.min.toArray(),...box.max.toArray()],sphere:[...sphere.center.toArray(),sphere.radius]});chunkOffset+=count;
   }
   const islets=mergeGeometries(secondary);light.geometry(islets);terrainNames.secondary=pack.pack('terrain/secondary',islets);islets.dispose();secondary.forEach(g=>g.dispose());
   const waterfall=pack.pack('waterfall',makeCitadelWater(low,surface)),roads={};
@@ -71,10 +97,13 @@ for(const low of [false,true]){
     const unit=(lowDetail)=>{const g=geometryForShape(batch.shape,lowDetail).clone();if(!['inscription','scholarRelief','astralRelief','heraldry'].includes(batch.shape))g.deleteAttribute('uv');const id=pack.pack((lowDetail?'unit-low/':'unit/')+batch.shape,g);g.dispose();return id;};
     const full=unit(false);units[batch.shape]={full,low:['rock','broadleaf','conifer'].includes(batch.shape)?unit(true):full};
   }
-  const land={};for(const [kind,batches]of Object.entries(architecture.models)){
+  const land={},landmarkZones={};for(const [kind,batches]of Object.entries(architecture.models)){
     if(!w.LANDMARK_SITE_KEYS.includes(kind))continue;
     const groups=new Map();for(const batch of batches){const mineral=batch.shape==='rock'||batch.shape==='obelisk',key=batch.surface+':'+mineral;let group=groups.get(key);if(!group){group={surface:batch.surface,mineral,pieces:[]};groups.set(key,group);}for(const values of batch.pieces)group.pieces.push({geometry:geometryForShape(batch.shape),matrix:new T.Matrix4().fromArray(values),tint:new T.Color().fromArray(values,16),wind:batch.surface==='cloth'});}
-    land[kind]=Array.from(groups.entries()).map(([key,group])=>{const g=merge(group.pieces);if(group.surface!=='carving')g.deleteAttribute('uv');light.geometry(g,new T.Matrix4().makeTranslation(...w.sitePosition(kind)).scale(new T.Vector3().setScalar(LANDMARK_SCALE)));const id=pack.pack('landmark/'+kind+'/'+key,g);g.dispose();return {surface:group.surface,mineral:group.mineral,geometry:id};});
+    const bounds=new T.Box3();
+    land[kind]=Array.from(groups.entries()).map(([key,group])=>{const g=merge(group.pieces);if(group.surface!=='carving')g.deleteAttribute('uv');light.geometry(g,new T.Matrix4().makeTranslation(...w.sitePosition(kind)).scale(new T.Vector3().setScalar(LANDMARK_SCALE)));const id=pack.pack('landmark/'+kind+'/'+key,g);bounds.union(g.boundingBox);g.dispose();return {surface:group.surface,mineral:group.mineral,geometry:id};});
+    const center=bounds.getCenter(new T.Vector3()),size=bounds.getSize(new T.Vector3()),site=w.sitePosition(kind),radius=landmarkZoneRadius(size.x*LANDMARK_SCALE,size.z*LANDMARK_SCALE),x=site[0]+center.x*LANDMARK_SCALE,z=site[2]+center.z*LANDMARK_SCALE;
+    landmarkZones[kind]={x,y:site[1],z,radius,perimeter:Array.from({length:64},(_,j)=>{const a=j/64*Math.PI*2,px=x+Math.cos(a)*radius,pz=z+Math.sin(a)*radius;return [px,Math.max(WATER_LEVEL+.02,surface(px,pz)+.025),pz];})};
   }
   const compileWorld=(id,batches,baked=true)=>{
     const groups=new Map();for(const batch of batches){const mineral=batch.shape==='rock'||batch.shape==='obelisk',key=batch.surface+':'+mineral;let group=groups.get(key);if(!group){group={surface:batch.surface,mineral,pieces:[]};groups.set(key,group);}for(const values of batch.pieces)group.pieces.push({geometry:geometryForShape(batch.shape),matrix:new T.Matrix4().fromArray(values),tint:new T.Color().fromArray(values,16),wind:batch.surface==='cloth',phase:batch.phase});}
@@ -86,5 +115,5 @@ for(const low of [false,true]){
   const glows={};for(const [kind,channels]of Object.entries(glow.models)){glows[kind]={};for(const [channel,data]of Object.entries(channels)){
     const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(data.position,3));g.setAttribute('normal',new T.Float32BufferAttribute(data.normal,3));g.setIndex(data.index);glows[kind][channel]=pack.pack('glow/'+kind+'/'+channel,g);g.dispose();
   }}
-  pack.write(low?'balanced':'high',{terrain:terrainNames,waterfall,roads,scenery,forest:forestGroups,units,landmarks:land,dressings,harbor,boatShadows:HARBOR_BOATS,glows,coastal:architecture.models.coastal,transport:architecture.models.transport});terrain.dispose();
+  pack.write(low?'balanced':'high',{terrain:terrainNames,terrainChunks,occlusionBoxes:terrainOccluders(terrain),waterfall,roads,scenery,forest:forestGroups,units,landmarks:land,landmarkZones,dressings,harbor,boatShadows:HARBOR_BOATS,glows,coastal:architecture.models.coastal,transport:architecture.models.transport});terrain.dispose();
 }

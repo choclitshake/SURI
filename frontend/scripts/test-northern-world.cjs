@@ -3,8 +3,17 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:1,target:7,esModuleInterop:true}}).outputText,f);
 const w=require('../lib/worldMap/landscape.ts'),{NORTHERN_ISLANDS,WYRM_TOWER}=require('../lib/worldMap/northernIslands.ts');
 const {responsiveCamera,applyOverviewPose}=require('../lib/worldMap/responsiveCamera.ts');
-const {playableProjectionBounds}=require('../lib/worldMap/worldBounds.ts');
+const {playableProjectionBounds,architectureBounds}=require('../lib/worldMap/worldBounds.ts');
 const {worldFrame}=require('../lib/worldMap/framing.ts');
+const {ArchitectureBuilder}=require('../lib/worldMap/architecture.ts'),{drawNorthernArchitecture}=require('../lib/worldMap/northernArchitecture.ts');
+const tower=new ArchitectureBuilder();drawNorthernArchitecture(tower);
+const centered=p=>Math.abs(p.matrix.elements[12]-WYRM_TOWER.x)<.01&&Math.abs(p.matrix.elements[14]-WYRM_TOWER.z)<.01;
+const walls=[...tower.batches.values()].filter(b=>b.shape==='cylinder'&&b.surface==='stone').flatMap(b=>b.pieces).filter(p=>centered(p)&&p.matrix.elements[13]>WYRM_TOWER.floor+7&&p.matrix.elements[5]>1.2);
+const roofs=[...tower.batches.values()].filter(b=>b.shape==='spireRoof'&&b.surface==='roof').flatMap(b=>b.pieces).filter(p=>centered(p)&&p.matrix.elements[13]>WYRM_TOWER.floor+8);
+const windows=[...tower.batches.values()].filter(b=>b.surface==='glass').flatMap(b=>b.pieces).filter(p=>p.matrix.elements[13]>WYRM_TOWER.floor+7);
+assert.equal(walls.length,1,'the upper room has a continuous enclosing stone wall');
+assert.equal(roofs.length,1,'the upper room has a supported purple roof');assert.equal(windows.length,4,'four glazed arched windows serve the enclosed room');
+const towerBounds=architectureBounds(tower);
 assert.equal(w.LANDMARK_SITE_KEYS.length,5);assert.equal(Object.keys(w.PRIMARY_ISLANDS).length,5);
 assert.equal(Object.keys(NORTHERN_ISLANDS).length,13);
 for(const i of Object.values(NORTHERN_ISLANDS)){
@@ -35,7 +44,7 @@ for(const [width,height] of [[1440,900],[1366,768],[1024,768],[768,1024],[390,84
   }
   if(width>=1024){
     const frame=worldFrame(width,height,bounds),matrix=new T.Matrix4().compose(new T.Vector3(...frame.position),new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),frame.rotation),new T.Vector3().setScalar(frame.scale));
-    const top=new T.Vector3(WYRM_TOWER.x,WYRM_TOWER.floor+8.7,WYRM_TOWER.z).applyMatrix4(matrix).project(camera);
+    const top=new T.Vector3(WYRM_TOWER.x,towerBounds.max.y,WYRM_TOWER.z).applyMatrix4(matrix).project(camera);
     const foot=new T.Vector3(WYRM_TOWER.x,1,WYRM_TOWER.z).applyMatrix4(matrix).project(camera);
     console.log(`${width}x${height}: tower top ${((1-top.y)*height/2).toFixed(1)}px; island shore ${((1-foot.y)*height/2).toFixed(1)}px; zoom ${a.zoom.toFixed(3)}`);
     assert(Math.abs(top.x)<.86&&top.y<1&&foot.y>-1,'northern tower fits the existing shot');

@@ -1,6 +1,6 @@
 {
   "version": "purple-afternoon-v2",
-  "sourceHash": "93876cfe15a01bad85e5400574baac1e8476c4e1196db07e1815c0b01e4c867a",
+  "sourceHash": "4c2c44fe502bdfd4dcfd7b530ccac0707543f098bd5e45c912125188027e89c8",
   "probes": [
     {
       "x": 0,
@@ -85,10 +85,10 @@
     "architecture-surface.webp": 243286,
     "coast-depth.png": 229982,
     "coastal-cloud.webp": 43034,
-    "lighting-mask.webp": 162794,
-    "terrain-albedo.webp": 95386,
-    "terrain-normal.webp": 1737260,
-    "terrain-rma.webp": 1155826,
+    "lighting-mask.webp": 162778,
+    "terrain-albedo.webp": 42726,
+    "terrain-normal.webp": 848870,
+    "terrain-rma.webp": 765632,
     "water-normal.webp": 83416
   }
 }

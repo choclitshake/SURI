@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { Fragment, memo, Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import type { CameraCommand } from "@/lib/worldMap/navigation";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
@@ -23,6 +23,8 @@ import { WorldQuality,detectWorldQuality } from "./WorldQuality";
 import { QUALITY } from "@/lib/worldMap/renderQuality";
 import { WorldProfiler } from "./WorldProfiler";
 import { SceneWarmup } from "./SceneWarmup";
+import { WorldVisibility } from "./WorldVisibility";
+import { useBakedScene } from "./BakedScene";
 
 type Point3 = [number, number, number];
 // MapCamera owns the original frustum. Adaptive DPR resizes the drawing buffer
@@ -54,7 +56,7 @@ type WorldProps = {
 };
 
 type CoastalWorldProps = WorldProps & {
-  labelElementsRef: RefObject<LandmarkElements>; hitElementsRef: RefObject<LandmarkElements>; feedback: Record<DashboardLandmark,LandmarkFeedback>; lowPower: boolean; controlsEnabled: boolean; headerInset: number|null;
+  labelElementsRef: RefObject<LandmarkElements>; hitElementsRef: RefObject<LandmarkElements>; circleElementsRef: RefObject<LandmarkElements>; feedback: Record<DashboardLandmark,LandmarkFeedback>; lowPower: boolean; controlsEnabled: boolean; headerInset: number|null;
 };
 
 function FrameGate({ active }: { active: boolean }) {
@@ -63,30 +65,43 @@ function FrameGate({ active }: { active: boolean }) {
   return null;
 }
 
-function LandmarkLabelProjector({ elementsRef,hitElementsRef }: { elementsRef: RefObject<LandmarkElements>;hitElementsRef:RefObject<LandmarkElements> }) {
+function LandmarkLabelProjector({ elementsRef,hitElementsRef,circleElementsRef }: { elementsRef: RefObject<LandmarkElements>;hitElementsRef:RefObject<LandmarkElements>;circleElementsRef:RefObject<LandmarkElements> }) {
+  const assets=useBakedScene();
   const size = useThree(state => state.size);
   const frame = useMemo(() => worldFrame(size.width, size.height, playableProjectionBounds()), [size.width, size.height]);
   const point = useRef(new THREE.Vector3());
   const anchors=useMemo(()=>DASHBOARD_LANDMARKS.map(({kind})=>{
     const root=new THREE.Vector3(...LANDMARK_POSITIONS[kind]).applyAxisAngle(new THREE.Vector3(0,1,0),frame.rotation).multiplyScalar(frame.scale).add(new THREE.Vector3(...frame.position));
-    return {kind,root,label:root.clone().add(new THREE.Vector3(0,(LANDMARK_BOUNDS[kind][1]+LANDMARK_LABEL_LIFT)*LANDMARK_SCALE*frame.scale,0))};
-  }),[frame]);
-  const previous=useRef({world:new THREE.Matrix4(),projection:new THREE.Matrix4(),width:0,height:0,labels:[] as Array<HTMLDivElement|null|undefined>,hits:[] as Array<HTMLDivElement|null|undefined>,ready:false});
+    const circle=(assets.landmarkZones?.[kind]?.perimeter??[]).map(p=>new THREE.Vector3().fromArray(p).applyAxisAngle(new THREE.Vector3(0,1,0),frame.rotation).multiplyScalar(frame.scale).add(new THREE.Vector3(...frame.position)));
+    return {kind,root,circle,pixels:circle.map(()=>new THREE.Vector2()),label:root.clone().add(new THREE.Vector3(0,(LANDMARK_BOUNDS[kind][1]+LANDMARK_LABEL_LIFT)*LANDMARK_SCALE*frame.scale,0))};
+  }),[frame,assets]);
+  const previous=useRef({world:new THREE.Matrix4(),projection:new THREE.Matrix4(),width:0,height:0,labels:[] as Array<HTMLDivElement|null|undefined>,hits:[] as Array<HTMLDivElement|null|undefined>,circles:[] as Array<HTMLDivElement|null|undefined>,ready:false});
   useFrame(({camera})=>{
     const last=previous.current;
     let unchanged=last.ready&&last.width===size.width&&last.height===size.height&&last.world.equals(camera.matrixWorld)&&last.projection.equals(camera.projectionMatrix);
     for(let i=0;i<anchors.length;i++){
-      const kind=anchors[i].kind;if(last.labels[i]!==elementsRef.current[kind]||last.hits[i]!==hitElementsRef.current[kind])unchanged=false;
+      const kind=anchors[i].kind;if(last.labels[i]!==elementsRef.current[kind]||last.hits[i]!==hitElementsRef.current[kind]||last.circles[i]!==circleElementsRef.current[kind])unchanged=false;
     }
     if(unchanged)return;
     last.ready=true;last.width=size.width;last.height=size.height;last.world.copy(camera.matrixWorld);last.projection.copy(camera.projectionMatrix);
     const ortho=camera as THREE.OrthographicCamera,unit=size.height/(ortho.top-ortho.bottom)*ortho.zoom*frame.scale;
     for(let i=0;i<anchors.length;i++){
-      const {kind,root,label}=anchors[i],hit=hitElementsRef.current[kind],element=elementsRef.current[kind];last.labels[i]=element;last.hits[i]=hit;
+      const {kind,root,label,circle,pixels}=anchors[i],hit=hitElementsRef.current[kind],area=circleElementsRef.current[kind],element=elementsRef.current[kind];last.labels[i]=element;last.hits[i]=hit;last.circles[i]=area;
       if(hit){
         point.current.copy(root).project(camera);const shape=PROJECTED_LANDMARKS[kind];
         hit.style.transform=`translate3d(${((point.current.x*.5+.5)*size.width+shape.minX*unit).toFixed(2)}px,${((-point.current.y*.5+.5)*size.height-shape.maxY*unit).toFixed(2)}px,0)`;
         hit.style.width=`${(shape.width*unit).toFixed(2)}px`;hit.style.height=`${(shape.height*unit).toFixed(2)}px`;hit.style.visibility=point.current.z>=-1?"visible":"hidden";
+      }
+      if(area&&circle.length){
+        let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+        for(let j=0;j<circle.length;j++){
+          point.current.copy(circle[j]).project(camera);const x=(point.current.x*.5+.5)*size.width,y=(-point.current.y*.5+.5)*size.height;
+          pixels[j].set(x,y);minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
+        }
+        const width=maxX-minX,height=maxY-minY;
+        area.style.transform=`translate3d(${minX}px,${minY}px,0)`;area.style.width=`${width}px`;area.style.height=`${height}px`;
+        area.style.clipPath=`polygon(${pixels.map(p=>`${(p.x-minX)/width*100}% ${(p.y-minY)/height*100}%`).join(',')})`;
+        area.style.visibility=width>0&&height>0?"visible":"hidden";
       }
       if(element){
         point.current.copy(label).project(camera);
@@ -99,7 +114,7 @@ function LandmarkLabelProjector({ elementsRef,hitElementsRef }: { elementsRef: R
   return null;
 }
 
-function CoastalWorld({ command, visible, preserveCameraOnActivate, labelElementsRef, hitElementsRef, feedback, lowPower, controlsEnabled, headerInset }: CoastalWorldProps) {
+function CoastalWorld({ command, visible, preserveCameraOnActivate, labelElementsRef, hitElementsRef,circleElementsRef, feedback, lowPower, controlsEnabled, headerInset }: CoastalWorldProps) {
   const size = useThree(state => state.size);
   const frame = useMemo(() => worldFrame(size.width, size.height, playableProjectionBounds()), [size.height, size.width]);
   return (
@@ -108,13 +123,15 @@ function CoastalWorld({ command, visible, preserveCameraOnActivate, labelElement
       <SceneWarmup/>
       <WorldProfiler/>
       <MapCamera command={command} active={visible&&headerInset!==null} preserveCameraOnActivate={preserveCameraOnActivate} controlsEnabled={controlsEnabled} headerInset={headerInset??0} />
-      <LandmarkLabelProjector elementsRef={labelElementsRef} hitElementsRef={hitElementsRef} />
+      <LandmarkLabelProjector elementsRef={labelElementsRef} hitElementsRef={hitElementsRef} circleElementsRef={circleElementsRef} />
       <group position={frame.position} rotation={[0, frame.rotation, 0]} scale={frame.scale}>
+        <WorldVisibility>
         <AtmosphericClouds />
         <Ocean lowDetail={lowPower} />
         <Landscape lowDetail={lowPower} />
 
         {DASHBOARD_LANDMARKS.map(({kind})=><Landmark key={kind} position={LANDMARK_POSITIONS[kind]} kind={kind} feedback={feedback[kind]}/>)}
+        </WorldVisibility>
       </group>
     </>
   );
@@ -124,6 +141,7 @@ function DashboardWorld(props: WorldProps) {
   const [hoveredLandmark, setHoveredLandmark] = useState<DashboardLandmark | null>(null);
   const labelElementsRef = useRef<LandmarkElements>({});
   const hitElementsRef=useRef<LandmarkElements>({});
+  const circleElementsRef=useRef<LandmarkElements>({});
   const [focusedLandmark,setFocusedLandmark]=useState<DashboardLandmark|null>(null);
   const [pressedLandmark,setPressedLandmark]=useState<DashboardLandmark|null>(null);
   const enabled=props.labelsVisible&&props.visible&&!props.busy;
@@ -132,7 +150,7 @@ function DashboardWorld(props: WorldProps) {
   const gesture=useRef({id:-1,x:0,y:0,moved:false});
   const pointers=useRef(new Set<number>());
   useEffect(()=>{
-    const release=(event:PointerEvent)=>{pointers.current.delete(event.pointerId);setPressedLandmark(null);};
+    const release=(event:PointerEvent)=>{pointers.current.delete(event.pointerId);if(gesture.current.id===event.pointerId)gesture.current.id=-1;setPressedLandmark(null);};
     const blur=()=>{pointers.current.clear();gesture.current.moved=true;setPressedLandmark(null);setHoveredLandmark(null);};
     window.addEventListener("pointerup",release);window.addEventListener("pointercancel",release);window.addEventListener("blur",blur);
     return()=>{window.removeEventListener("pointerup",release);window.removeEventListener("pointercancel",release);window.removeEventListener("blur",blur);};
@@ -186,7 +204,7 @@ function DashboardWorld(props: WorldProps) {
       {showSaved && <div className="world-toast">✦ Progress cataloged in the kingdom archives.</div>}
       <div className={styles.viewport} data-world-viewport
         onPointerDownCapture={event=>{pointers.current.add(event.pointerId);gesture.current={id:event.pointerId,x:event.clientX,y:event.clientY,moved:pointers.current.size>1};}}
-        onPointerMoveCapture={event=>{const g=gesture.current;if(g.id===event.pointerId&&Math.hypot(event.clientX-g.x,event.clientY-g.y)>6){g.moved=true;setPressedLandmark(null);setHoveredLandmark(null);}}}
+        onPointerMoveCapture={event=>{const g=gesture.current;if(pointers.current.has(event.pointerId)&&g.id===event.pointerId&&Math.hypot(event.clientX-g.x,event.clientY-g.y)>6){g.moved=true;setPressedLandmark(null);setHoveredLandmark(null);}}}
         onPointerUpCapture={()=>setPressedLandmark(null)}
         onPointerCancelCapture={()=>{gesture.current.moved=true;setPressedLandmark(null);setHoveredLandmark(null);}}><Canvas
         className="dashboard-canvas"
@@ -201,16 +219,22 @@ function DashboardWorld(props: WorldProps) {
         onCreated={({ gl }) => configureWorldRenderer(gl)}
       >
         <FrameGate active={props.visible} />
-        <WorldQuality tier={quality}><Suspense fallback={null}><CoastalWorld {...props} controlsEnabled={!props.busy} headerInset={headerInset} labelElementsRef={labelElementsRef} hitElementsRef={hitElementsRef} feedback={feedback} lowPower={lowPower} /></Suspense></WorldQuality>
+        <WorldQuality tier={quality}><Suspense fallback={null}><CoastalWorld {...props} controlsEnabled={!props.busy} headerInset={headerInset} labelElementsRef={labelElementsRef} hitElementsRef={hitElementsRef} circleElementsRef={circleElementsRef} feedback={feedback} lowPower={lowPower} /></Suspense></WorldQuality>
       </Canvas>
         <div className={styles.hitLayer} data-visible={props.labelsVisible&&!props.busy} hidden={!props.visible} aria-hidden="true">
-          {DASHBOARD_LANDMARKS.map(({kind,href})=><div key={kind} ref={element=>{hitElementsRef.current[kind]=element;}}
+          {DASHBOARD_LANDMARKS.map(({kind,href})=><Fragment key={kind}><div ref={element=>{hitElementsRef.current[kind]=element;}}
             className={styles.landmarkHit} aria-hidden="true" data-landmark-hit={kind} data-feedback={feedback[kind]}
             style={{visibility:"hidden",clipPath:PROJECTED_LANDMARKS[kind].clip}}
             onPointerEnter={event=>{if(event.pointerType!=="touch"){setHoveredLandmark(kind);props.preloadRoute?.(href);}}}
             onPointerLeave={()=>setHoveredLandmark(null)}
             onPointerDown={()=>{setPressedLandmark(kind);props.preloadRoute?.(href);}}
-            onClick={()=>{if(!props.busy&&!gesture.current.moved)props.navigate(href);}}/>) }
+            onClick={()=>{if(!props.busy&&!gesture.current.moved)props.navigate(href);}}/>
+            <div ref={element=>{circleElementsRef.current[kind]=element;}} className={styles.landmarkHit} aria-hidden="true" data-landmark-zone={kind} data-feedback={feedback[kind]} style={{visibility:"hidden"}}
+              onPointerEnter={event=>{if(event.pointerType!=="touch"){setHoveredLandmark(kind);props.preloadRoute?.(href);}}}
+              onPointerLeave={()=>setHoveredLandmark(null)}
+              onPointerDown={()=>{setPressedLandmark(kind);props.preloadRoute?.(href);}}
+              onClick={()=>{if(!props.busy&&!gesture.current.moved)props.navigate(href);}}/>
+          </Fragment>) }
         </div>
         {createPortal(<div className={`${styles.labelLayer} ${lowPower ? "is-low-power" : ""}`} data-visible={props.labelsVisible} inert={!props.labelsVisible} hidden={!props.visible} aria-hidden={!props.labelsVisible}>
           {DASHBOARD_LANDMARKS.map(({ kind, title, href, description }) => {

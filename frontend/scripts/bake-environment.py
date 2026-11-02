@@ -24,6 +24,24 @@ def noise(size, cells):
 def fbm(size):
     return sum(noise(size,c)*a for c,a in [(4,.34),(9,.23),(21,.17),(47,.12),(99,.08),(203,.06)])
 
+def terrain_noise(size, cells):
+    # Circular Fourier filtering removes the square interpolation lattice.
+    # The periodic field stays seamless, including its normal derivatives.
+    # Consume the same authored samples so sky/water/architecture keep their seeds.
+    field = rng.random((cells, cells), dtype=np.float32)
+    frequency = np.arange(cells)-cells//2
+    radius2 = frequency[:,None]**2+frequency[None,:]**2
+    spectrum = np.fft.fftshift(np.fft.fft2(field-field.mean()))
+    spectrum *= np.exp(-radius2/(2*(cells*.18)**2))
+    padded = np.zeros((size,size), dtype=np.complex128)
+    start = size//2-cells//2
+    padded[start:start+cells,start:start+cells] = spectrum
+    smooth = np.fft.ifft2(np.fft.ifftshift(padded)).real
+    return np.clip(.5+smooth/max(float(smooth.std())*5,1e-8),0,1)
+
+def terrain_fbm(size):
+    return sum(terrain_noise(size,c)*a for c,a in [(4,.34),(9,.23),(21,.17),(47,.12),(99,.08),(203,.06)])
+
 def atomic_image(image,name,**options):
     destination=OUT/name;temporary=OUT/(name+'.pending')
     image.save(temporary,format='PNG' if name.endswith('.png') else 'WEBP',**options)
@@ -42,29 +60,29 @@ N=512
 yy,xx=np.mgrid[0:N,0:N]/N
 albedos=[];normals=[];packed=[]
 for material in range(4):
-    broad=fbm(N);fine=noise(N,173);micro=noise(N,251)
+    broad=terrain_fbm(N);fine=terrain_noise(N,173);micro=terrain_noise(N,251)
     if material==0:  # grass, lichen, scattered organic soil
-        blades=(noise(N,173)-.5)*.8+(noise(N,251)-.5)*.35
+        blades=(terrain_noise(N,173)-.5)*.8+(terrain_noise(N,251)-.5)*.35
         height=broad*.48+fine*.25+blades*.055
-        patches=np.clip((noise(N,11)-.53)*3,0,1)
+        patches=np.clip((terrain_noise(N,11)-.53)*3,0,1)
         base=np.array([.43,.53,.29])+ (broad[...,None]-.5)*np.array([.24,.24,.13])
         base=base*(1-patches[...,None]*.6)+np.array([.39,.35,.235])*patches[...,None]*.6
         rough=.91-fine*.09
     elif material==1:  # eroded bedded limestone, veins, fractures
         # Irregular limestone/moss: no repeated horizontal comb or grid joints.
-        bedding=noise(N,11)*.6+noise(N,27)*.4
-        cracks=np.clip((.23-noise(N,29))*3.2,0,.35)
+        bedding=terrain_noise(N,11)*.6+terrain_noise(N,27)*.4
+        cracks=np.clip((.23-terrain_noise(N,29))*3.2,0,.35)
         height=broad*.39+fine*.16+bedding*.09-cracks*.15
         base=np.array([.65,.635,.57])+(broad[...,None]-.5)*.23-cracks[...,None]*.075
         base+=np.clip((micro-.75)*.3,0,.06)[...,None]
         rough=.8+fine*.16
     elif material==2:  # mixed sand, shell grit and coarse beach pebbles
-        pebbles=np.clip((noise(N,101)-.68)*6,0,1)
+        pebbles=np.clip((terrain_noise(N,101)-.68)*6,0,1)
         height=broad*.16+micro*.17+pebbles*.28
         base=np.array([.76,.70,.56])+(broad[...,None]-.5)*.18+(fine[...,None]-.5)*.12-pebbles[...,None]*.16
         rough=.88+micro*.09
     else:  # moist soil, scree and broken moss
-        moss=np.clip((noise(N,13)-.5)*3,0,1)
+        moss=np.clip((terrain_noise(N,13)-.5)*3,0,1)
         stones=np.clip((fine-.65)*3,0,1)
         height=broad*.36+fine*.2+stones*.2
         base=np.array([.42,.365,.255])+(broad[...,None]-.5)*.21+stones[...,None]*.1

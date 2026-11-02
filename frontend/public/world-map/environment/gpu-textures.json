@@ -2,7 +2,7 @@
   "terrain-albedo": {
     "bytes": 699192,
     "mipmaps": 11,
-    "meanAbsoluteError": 0.00694,
+    "meanAbsoluteError": 0.00673,
     "codec": "DXT1"
   },
   "architecture-surface": {
