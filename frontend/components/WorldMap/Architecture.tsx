@@ -27,7 +27,7 @@ function ArchitectureBatch({ batch, shadows }: {batch:Batch;shadows:boolean}) {
   const detail=useRef(true),lod=batch.shape==="rock"||batch.shape==="broadleaf"||batch.shape==="conifer";
   useFrame(({camera,size})=>{
     const mesh=ref.current,order=slots.current;
-    if(mesh&&order&&visibility&&!visibility.disabled&&revision.current!==visibility.revision){
+    if(mesh&&order&&visibility&&revision.current!==visibility.revision){
       revision.current=visibility.revision;
       let count=0,changed=false;
       for(let i=0;i<candidates.length;i++){
@@ -55,7 +55,7 @@ function ArchitectureBatch({ batch, shadows }: {batch:Batch;shadows:boolean}) {
     ref.current.instanceMatrix.needsUpdate=true;
     if(ref.current.instanceColor)ref.current.instanceColor.needsUpdate=true;
     const mesh=ref.current,bounds=new THREE.Box3();for(const candidate of candidates)bounds.union(candidate.bounds);
-    mesh.boundingBox=bounds;mesh.boundingSphere=bounds.getBoundingSphere(new THREE.Sphere());mesh.userData.worldTotalInstances=batch.pieces.length;revision.current=-1;
+    mesh.boundingBox=bounds;mesh.boundingSphere=bounds.getBoundingSphere(new THREE.Sphere());revision.current=-1;
     return()=>mesh.dispose();
   },[batch,candidates]);
   return <group ref={group}><instancedMesh ref={ref} args={[full,environmentArchitectureMaterial(batch.surface,textures,batch.shape==="rock"||batch.shape==="obelisk"),batch.pieces.length]} castShadow={shadows} receiveShadow raycast={noRaycast} dispose={null}/></group>;

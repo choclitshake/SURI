@@ -11,7 +11,7 @@ import { useWorldVisibility } from "./WorldVisibility";
 const noRaycast:THREE.Mesh["raycast"]=()=>{};
 class MotionClock{
   value=0;
-  advance(delta:number,reduced:boolean,diagnostic:number|null){if(diagnostic!==null)this.value=diagnostic;else if(!reduced)this.value+=Math.min(delta,.1);}
+  advance(delta:number,reduced:boolean){if(!reduced)this.value+=Math.min(delta,.1);}
 }
 const jointShader=`
 attribute vec4 motionJoint;
@@ -76,7 +76,7 @@ function ActorBatch({model,assets,time,shadowRef}:{model:VesselKind|"person";ass
     if(!ref.current)return;
     ref.current.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     runtime.current=actors.map(actor=>({actor,pose:makeAmbientPose(),matrix:new THREE.Matrix4(),color:new THREE.Color(actor.tint),nextUpdate:0,lastUpdate:0,lastYaw:0,initialized:false}));
-    slots.current=new Int32Array(actors.length).fill(-1);revision.current=-1;ref.current.userData.worldTotalInstances=actors.length;
+    slots.current=new Int32Array(actors.length).fill(-1);revision.current=-1;
     const bounds=new THREE.Box3();for(const actor of actors){for(const p of assets.routes[actor.route].points)bounds.expandByPoint(new THREE.Vector3(...p));}
     bounds.expandByScalar(person?1.4:8);ref.current.boundingSphere=bounds.getBoundingSphere(new THREE.Sphere());
     actors.forEach((a,i)=>ref.current!.setColorAt(i,new THREE.Color(a.tint)));
@@ -99,7 +99,7 @@ function ActorBatch({model,assets,time,shadowRef}:{model:VesselKind|"person";ass
       const bob=person||reduced?0:Math.sin(now*.8+a.offset)*.035;
       s.position.set(pose.x,pose.y+bob,pose.z);entry.matrix.compose(s.position,s.quaternion,s.scale);
       s.sphere.copy(geometry.boundingSphere!).applyMatrix4(entry.matrix);s.sphere.set(s.sphere.center,s.sphere.radius+.2);
-      const offscreen=visibility&&!visibility.disabled?!visibility.frustum.intersectsSphere(s.sphere):Math.abs(s.project.x)>1.18||Math.abs(s.project.y)>1.18;
+      const offscreen=visibility?!visibility.frustum.intersectsSphere(s.sphere):Math.abs(s.project.x)>1.18||Math.abs(s.project.y)>1.18;
       entry.nextUpdate=now+(offscreen?1:interval);
       const height=person?.5:.6,width=person?.55:assets.geometries[assets.models[model]].boundingBox!.getSize(s.scale).x*1.25,length=person?.95:assets.geometries[assets.models[model]].boundingBox!.max.z*2*1.4;
       s.position.set(pose.x-LOCAL_SUN[0]/LOCAL_SUN[1]*height,person?pose.y+.018:WATER_LEVEL+.12,pose.z-LOCAL_SUN[2]/LOCAL_SUN[1]*height);
@@ -109,7 +109,7 @@ function ActorBatch({model,assets,time,shadowRef}:{model:VesselKind|"person";ass
     let count=0,layoutChanged=false;const order=slots.current;
     if(order)for(let i=0;i<runtime.current.length;i++){
       const entry=runtime.current[i];s.sphere.copy(geometry.boundingSphere!).applyMatrix4(entry.matrix);s.sphere.set(s.sphere.center,s.sphere.radius+.2);
-      if(visibility&&!visibility.disabled&&!visibility.frustum.intersectsSphere(s.sphere))continue;
+      if(visibility&&!visibility.frustum.intersectsSphere(s.sphere))continue;
       if(order[count]!==i){order[count]=i;layoutChanged=true;}count++;
     }
     if(order&&(changed||layoutChanged||mesh.count!==count)){
@@ -157,8 +157,7 @@ function AmbientPopulation(){
   const assets=useAmbientAssets(),textures=useEnvironmentTextures(),reduced=useWorldReducedMotion();
   const shadows=useRef<THREE.InstancedMesh>(null);
   const time=useMemo(()=>new MotionClock(),[]);
-  const diagnostic=useMemo(()=>{if(typeof window==="undefined")return null;const p=new URLSearchParams(window.location.search),value=p.get('world-ambient-time');return p.has('world-profile')&&value!==null&&Number.isFinite(Number(value))?Math.max(0,Number(value)):null;},[]);
-  useFrame((_,delta)=>time.advance(delta,reduced,diagnostic),-2);
+  useFrame((_,delta)=>time.advance(delta,reduced),-2);
   return <group name="archipelago-ambient-life">
     {assets.portParts.map(p=><mesh key={p.surface} geometry={assets.geometries[p.geometry]} material={environmentArchitectureMaterial(p.surface,textures,false,true,true)} raycast={noRaycast} dispose={null}/>)}
     <AmbientShadows assets={assets} shadowRef={shadows}/>
@@ -166,7 +165,4 @@ function AmbientPopulation(){
     <FountainMotion assets={assets} time={time}/>
   </group>;
 }
-export const AmbientWorld=memo(function AmbientWorld(){
-  const disabled=useMemo(()=>{if(typeof window==="undefined")return false;const p=new URLSearchParams(window.location.search);return p.has("world-profile")&&p.get("world-ambient")==="off";},[]);
-  return disabled?null:<AmbientPopulation/>;
-});
+export const AmbientWorld=memo(AmbientPopulation);

@@ -11,7 +11,6 @@ import { TraversalNetwork } from "./TraversalNetwork";
 import { Harbor } from "./Harbor";
 import { WorldMotion } from "./WorldMotion";
 import { AmbientWorld } from "./AmbientWorld";
-import { recordWorldCommit } from "./WorldProfiler";
 import { useWorldVisibility } from "./WorldVisibility";
 const noRaycast: THREE.Mesh["raycast"] = () => {};
 
@@ -26,7 +25,7 @@ function SecondaryTerrain({material}:{material:THREE.Material}){
     revision.current=visibility?.revision??0;
     // The overview draws one merged mesh. Split views only help when at least
     // one region is outside the frame, avoiding extra overview draw calls.
-    const full=!visibility||visibility.disabled||ids.every(id=>visibility.frustum.intersectsBox(assets.geometries[id].boundingBox!));
+    const full=!visibility||ids.every(id=>visibility.frustum.intersectsBox(assets.geometries[id].boundingBox!));
     whole.current.visible=full;chunks.current.visible=!full;
   });
   return <>
@@ -36,7 +35,6 @@ function SecondaryTerrain({material}:{material:THREE.Material}){
 }
 
 export const Landscape=memo(function Landscape({focus,lowDetail=false}:{focus?:LandscapeFocus;lowDetail?:boolean}) {
-  useEffect(()=>recordWorldCommit("landscape"));
   const island=focus?.island;
   const textures=useEnvironmentTextures();
   const material=useMemo(()=>makeTerrainMaterial(textures,lowDetail),[textures,lowDetail]);

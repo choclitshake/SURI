@@ -13,7 +13,7 @@ const root=path.join(__dirname,'../lib/worldMap'),out=path.join(__dirname,'../pu
 const sourceFiles=['landscape.ts','terrainGeometry.ts','settlements.ts','architecture.ts','architecturalGeometry.ts','primitiveGeometry.ts','foliageGeometry.ts','traversal.ts','generated/traversal.json','landmarkDesigns.ts','landmarkInteraction.ts','architecturalModules.ts','supportingArchitecture.ts','northernIslands.ts','northernArchitecture.ts','environmentDecor.ts','worldPalette.ts','environment.ts','staticLighting.ts'];
 const hash=crypto.createHash('sha256');for(const file of sourceFiles)hash.update(fs.readFileSync(path.join(root,file),'utf8').replace(/\r\n/g,'\n'));
 const {mergeGeometries}=require('three/examples/jsm/utils/BufferGeometryUtils.js');
-const sourceHash=hash.digest('hex'),architecture=JSON.parse(fs.readFileSync(path.join(out,'../architecture/instances.json'))),paths=JSON.parse(fs.readFileSync(path.join(out,'../traversal/paths.json'))),glow=JSON.parse(fs.readFileSync(path.join(out,'../architecture/glow.json')));
+const sourceHash=hash.digest('hex'),architecture=JSON.parse(fs.readFileSync(path.join(out,'../architecture/instances.json'))),paths=JSON.parse(fs.readFileSync(path.join(out,'../traversal/paths.json')));
 const lightingScene=JSON.parse(fs.readFileSync(path.join(__dirname,'../.cache/environment-bake/scene.json')));
 const light=makeStaticLighting(lightingScene.size,new Float32Array(Uint8Array.from(fs.readFileSync(path.join(__dirname,'../.cache/environment-bake/height-coast.f32'))).buffer),lightingScene.shadows);
 function packer(){
@@ -112,8 +112,5 @@ for(const low of [false,true]){
   const dressings=compileWorld('dressings',[...architecture.models.transport,...architecture.models.decor,...architecture.models.coastal]);
   const boats=[];for(const [boatIndex,boat] of HARBOR_BOATS.entries())for(const batch of architecture.models.boat){const transform=new T.Matrix4().makeTranslation(boat.x,WATER_LEVEL-.05,boat.z).multiply(new T.Matrix4().makeRotationY(boat.turn));boats.push({...batch,phase:boatIndex*1.7,pieces:batch.pieces.map(p=>[...transform.clone().multiply(new T.Matrix4().fromArray(p)).toArray(),...p.slice(16)])});}
   const harbor=compileWorld('harbor',boats,false);
-  const glows={};for(const [kind,channels]of Object.entries(glow.models)){glows[kind]={};for(const [channel,data]of Object.entries(channels)){
-    const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(data.position,3));g.setAttribute('normal',new T.Float32BufferAttribute(data.normal,3));g.setIndex(data.index);glows[kind][channel]=pack.pack('glow/'+kind+'/'+channel,g);g.dispose();
-  }}
-  pack.write(low?'balanced':'high',{terrain:terrainNames,terrainChunks,occlusionBoxes:terrainOccluders(terrain),waterfall,roads,scenery,forest:forestGroups,units,landmarks:land,landmarkZones,dressings,harbor,boatShadows:HARBOR_BOATS,glows,coastal:architecture.models.coastal,transport:architecture.models.transport});terrain.dispose();
+  pack.write(low?'balanced':'high',{terrain:terrainNames,terrainChunks,occlusionBoxes:terrainOccluders(terrain),waterfall,roads,scenery,forest:forestGroups,units,landmarks:land,landmarkZones,dressings,harbor,boatShadows:HARBOR_BOATS,coastal:architecture.models.coastal,transport:architecture.models.transport});terrain.dispose();
 }

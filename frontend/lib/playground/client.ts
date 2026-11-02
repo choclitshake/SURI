@@ -9,7 +9,6 @@ import {
   type PlaygroundSitting,
   type PlaygroundTopics,
 } from "../api";
-import { mockPlayground } from "./mock";
 
 export interface PlaygroundClient {
   getTopics(): Promise<PlaygroundTopics>;
@@ -18,13 +17,9 @@ export interface PlaygroundClient {
   reveal(problemId: string): Promise<PlaygroundReveal>;
 }
 
-const realPlayground: PlaygroundClient = {
+export const playground: PlaygroundClient = {
   getTopics: getPlaygroundTopics,
   getSitting: getPlaygroundSitting,
   check: checkPlaygroundAnswer,
   reveal: revealPlaygroundAnswer,
 };
-
-const USE_MOCK = false; // flip to true to use the offline sample problems (lib/playground/mock.ts)
-
-export const playground: PlaygroundClient = USE_MOCK ? mockPlayground : realPlayground;

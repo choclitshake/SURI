@@ -13,9 +13,8 @@ class Visibility {
   private previous = new THREE.Matrix4();
   private inverse = new THREE.Matrix4();
   private direction = new THREE.Vector3();
-  constructor(readonly terrain: TerrainOcclusion, readonly disabled: boolean) {}
+  constructor(readonly terrain: TerrainOcclusion) {}
   update(camera: THREE.Camera, root: THREE.Group) {
-    if (this.disabled) return;
     root.updateWorldMatrix(true, false);
     this.clip.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).multiply(root.matrixWorld);
     if (this.revision && this.clip.equals(this.previous)) return;
@@ -34,10 +33,7 @@ export const useWorldVisibility = () => useContext(Context);
  * never waits for a GPU query, and changing the view direction restores objects. */
 export function WorldVisibility({ children }: { children: ReactNode }) {
   const assets = useBakedScene(), root = useRef<THREE.Group>(null);
-  const visibility = useMemo<Visibility>(() => {
-    const params = new URLSearchParams(window.location.search);
-    return new Visibility(new TerrainOcclusion(assets.occlusionBoxes ?? []), params.has("world-profile") && params.get("world-culling") === "off");
-  }, [assets]);
+  const visibility = useMemo(() => new Visibility(new TerrainOcclusion(assets.occlusionBoxes ?? [])), [assets]);
   useFrame(({ camera }) => {
     if (root.current) visibility.update(camera, root.current);
   }, -.5);

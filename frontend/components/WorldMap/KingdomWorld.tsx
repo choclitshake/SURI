@@ -21,7 +21,6 @@ import { AfternoonEnvironment } from "./AfternoonEnvironment";
 import { AtmosphericClouds } from "./AtmosphericClouds";
 import { WorldQuality,detectWorldQuality } from "./WorldQuality";
 import { QUALITY } from "@/lib/worldMap/renderQuality";
-import { WorldProfiler } from "./WorldProfiler";
 import { SceneWarmup } from "./SceneWarmup";
 import { WorldVisibility } from "./WorldVisibility";
 import { useBakedScene } from "./BakedScene";
@@ -121,7 +120,6 @@ function CoastalWorld({ command, visible, preserveCameraOnActivate, labelElement
     <>
       <AfternoonEnvironment />
       <SceneWarmup/>
-      <WorldProfiler/>
       <MapCamera command={command} active={visible&&headerInset!==null} preserveCameraOnActivate={preserveCameraOnActivate} controlsEnabled={controlsEnabled} headerInset={headerInset??0} />
       <LandmarkLabelProjector elementsRef={labelElementsRef} hitElementsRef={hitElementsRef} circleElementsRef={circleElementsRef} />
       <group position={frame.position} rotation={[0, frame.rotation, 0]} scale={frame.scale}>

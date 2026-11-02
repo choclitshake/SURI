@@ -4,8 +4,6 @@ import { useFrame,useThree } from "@react-three/fiber";
 import { QUALITY,frameBudgetAdjustment,initialQuality,type QualityTier } from "@/lib/worldMap/renderQuality";
 export function detectWorldQuality():QualityTier{
   if(typeof window==="undefined")return "high";
-  const params=new URLSearchParams(window.location.search),forced=params.get("world-quality");
-  if(params.has("world-profile")&&(forced==="high"||forced==="balanced"||forced==="economy"))return forced;
   const capability=navigator as Navigator&{deviceMemory?:number;connection?:{saveData?:boolean}};
   return initialQuality({width:window.innerWidth,cores:navigator.hardwareConcurrency,memory:capability.deviceMemory,saveData:capability.connection?.saveData});
 }

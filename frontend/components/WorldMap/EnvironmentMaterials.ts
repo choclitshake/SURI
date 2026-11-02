@@ -12,8 +12,7 @@ import { finishEnvironmentHighlight } from "./EnvironmentHighlight";
 
 export function useEnvironmentTextures() {
   const supported=useThree(state=>state.gl.extensions.has("WEBGL_compressed_texture_s3tc")&&state.gl.extensions.has("WEBGL_compressed_texture_s3tc_srgb"));
-  const portable=typeof window!=="undefined"&&window.location.search.includes("world-profile")&&window.location.search.includes("world-textures=portable");
-  const loaded=useLoader(EnvironmentTextureLoader,supported&&!portable?"environment-s3tc":"environment-portable");
+  const loaded=useLoader(EnvironmentTextureLoader,supported?"environment-s3tc":"environment-portable");
   return useMemo(()=>({albedo:loaded[0],normal:loaded[1],rma:loaded[2],lighting:loaded[3],coast:loaded[4],sky:loaded[5],water:loaded[6],cloud:loaded[7],architecture:loaded[8],reliefs:loaded[9]}),[loaded]);
 }
 type Textures=ReturnType<typeof useEnvironmentTextures>;

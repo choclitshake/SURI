@@ -1,7 +1,7 @@
 "use client";
 import { memo,useEffect } from "react";
 import { useThree } from "@react-three/fiber";
-/** Warm cached variants, including inactive glow shells, off the input path.
+/** Warm cached scene materials off the input path.
  * Older drivers keep normal lazy compilation instead of a blocking warm-up. */
 export const SceneWarmup=memo(function SceneWarmup(){
   const {gl,scene,camera,invalidate}=useThree();

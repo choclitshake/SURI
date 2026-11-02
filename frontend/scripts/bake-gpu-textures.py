@@ -1,11 +1,10 @@
 """Optional native S3TC textures. Lossless WebP/PNG remains the portable fallback."""
 from pathlib import Path
 from io import BytesIO
-import json,struct
+import struct
 import numpy as np
 from PIL import Image
 root=Path(__file__).resolve().parents[1]/'public/world-map/environment'
-report={}
 for name,codec in [('terrain-albedo','DXT1'),('architecture-surface','DXT5')]:
     image=Image.open(root/(name+'.webp')).convert('RGBA').transpose(Image.Transpose.FLIP_TOP_BOTTOM)
     parts=[];header=None;level=image;count=0
@@ -22,6 +21,4 @@ for name,codec in [('terrain-albedo','DXT1'),('architecture-surface','DXT5')]:
     decoded=np.asarray(Image.open(dest).convert('RGBA'),dtype=float)[:,:,:3]
     mae=float(np.mean(np.abs(decoded-np.asarray(image,dtype=float)[:,:,:3]))/255)
     assert mae<.035,(name,mae)
-    report[name]={'bytes':len(data),'mipmaps':count,'meanAbsoluteError':round(mae,5),'codec':codec}
-(root/'gpu-textures.json').write_text(json.dumps(report,indent=2)+'\n')
-print(json.dumps(report))
+    print(f"Encoded {name}.dds: {len(data)} bytes, {count} mipmaps.")
