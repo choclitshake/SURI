@@ -1,0 +1,42 @@
+{
+  "mode": "continuous-throughput",
+  "quality": "balanced",
+  "renderer": "ANGLE (Intel, Intel(R) UHD Graphics (0x00008A56) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "canvasWidth": 1440,
+  "canvasHeight": 900,
+  "camera": {
+    "manual": true,
+    "top": 40,
+    "bottom": -40,
+    "zoom": 1.375,
+    "position": [
+      39.43352681089328,
+      125.28865934873636,
+      188.66592005889618
+    ]
+  },
+  "elapsedSeconds": 46.7,
+  "sampledFrames": 43,
+  "frameMedianMs": null,
+  "frameP95Ms": null,
+  "cpuSubmitMedianMs": 3.9,
+  "cpuSubmitP95Ms": 5.3,
+  "gpuMedianMs": 20.03,
+  "gpuP95Ms": 22.96,
+  "gpuTimerAvailable": true,
+  "drawCalls": 108,
+  "triangles": 339602,
+  "gpuGeometries": 104,
+  "gpuTextures": 13,
+  "shaderPrograms": 38,
+  "dpr": 1,
+  "sceneGeometries": 98,
+  "sceneMaterials": 48,
+  "instances": 1056,
+  "nativeCompressedTextures": 2,
+  "geometryBufferMiB": 8.7,
+  "estimatedTextureMiB": 22.67,
+  "commits": {
+    "landscape": 2
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "version": "purple-afternoon-v2",
+  "sourceHash": "93876cfe15a01bad85e5400574baac1e8476c4e1196db07e1815c0b01e4c867a",
+  "probes": [
+    {
+      "x": 0,
+      "z": -3,
+      "coast": 12.237977375889233
+    },
+    {
+      "x": -43,
+      "z": -5,
+      "coast": 10.308989009008927
+    },
+    {
+      "x": -11,
+      "z": -35,
+      "coast": 10.830332342316776
+    },
+    {
+      "x": 47,
+      "z": 1,
+      "coast": 8.03323455380642
+    },
+    {
+      "x": 16,
+      "z": 34,
+      "coast": 10.172833100180311
+    },
+    {
+      "x": 22,
+      "z": 0,
+      "coast": -1.9479563486639697
+    },
+    {
+      "x": 0,
+      "z": 18,
+      "coast": -5.794318004209572
+    },
+    {
+      "x": -25,
+      "z": -2,
+      "coast": -2.3505144699974565
+    },
+    {
+      "x": 5,
+      "z": -18,
+      "coast": -5.6037128898770785
+    }
+  ],
+  "sunLocal": [
+    -77.78174593052023,
+    100,
+    -14.142135623730947
+  ],
+  "bounds": {
+    "minX": -70,
+    "maxX": 70,
+    "minZ": -55,
+    "maxZ": 55
+  },
+  "bakeSize": 512,
+  "atlasSize": 1024,
+  "channels": {
+    "lighting": [
+      "ambient occlusion",
+      "sun and object visibility",
+      "moisture"
+    ],
+    "coast": [
+      "signed distance: (r-.5)*32",
+      "depth: g*20",
+      "open exposure",
+      "cliff gradient: (a-.5)*2"
+    ],
+    "rma": [
+      "roughness",
+      "ambient occlusion",
+      "height"
+    ]
+  },
+  "assets": {
+    "afternoon-sky.webp": 7068,
+    "architecture-reliefs.webp": 11274,
+    "architecture-surface.webp": 243286,
+    "coast-depth.png": 229982,
+    "coastal-cloud.webp": 43034,
+    "lighting-mask.webp": 162794,
+    "terrain-albedo.webp": 95386,
+    "terrain-normal.webp": 1737260,
+    "terrain-rma.webp": 1155826,
+    "water-normal.webp": 83416
+  }
+}

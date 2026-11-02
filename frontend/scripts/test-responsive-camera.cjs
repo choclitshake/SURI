@@ -99,5 +99,5 @@ for (const hz of [30, 60, 144]) {
   for (let frame = 0; frame < hz; frame++) position += (1 - position) * (1 - Math.exp(-9 / hz));
   assert.ok(Math.abs(position - (1 - Math.exp(-9))) < 1e-10);
 }
-assert.equal(responsiveCamera(1366, 680, bounds, true).mobile, true, "coarse pointer uses touch controls");
+assert.equal(responsiveCamera(1366, 680, bounds, true).touch, true, "coarse pointer uses touch controls");
 console.log("Camera geometry and damping checks passed.");

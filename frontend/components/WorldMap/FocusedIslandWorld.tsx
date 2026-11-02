@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef,useState } from "react";
 import * as THREE from "three";
 import { LandmarkArchitecture } from "./Architecture";
 import { Landscape, type IslandFocus, type LandscapeFocus } from "./Landscape";
@@ -11,6 +11,9 @@ import { LANDMARK_SCALE, WORLD_ROTATION } from "@/lib/worldMap/framing";
 import { sitePosition, SITES } from "@/lib/worldMap/landscape";
 import { configureWorldRenderer } from "@/lib/three/renderer";
 import { FOCUSED_CAMERA_OFFSET, FOCUSED_HALF_HEIGHT, FOCUSED_ZOOM } from "@/lib/worldMap/navigation";
+import { WorldQuality,detectWorldQuality } from "./WorldQuality";
+import { QUALITY } from "@/lib/worldMap/renderQuality";
+import { AfternoonEnvironment } from "./AfternoonEnvironment";
 
 const FOCUSED_ARRIVAL_DURATION = 1.15;
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
@@ -74,10 +77,7 @@ export function FocusedIslandScene({ focus, landmark, site, arrive = true }: Foc
   const position = sitePosition(site);
 
   return <>
-    <color attach="background" args={["#a9d8df"]} />
-    <ambientLight intensity={0.7} color="#fff8e7" />
-    <hemisphereLight args={["#c4dfef", "#697653", 0.7]} />
-    <directionalLight position={[-38, 60, 35]} intensity={2.6} color="#fffde7" castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024} shadow-camera-left={-50} shadow-camera-right={50} shadow-camera-top={42} shadow-camera-bottom={-42} shadow-camera-far={130} shadow-normalBias={0.06} shadow-bias={-0.0004} />
+    <AfternoonEnvironment />
     <FocusedIslandCamera site={site} arrive={arrive} />
     <group rotation={[0, WORLD_ROTATION, 0]}>
       <Ocean island={focus.island as IslandFocus} />
@@ -107,11 +107,12 @@ type FocusedIslandWorldProps = FocusedIslandSceneProps & {
 
 /** Shared fullscreen treatment for route-level close-ups of the dashboard islands. */
 export default function FocusedIslandWorld({ active = true, arrive = true, className, focus, landmark, site, onReady }: FocusedIslandWorldProps) {
+  const [quality]=useState(detectWorldQuality);
   return <div className={className} aria-hidden="true">
     <div className={`${className}-backdrop`}>
-      <Canvas frameloop={active ? "demand" : "never"} orthographic shadows="percentage" dpr={[1, 1.25]} camera={{ position: [82, 82, 82], near: 0.5, far: 420 }} gl={{ antialias: true, powerPreference: "high-performance" }} onCreated={({ gl }) => configureWorldRenderer(gl)}>
-        <FrameGate active={active} onReady={onReady} />
-        <FocusedIslandScene focus={focus} landmark={landmark} site={site} arrive={arrive} />
+      <Canvas frameloop={active ? "demand" : "never"} orthographic shadows={false} dpr={[1, QUALITY[quality].maxDpr]} camera={{ manual:true, position: [82, 82, 82], near: 0.5, far: 420 }} events={()=>({enabled:false,priority:0})} gl={{ antialias: quality!=="economy", powerPreference: quality==="high"?"high-performance":"low-power" }} onCreated={({ gl }) => configureWorldRenderer(gl)}>
+        <WorldQuality tier={quality}><FrameGate active={active} onReady={onReady} />
+        <FocusedIslandScene focus={focus} landmark={landmark} site={site} arrive={arrive} /></WorldQuality>
       </Canvas>
     </div>
   </div>;
