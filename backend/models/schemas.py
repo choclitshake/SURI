@@ -161,6 +161,7 @@ class PracticeSubmitStepResponse(BaseModel):
 class ProgressionDecideRequest(BaseModel):
     session_id: str
     node_id: str
+    battle_id: Optional[str] = None
 
 
 class MisconceptionNode(BaseModel):

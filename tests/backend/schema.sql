@@ -9,7 +9,7 @@
 --
 -- Every test starts from an empty copy of these tables (see conftest.py).
 
-DROP TABLE IF EXISTS quiz_sessions, progression_logs, misconception_logs,
+DROP TABLE IF EXISTS history_logs, topic_checks, quiz_sessions, progression_logs, misconception_logs,
     practice_attempts, practice_problems, content_records, competency_status,
     diagnostic_logs, sessions, students CASCADE;
 
@@ -116,4 +116,30 @@ CREATE TABLE quiz_sessions (
     started_at TEXT NOT NULL,
     completed_at TEXT,
     current_streak INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE history_logs (
+    id            TEXT PRIMARY KEY,
+    student_id    TEXT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    session_id    TEXT,
+    kind          TEXT NOT NULL CHECK (kind IN ('quiz', 'practice', 'topic_check')),
+    node_id       TEXT NOT NULL,
+    score         INTEGER,
+    total_correct INTEGER,
+    total_steps   INTEGER,
+    passed_count  INTEGER,
+    passed        BOOLEAN,
+    decision      TEXT CHECK (decision IN ('advance', 'remediate')),
+    page_key      TEXT CHECK (page_key IN ('concept', 'example', 'explanation')),
+    checked       BOOLEAN,
+    logged_at     TEXT NOT NULL
+);
+
+CREATE TABLE topic_checks (
+    student_id  TEXT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    node_id     TEXT NOT NULL,
+    page_key    TEXT NOT NULL CHECK (page_key IN ('concept', 'example', 'explanation')),
+    checked     BOOLEAN NOT NULL DEFAULT TRUE,
+    updated_at  TEXT NOT NULL,
+    PRIMARY KEY (student_id, node_id, page_key)
 );

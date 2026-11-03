@@ -550,6 +550,7 @@ export function submitPracticeStep(body: {
 export function decideProgression(body: {
   session_id: string;
   node_id: string;
+  battle_id?: string | null;
 }): Promise<ProgressionDecision> {
   return request<ProgressionDecision>("/api/progression/decide", {
     method: "POST",
