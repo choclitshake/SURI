@@ -755,6 +755,32 @@ export function finishQuiz(body: {
 }
 
 
+// ─── History / Topic checks ──────────────────────────
+
+export type TopicPageKey = "concept" | "example" | "explanation";
+
+export interface TopicChecksResponse {
+  node_id: string;
+  checked_pages: TopicPageKey[];
+}
+
+export function getTopicChecks(nodeId: string): Promise<TopicChecksResponse> {
+  return request<TopicChecksResponse>(`/api/history/topic-checks/${encodeURIComponent(nodeId)}`);
+}
+
+export function setTopicCheck(body: {
+  session_id: string;
+  node_id: string;
+  page_key: TopicPageKey;
+  checked: boolean;
+}): Promise<TopicChecksResponse> {
+  return request<TopicChecksResponse>("/api/history/topic-check", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+
 // ─── Playground ──────────────────────────────────────
 // Shapes match knowledge_base/playground/API_SPEC.md exactly.
 
