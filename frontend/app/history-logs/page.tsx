@@ -2,6 +2,7 @@
 
 import MainPage from "@/components/mainpage";
 import { useWorldNavigation } from "@/components/navigation/LearningShell";
+import HistoryLogList from "@/components/history/HistoryLogList";
 
 export default function HistoryLogsPage() {
   const { navigate } = useWorldNavigation();
@@ -15,6 +16,7 @@ export default function HistoryLogsPage() {
         <div className="progress-library-kicker"><span aria-hidden="true" /> SURI&apos;S HISTORY ARCHIVE <span aria-hidden="true" /></div>
         <h1>Your <em>History Logs</em></h1>
       </header>
+      <HistoryLogList />
     </div>
   </MainPage>;
 }

@@ -781,6 +781,54 @@ export function setTopicCheck(body: {
 }
 
 
+// ─── History logs ────────────────────────────────────
+
+export type HistoryKind = "quiz" | "practice" | "topic_check";
+
+export interface HistoryLogItem {
+  id: string;
+  kind: HistoryKind;
+  node_id: string;
+  node_label: string;
+  session_id: string | null;
+  logged_at: string;
+  score: number | null;
+  total_correct: number | null;
+  total_steps: number | null;
+  passed_count: number | null;
+  passed: boolean | null;
+  decision: "advance" | "remediate" | null;
+  page_key: TopicPageKey | null;
+  checked: boolean | null;
+}
+
+export interface HistoryPage {
+  items: HistoryLogItem[];
+  next_offset: number | null;
+  total: number;
+}
+
+export interface HistorySummary {
+  quizzes_taken: number;
+  practice_sessions: number;
+  pages_checked: number;
+  best_quiz_score: number | null;
+  quiz_accuracy: number | null;
+}
+
+export function getHistory(params: { kind?: HistoryKind; limit?: number; offset?: number } = {}): Promise<HistoryPage> {
+  const query = new URLSearchParams();
+  if (params.kind) query.set("kind", params.kind);
+  query.set("limit", String(params.limit ?? 20));
+  query.set("offset", String(params.offset ?? 0));
+  return request<HistoryPage>(`/api/history?${query.toString()}`);
+}
+
+export function getHistorySummary(): Promise<HistorySummary> {
+  return request<HistorySummary>("/api/history/summary");
+}
+
+
 // ─── Playground ──────────────────────────────────────
 // Shapes match knowledge_base/playground/API_SPEC.md exactly.
 
