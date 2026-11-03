@@ -2,8 +2,8 @@
 Pydantic request/response models for SURI API.
 """
 
+from typing import Literal, Optional
 from pydantic import BaseModel, Field
-from typing import Optional
 
 
 # ─── Auth ──────────────────────────────────────────────
@@ -62,6 +62,14 @@ class DiagnosticProbeResponse(BaseModel):
 class DiagnosticAnswerRequest(BaseModel):
     node_id: str
     selected_option_index: int
+    battle_id: Optional[str] = None
+    request_id: Optional[str] = None
+
+
+class DiagnosticSpellRequest(BaseModel):
+    battle_id: str
+    request_id: str
+    spell: Literal["flame", "ward", "bloom"]
 
 
 class DiagnosticAnswerItem(BaseModel):
@@ -104,6 +112,7 @@ class ContentResponse(BaseModel):
 class PracticeStartRequest(BaseModel):
     session_id: str
     node_id: str
+    enable_powerups: bool = False
 
 
 class PracticeStep(BaseModel):
@@ -126,6 +135,27 @@ class PracticeProblemResponse(BaseModel):
 
 class PracticeStartResponse(BaseModel):
     problems: list[PracticeProblemResponse]
+    battle_id: Optional[str] = None
+
+
+class PracticeBattleActionRequest(BaseModel):
+    battle_id: str
+    problem_id: str
+    request_id: str
+    action: Literal["flame", "ward", "bloom", "answer"]
+    step_index: Optional[int] = None
+    submitted_value: Optional[str] = None
+
+
+class PracticeBattleActionResponse(BaseModel):
+    hearts: int
+    used: list[str]
+    flame_ready: bool
+    ward_ready: bool
+    score: int
+    correct: Optional[bool] = None
+    blocked: bool = False
+    bonus: int = 0
 
 
 class StudentStepSubmission(BaseModel):
@@ -161,6 +191,7 @@ class PracticeSubmitStepResponse(BaseModel):
 class ProgressionDecideRequest(BaseModel):
     session_id: str
     node_id: str
+    battle_id: Optional[str] = None
 
 
 class MisconceptionNode(BaseModel):
@@ -221,7 +252,7 @@ class QuizStepWithChoices(BaseModel):
     operation_description: str
     mapped_node_id: str
     choices: list[str]   # 4 items: correct + 3 distractors, shuffled
-    timer_ms: int        # 20000 for variable_identification, 30000 for algebra
+    timer_ms: int        # per-step countdown; see step_timer_ms in quiz_routes
 
 
 class QuizProblem(BaseModel):
@@ -312,3 +343,46 @@ class QuizFinishResponse(BaseModel):
     step_errors: list[QuizStepError]
     feedback_text: str
     progression: QuizProgressionResult
+
+
+class TopicCheckRequest(BaseModel):
+    session_id: str
+    node_id: str
+    page_key: Literal["concept", "example", "explanation"]
+    checked: bool
+
+
+class TopicChecksResponse(BaseModel):
+    node_id: str
+    checked_pages: list[str]
+    
+    
+class HistoryLogItem(BaseModel):
+    id: str
+    kind: Literal["quiz", "practice", "topic_check"]
+    node_id: str
+    node_label: str
+    session_id: Optional[str] = None
+    logged_at: str
+    score: Optional[int] = None
+    total_correct: Optional[int] = None
+    total_steps: Optional[int] = None
+    passed_count: Optional[int] = None
+    passed: Optional[bool] = None
+    decision: Optional[Literal["advance", "remediate"]] = None
+    page_key: Optional[Literal["concept", "example", "explanation"]] = None
+    checked: Optional[bool] = None
+
+
+class HistoryLogsResponse(BaseModel):
+    items: list[HistoryLogItem]
+    next_offset: Optional[int] = None
+    total: int
+
+
+class HistorySummaryResponse(BaseModel):
+    quizzes_taken: int
+    practice_sessions: int
+    pages_checked: int
+    best_quiz_score: Optional[int] = None
+    quiz_accuracy: Optional[float] = None  # 0-100, from quiz steps

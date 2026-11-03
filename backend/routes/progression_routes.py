@@ -4,7 +4,9 @@ Progression routes for SURI.
 Mastery-based advance/remediate decisions after a practice round.
 """
 
+import json
 import uuid
+
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -18,6 +20,7 @@ from backend.competency_utils import (
 )
 from backend.progress_utils import compute_and_save_session_progress
 from backend.models.schemas import ProgressionDecideRequest
+from backend.history_utils import log_history
 
 router = APIRouter(prefix="/api/progression", tags=["progression"])
 
@@ -75,6 +78,17 @@ async def decide_progression(
         mastery_score = passed_count / PRACTICE_SET_SIZE
         passed = passed_count >= PASS_THRESHOLD
 
+        battle_score = None
+        if body.battle_id:
+            battle_row = await conn.fetchrow(
+                "SELECT b.state_json FROM practice_battles b "
+                "JOIN sessions s ON s.id = b.session_id "
+                "WHERE b.id = $1 AND s.id = $2 AND s.student_id = $3",
+                body.battle_id, session_id, student_id,
+            )
+            if battle_row:
+                battle_score = json.loads(battle_row["state_json"]).get("score")
+                
         batch_attempt_id = str(uuid.uuid4())
         now_iso = datetime.now(timezone.utc).isoformat()
         
@@ -118,6 +132,19 @@ async def decide_progression(
                 mastery_score,
                 decision,
                 now_iso,
+            )
+            
+            await log_history(
+                conn,
+                student_id=student_id,
+                kind="practice",
+                node_id=node_id,
+                session_id=session_id,
+                score=battle_score,
+                passed_count=passed_count,
+                passed=passed,
+                decision=decision,
+                logged_at=now_iso,
             )
 
             base_response = {

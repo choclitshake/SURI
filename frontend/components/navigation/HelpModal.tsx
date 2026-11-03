@@ -23,17 +23,18 @@ function subscribeCompactHelp(onChange: () => void) {
 const HELP_CONTENT: Record<HelpPage, HelpContent> = {
   dashboard: {
     label: "Dashboard", eyebrow: "LEARNING KINGDOM",
-    summary: "Choose where to learn, resume a quest, or open your account from the map.", icon: Map,
+    summary: "Choose a learning destination from the map, resume a quest, or open your account from your username.", icon: Map,
     sections: [
       { id: "guide", title: "Explore the map", icon: ListChecks, items: [
-        { title: "Choose a landmark", description: "Hover or focus to preview, then select Topics, Progress, or Calculator." },
+        { title: "Choose a landmark", description: "Hover or focus to preview, then select History Logs, Topics, Playground, Progress, or Calculator." },
         { title: "Resume a quest", description: "In Topics, select Resume quest on an active spellbook to continue its lesson." },
-        { title: "Return to the map", description: "Select Go back from Topics, Progress, or Calculator." },
+        { title: "Return to the map", description: "Select Go back from any destination page." },
       ] },
       { id: "features", title: "Your destinations", icon: Compass, items: [
         { title: "Topics & Progress", description: "Browse learning paths in Topics; check mastery, lessons, and mistakes in Progress." },
         { title: "Calculator", description: "Simplify algebra and follow each explained step." },
-        { title: "Account & audio", description: "Open SURI Keep or your username for account details and logout. Audio is coming soon." },
+        { title: "History Logs", description: "The central castle opens the History Logs page." },
+        { title: "Account & audio", description: "Select your username in the main header for account details and logout. Audio is coming soon." },
       ] },
     ],
   },

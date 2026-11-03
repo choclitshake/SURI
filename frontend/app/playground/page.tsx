@@ -70,7 +70,7 @@ function PlaygroundInner() {
   const goBack = view === "topics" ? () => navigate("/dashboard") : view === "difficulty" ? goTopics : goDifficulty;
 
   return <MainPage immersive>
-    <div className={`progress-library-page playground-route-page ${styles.page}`}>
+    <div data-tutorial-scope={`playground-${view === "problem" ? "problem" : view === "difficulty" ? "difficulty" : "topics"}`} className={`progress-library-page playground-route-page ${styles.page}`}>
       <div className="progress-library-back-row">
         <button type="button" className="topics-library-back" onClick={goBack} aria-label="Go back"><span aria-hidden="true">←</span> Go back</button>
       </div>
@@ -121,6 +121,7 @@ function PlaygroundInner() {
                     <li key={n.node_id} className={styles.trailItem}>
                       <button
                         type="button"
+                        data-tutorial="playground-topic"
                         className={styles.topicCard}
                         data-done={done}
                         data-empty={totals.total === 0}
@@ -169,7 +170,7 @@ function PlaygroundInner() {
               const c = node.difficulties[d];
               const empty = c.total === 0;
               return (
-                <button key={d} type="button" className={styles.card} disabled={empty} onClick={() => router.push(`/playground?topic=${node.node_id}&difficulty=${d}`)}>
+                <button key={d} type="button" data-tutorial="playground-difficulty" className={styles.card} disabled={empty} onClick={() => router.push(`/playground?topic=${node.node_id}&difficulty=${d}`)}>
                   <span className={styles.cardTitle}>{DIFFICULTY_LABELS[d]}</span>
                   <span className={styles.cardCount}>{empty ? "Coming soon" : `${c.solved} / ${c.total} solved`}</span>
                 </button>

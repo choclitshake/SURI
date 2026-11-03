@@ -236,9 +236,9 @@ export default function ProblemRunner({ nodeId, nodeLabel, difficulty, onOtherDi
         <span className={styles.chip}>{problem.style === "word" ? "Word" : "Equation"}</span>
         {problem.solved && <span className={`${styles.chip} ${styles.chipSolved}`} title="Already solved">✓ Solved before</span>}
       </div>
-      <PromptText text={problem.prompt} className={styles.prompt} system />
+      <div data-tutorial="playground-prompt"><PromptText text={problem.prompt} className={styles.prompt} system /></div>
       <div className={styles.answerRow}>
-        <div className={styles.answerField}>
+        <div data-tutorial="playground-answer" className={styles.answerField}>
           <MathField key={problem.id} value={state.answer} onChange={handleChange} onEnter={check} disabled={locked || busy} />
         </div>
         {problem.unit && <span className={styles.unit}>{problem.unit}</span>}
@@ -267,7 +267,7 @@ export default function ProblemRunner({ nodeId, nodeLabel, difficulty, onOtherDi
         </div>
       )}
 
-      <div className={styles.actionBar}>
+      <div data-tutorial="playground-actions" className={styles.actionBar}>
         {locked ? (
           <button type="button" className={`${styles.primaryButton} ${styles.mainAction}`} onClick={() => dispatch({ type: "NEXT" })}>
             {isLast ? "See summary" : "Next"} <span aria-hidden="true">→</span>
@@ -278,7 +278,7 @@ export default function ProblemRunner({ nodeId, nodeLabel, difficulty, onOtherDi
               <button type="button" className={styles.secondaryButton} onClick={reveal} disabled={busy}>Reveal answer</button>
               <button type="button" className={styles.secondaryButton} onClick={() => dispatch({ type: "SKIP" })} disabled={busy}>Skip</button>
             </div>
-            <button type="button" className={`${styles.primaryButton} ${styles.mainAction}`} onClick={check} disabled={busy}>Check</button>
+            <button type="button" data-tutorial="playground-check" className={`${styles.primaryButton} ${styles.mainAction}`} onClick={check} disabled={busy}>Check</button>
           </>
         )}
       </div>

@@ -199,6 +199,11 @@ const REGISTER_CSS = `
     color: rgba(217, 190, 237, .62);
   }
 
+  .quest-input option {
+    background: #fff;
+    color: #2b1646;
+  }
+
   .password-toggle {
     position: absolute;
     right: 14px;

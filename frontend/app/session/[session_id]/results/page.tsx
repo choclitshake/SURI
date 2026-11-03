@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
 import { ArrowRight, CheckCircle2, Circle, ShieldAlert, Target } from "lucide-react";
@@ -460,6 +460,7 @@ export default function ResultsPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [simplifying, setSimplifying] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const decidedRef = useRef(false);
 
   useEffect(() => {
     const loadResults = async () => {
@@ -468,9 +469,11 @@ export default function ResultsPage() {
       try {
         const session = await getSession(sessionId);
         setCurrentNode(session.current_node);
+        const battleId = sessionStorage.getItem(`suri_battle_${sessionId}`);
         const decision = await decideProgression({
           session_id: sessionId,
           node_id: session.current_node,
+          battle_id: battleId,
         });
         setResult(decision);
       } catch (err: unknown) {
@@ -487,7 +490,8 @@ export default function ResultsPage() {
       }
     };
 
-    if (sessionId) {
+    if (sessionId && !decidedRef.current) {
+      decidedRef.current = true;
       loadResults();
     }
   }, [sessionId]);
@@ -641,7 +645,7 @@ export default function ResultsPage() {
                 <span />
               </div>
 
-              <p className="result-summary">{resultSummary}</p>
+              <p className="result-summary" data-tutorial-scope="results">{resultSummary}</p>
 
               {errorMsg && (
                 <div className="result-error" role="alert">

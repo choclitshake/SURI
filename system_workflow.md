@@ -65,7 +65,7 @@ When a user engages with a topic, the system orchestrates a personalized learnin
 
 ### Phase 2: Diagnostic Assessment
 - **Purpose**: Find the first prerequisite the student has not mastered.
-- **Action**: Starting at the deepest prerequisite of the chain, the system presents multiple-choice probes one at a time (`/api/diagnostic/{session_id}/probe`), drawn from 16 stored questions per node. Each node is shown as a battle: one enemy with 3 hearts, and the student has 2 hearts.
+- **Action**: Starting at the deepest prerequisite of the chain, the system presents multiple-choice probes one at a time (`/api/diagnostic/{session_id}/probe`), drawn from the node's stored questions (16 standard probes, plus up to 8 challenge probes on the 14 learning-path nodes; see `knowledge_base/challenge/README.md`). Each node's 4 questions are 3 standard + 1 challenge (placed at a seeded random position), falling back to standard-only when a node has no challenge probes. Each node is shown as a battle: one enemy with 3 hearts, and the student has 2 hearts.
 - **Evaluation** (`/api/diagnostic/{session_id}/answer`): a node is passed after 3 correct answers (3 of 4 = 75%) and failed after 2 wrong answers (3 of 4 can no longer be reached). A passed node moves up to the next node; the first failed node ends the diagnostic and becomes the gap. If every node is passed, no gap is found.
 - **Results** (`/api/diagnostic/{session_id}/submit`): nodes below the gap are marked mastered, the gap and nodes above it unresolved. The results screen shows the path and a "Start Practice" button (or an "all Improved" summary when there is no gap).
 
@@ -78,7 +78,7 @@ When a user engages with a topic, the system orchestrates a personalized learnin
 - **AI Integration**: If the student finds the lesson too difficult, they can trigger an AI simplification (`/api/content/{node_id}/simplify`). The backend uses the LLM to rewrite the text to be more accessible.
 
 ### Phase 4: Active Practice
-- **Action**: After reading the lesson, the student picks "Let's Practice!" (standard step-by-step mode, `/api/practice/start`) or "Quiz Me!" (gamified quiz with timers, hints, and streaks, `/api/quiz/*`). 5 of the at least 10 stored problems for the node are sampled.
+- **Action**: After reading the lesson, the student picks "Let's Practice!" (standard step-by-step mode, `/api/practice/start`) or "Quiz Me!" (gamified quiz with timers, hints, and streaks, `/api/quiz/*`). 5 of the at least 10 stored problems for the node are sampled, as 3 standard + 2 challenge (`practice_problems.difficulty`; `backend/problem_sampling.py`), topping up from the other pool when a node has too few of one kind. Both modes read the same table. In quiz mode challenge steps get longer timers (90 s for `variable_identification`, 75 s for `algebra`, versus 60 s), computed by `step_timer_ms` in `quiz_routes.py` for both the countdown and the points.
 - **Evaluation** (`/api/practice/submit-step`):
   - The student's **first** answer for each step is the one scored; retries do not change it. A problem passes only if every step was right on the first attempt.
   - **Misconception Detection**: the first wrong step of a problem is logged to the student's history and mapped to a graph node; Gemini writes a short feedback note for that step.

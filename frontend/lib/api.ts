@@ -160,6 +160,24 @@ export interface DiagnosticAnswer {
   correct_count?: number;
   questions_answered?: number;
   questions_total?: number;
+  battle?: DiagnosticBattleState;
+}
+
+export interface DiagnosticBattleState extends PracticeBattleState {
+  enemy_hearts: number;
+}
+
+export interface DiagnosticSpellRequest {
+  battle_id: string;
+  request_id: string;
+  spell: PracticeSpell;
+}
+
+export interface DiagnosticBattleAnswerRequest {
+  node_id: string;
+  selected_option_index: number;
+  battle_id?: string;
+  request_id?: string;
 }
 
 export interface CompetencyStatus {
@@ -207,6 +225,37 @@ export interface PracticeProblem {
 
 export interface PracticeStartResponse {
   problems: PracticeProblem[];
+  battle_id?: string | null;
+}
+
+export type PracticeSpell = "flame" | "ward" | "bloom";
+
+export interface PracticeBattleAction {
+  battle_id: string;
+  problem_id: string;
+  request_id: string;
+  action: PracticeSpell | "answer";
+  step_index?: number;
+  submitted_value?: string;
+}
+
+export interface PracticeBattleState {
+  hearts: number;
+  used: string[];
+  flame_ready: boolean;
+  ward_ready: boolean;
+  score: number;
+  correct: boolean | null;
+  blocked: boolean;
+  bonus: number;
+}
+
+export function actInPracticeBattle(body: PracticeBattleAction): Promise<PracticeBattleState> {
+  return request<PracticeBattleState>("/api/practice/battle/action", {
+    method: "POST",
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(15000),
+  });
 }
 
 export interface StepEvaluationResult {
@@ -447,11 +496,24 @@ export function getDiagnosticProbe(
 
 export function submitDiagnosticAnswer(
   sessionId: string,
-  body: { node_id: string; selected_option_index: number }
+  body: DiagnosticBattleAnswerRequest
 ): Promise<DiagnosticAnswer> {
   return request<DiagnosticAnswer>(`/api/diagnostic/${sessionId}/answer`, {
     method: "POST",
     body: JSON.stringify(body),
+    ...(body.battle_id ? { signal: AbortSignal.timeout(15000) } : {}),
+  });
+}
+
+export function startDiagnosticBattle(sessionId: string): Promise<{ battle_id: string; battle: DiagnosticBattleState }> {
+  return request(`/api/diagnostic/${sessionId}/battle`, {
+    method: "POST", body: JSON.stringify({}), signal: AbortSignal.timeout(15000),
+  });
+}
+
+export function castDiagnosticSpell(sessionId: string, body: DiagnosticSpellRequest): Promise<DiagnosticBattleState> {
+  return request(`/api/diagnostic/${sessionId}/spell`, {
+    method: "POST", body: JSON.stringify(body), signal: AbortSignal.timeout(15000),
   });
 }
 
@@ -510,13 +572,17 @@ export function simplifyContent(
 export async function startPractice(body: {
   session_id: string;
   node_id: string;
+  enable_powerups?: boolean;
 }): Promise<PracticeStartResponse> {
   const url = `${API_BASE}/api/practice/start`;
   const res = await fetch(url, {
     method: "POST",
     credentials: "include",
     signal: AbortSignal.timeout(15000),
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(getStoredToken() ? { Authorization: `Bearer ${getStoredToken()}` } : {}),
+    },
     body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
@@ -550,6 +616,7 @@ export function submitPracticeStep(body: {
 export function decideProgression(body: {
   session_id: string;
   node_id: string;
+  battle_id?: string | null;
 }): Promise<ProgressionDecision> {
   return request<ProgressionDecision>("/api/progression/decide", {
     method: "POST",
@@ -685,6 +752,80 @@ export function finishQuiz(body: {
     method: "POST",
     body: JSON.stringify(body),
   });
+}
+
+
+// ─── History / Topic checks ──────────────────────────
+
+export type TopicPageKey = "concept" | "example" | "explanation";
+
+export interface TopicChecksResponse {
+  node_id: string;
+  checked_pages: TopicPageKey[];
+}
+
+export function getTopicChecks(nodeId: string): Promise<TopicChecksResponse> {
+  return request<TopicChecksResponse>(`/api/history/topic-checks/${encodeURIComponent(nodeId)}`);
+}
+
+export function setTopicCheck(body: {
+  session_id: string;
+  node_id: string;
+  page_key: TopicPageKey;
+  checked: boolean;
+}): Promise<TopicChecksResponse> {
+  return request<TopicChecksResponse>("/api/history/topic-check", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+
+// ─── History logs ────────────────────────────────────
+
+export type HistoryKind = "quiz" | "practice" | "topic_check";
+
+export interface HistoryLogItem {
+  id: string;
+  kind: HistoryKind;
+  node_id: string;
+  node_label: string;
+  session_id: string | null;
+  logged_at: string;
+  score: number | null;
+  total_correct: number | null;
+  total_steps: number | null;
+  passed_count: number | null;
+  passed: boolean | null;
+  decision: "advance" | "remediate" | null;
+  page_key: TopicPageKey | null;
+  checked: boolean | null;
+}
+
+export interface HistoryPage {
+  items: HistoryLogItem[];
+  next_offset: number | null;
+  total: number;
+}
+
+export interface HistorySummary {
+  quizzes_taken: number;
+  practice_sessions: number;
+  pages_checked: number;
+  best_quiz_score: number | null;
+  quiz_accuracy: number | null;
+}
+
+export function getHistory(params: { kind?: HistoryKind; limit?: number; offset?: number } = {}): Promise<HistoryPage> {
+  const query = new URLSearchParams();
+  if (params.kind) query.set("kind", params.kind);
+  query.set("limit", String(params.limit ?? 20));
+  query.set("offset", String(params.offset ?? 0));
+  return request<HistoryPage>(`/api/history?${query.toString()}`);
+}
+
+export function getHistorySummary(): Promise<HistorySummary> {
+  return request<HistorySummary>("/api/history/summary");
 }
 
 
