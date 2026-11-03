@@ -19,7 +19,9 @@ export const CAMERA_RESPONSE = {
 /** Bounds use the same projected terrain, architecture and label envelope as the world. */
 export function responsiveCamera(width: number, height: number, projected: THREE.Box2, coarse: boolean, headerInset = 0) {
   const usableHeight = Math.max(1, height - headerInset);
-  const mobile = width <= CAMERA_RESPONSE.mobileBreakpoint || coarse;
+  // Pointer capability selects controls, never the authored shot. Hybrid
+  // tablets can switch primary pointers when a mouse is attached.
+  const mobile = width <= CAMERA_RESPONSE.mobileBreakpoint;
   const frame = worldFrame(width, height, projected);
   const extent = projected.getSize(new THREE.Vector2()).multiplyScalar(frame.scale);
   // Include the label height and parallax travel in the header clearance.
@@ -71,5 +73,13 @@ export function responsiveCamera(width: number, height: number, projected: THREE
       Math.max(0, (extent.y - usableHeight * unitsPerPixel) / 2) + Math.max(usableHeight * unitsPerPixel * 0.06, 48 * unitsPerPixel),
     )
     : new THREE.Vector2(CAMERA_RESPONSE.parallaxPixels * unitsPerPixel, verticalParallax * unitsPerPixel);
-  return { mobile, zoom, position, quaternion: baseline.quaternion, right, up, limits, unitsPerPixel };
+  return { mobile, touch:mobile||coarse, zoom, position, quaternion: baseline.quaternion, right, up, limits, unitsPerPixel };
+}
+
+/** Pan translates only in the screen plane. Reject stray external zoom writes. */
+export function applyOverviewPose(camera:THREE.OrthographicCamera|THREE.PerspectiveCamera,response:ReturnType<typeof responsiveCamera>,offset:THREE.Vector2){
+  camera.position.copy(response.position).addScaledVector(response.right,offset.x).addScaledVector(response.up,offset.y);
+  camera.quaternion.copy(response.quaternion);
+  if(camera.zoom!==response.zoom){camera.zoom=response.zoom;camera.updateProjectionMatrix();}
+  camera.updateMatrixWorld();
 }
