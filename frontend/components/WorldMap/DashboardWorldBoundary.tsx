@@ -34,10 +34,11 @@ export default class DashboardWorldBoundary extends Component<DashboardWorldBoun
         <h1>The interactive map is unavailable.</h1>
         <p>Your learning tools still work. Choose a destination below, or retry the map.</p>
         <nav aria-label="Dashboard destinations">
-          <button type="button" onClick={() => this.props.onNavigate("/topics")}>Topics</button>
-          <button type="button" onClick={() => this.props.onNavigate("/progress")}>Progress &amp; mistake review</button>
-          <button type="button" onClick={() => this.props.onNavigate("/calculator")}>Calculator</button>
-          <button type="button" onClick={() => this.props.onNavigate("/playground")}>Playground</button>
+          <button type="button" data-tutorial="fallback-history" onClick={() => this.props.onNavigate("/history-logs")}>History Logs</button>
+          <button type="button" data-tutorial="fallback-topics" onClick={() => this.props.onNavigate("/topics")}>Topics</button>
+          <button type="button" data-tutorial="fallback-progress" onClick={() => this.props.onNavigate("/progress")}>Progress &amp; mistake review</button>
+          <button type="button" data-tutorial="fallback-calculator" onClick={() => this.props.onNavigate("/calculator")}>Calculator</button>
+          <button type="button" data-tutorial="fallback-playground" onClick={() => this.props.onNavigate("/playground")}>Playground</button>
         </nav>
         <button type="button" className="dashboard-world-retry" onClick={() => this.setState({ failed: false })}>Retry map</button>
       </div>

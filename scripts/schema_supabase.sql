@@ -60,7 +60,8 @@ CREATE TABLE IF NOT EXISTS practice_problems (
     steps_json TEXT NOT NULL,
     word_problem_text TEXT,
     created_at TEXT NOT NULL,
-    step_extras_json TEXT
+    step_extras_json TEXT,
+    difficulty TEXT NOT NULL DEFAULT 'standard'
 );
 
 CREATE TABLE IF NOT EXISTS practice_attempts (
@@ -72,6 +73,24 @@ CREATE TABLE IF NOT EXISTS practice_attempts (
     score INTEGER NOT NULL,
     passed INTEGER NOT NULL,
     attempted_at TEXT NOT NULL
+);
+
+-- Also created lazily by practice/start when powerups are enabled.
+CREATE TABLE IF NOT EXISTS practice_battles (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    problem_ids_json TEXT NOT NULL,
+    state_json TEXT NOT NULL,
+    last_request_id TEXT,
+    last_response_json TEXT
+);
+
+CREATE TABLE IF NOT EXISTS diagnostic_battles (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    state_json TEXT NOT NULL,
+    last_request_id TEXT,
+    last_response_json TEXT
 );
 
 CREATE TABLE IF NOT EXISTS misconception_logs (

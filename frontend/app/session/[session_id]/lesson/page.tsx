@@ -1035,7 +1035,7 @@ export default function LessonPage() {
   };
 
   return (
-    <div className="spellbook-study">
+    <div className="spellbook-study" data-tutorial-scope="lesson">
       <style dangerouslySetInnerHTML={{ __html: LESSON_CSS }} />
       <div className="tome-shell">
 
@@ -1088,6 +1088,7 @@ export default function LessonPage() {
                 return (
                   <button
                     key={id}
+                    data-tutorial={`lesson-${id}`}
                     type="button"
                     role="tab"
                     aria-selected={isActive}

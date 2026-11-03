@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { HelpCircle, UserRound } from "lucide-react";
 import { useLearningData } from "@/components/navigation/LearningShell";
 import HelpModal, { getHelpPage } from "@/components/navigation/HelpModal";
+import { TutorialButton } from "@/components/tutorial/TutorialProvider";
 const AccountSettingsModal = dynamic(() => import("@/components/WorldMap/AccountSettingsModal"), { ssr: false });
 
 export default function MainPage({
@@ -34,6 +35,7 @@ export default function MainPage({
             <Image alt="SURI" src="/SURI1.png" width={300} height={100} className="suri-app-brand-logo" priority />
           </div>
           <div className="suri-app-bar-actions">
+            <TutorialButton />
             <button
               onClick={(event) => { setHelpOpener(event.currentTarget); setShowHelp(true); }}
               aria-label={helpPage ? `Open ${helpPage[0].toUpperCase() + helpPage.slice(1)} help` : "Open help"}

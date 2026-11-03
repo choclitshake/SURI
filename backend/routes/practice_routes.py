@@ -12,15 +12,18 @@ import uuid
 import os
 import re
 import asyncio
-import random
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from backend.auth import get_current_student
 from backend.database import get_db, release_db
 from backend.graph import GRAPH
+from backend.problem_sampling import sample_mixed
+from backend.practice_battle import BATTLE_TABLE_SQL, new_battle_state, resolve_action
 from backend.models.schemas import (
     PracticeStartRequest,
     PracticeStartResponse,
+    PracticeBattleActionRequest,
+    PracticeBattleActionResponse,
     PracticeSubmitStepRequest,
     PracticeSubmitStepResponse,
     PracticeProblemResponse,
@@ -185,11 +188,21 @@ No other text, no markdown, no code fences. Return raw JSON string only.
     }
 
 
+
 def normalize_val(val: str) -> str:
     """Normalize input strings for robust mathematical comparison."""
     val = val.strip().lower()
     val = val.replace('\\\\', '\\')
-    val = val.replace('$', '').replace('*', '')
+    val = val.replace('$', '')
+
+    # Normalize multiplication symbols to the same representation.
+    val = val.replace(r'\cdot', '*').replace(r'\times', '*')
+    val = val.replace('·', '*').replace('⋅', '*').replace('×', '*')
+
+    # Normalize explicit multiplication between a coefficient and a variable.
+    val = re.sub(r'(?<=\d)\s*\*\s*(?=[a-zA-Z])', '', val)
+
+    # Normalize common LaTeX formatting.
     val = val.replace(r'\left(', '(').replace(r'\right)', ')')
     val = val.replace(r'\left', '').replace(r'\right', '')
     val = re.sub(r'\\frac{([^}]+)}{([^}]+)}', r'\1/\2', val)
@@ -197,8 +210,11 @@ def normalize_val(val: str) -> str:
     val = re.sub(r'\\sqrt\s*\[\]\s*{', r'\\sqrt{', val)
     val = re.sub(r'\\sqrt\s*{([^}]+)}', r'\\sqrt{\1}', val)
     val = re.sub(r'\\sqrt\s*([a-zA-Z0-9])', r'\\sqrt{\1}', val)
+
+    # Remove spaces around operators, but preserve the operators themselves.
     val = re.sub(r'\s*([\+\-\*/=\(\)\^,])\s*', r'\1', val)
     val = re.sub(r'\s+', ' ', val)
+
     val = re.sub(r'\^{\(([^()]+)\)}', r'^{\1}', val)
     val = re.sub(r'\^{([a-zA-Z0-9]+)}', r'^\1', val)
     return val
@@ -235,7 +251,7 @@ async def start_practice(body: PracticeStartRequest, student=Depends(get_current
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
 
         existing_rows = await conn.fetch(
-            "SELECT id, node_id, problem_expr, steps_json, word_problem_text FROM practice_problems WHERE node_id = $1",
+            "SELECT id, node_id, problem_expr, steps_json, word_problem_text, difficulty FROM practice_problems WHERE node_id = $1",
             node_id,
         )
         problems_list = []
@@ -247,6 +263,7 @@ async def start_practice(body: PracticeStartRequest, student=Depends(get_current
                 "problem_expr": r["problem_expr"],
                 "word_problem_text": r["word_problem_text"],
                 "steps": normalize_practice_steps(raw_steps),
+                "difficulty": r.get("difficulty", "standard"),
             })
 
         if len(problems_list) < 10:
@@ -255,7 +272,7 @@ async def start_practice(body: PracticeStartRequest, student=Depends(get_current
                 detail={"error": "no_practice_content", "node_id": node_id},
             )
 
-        sampled = random.sample(problems_list, 5)
+        sampled = sample_mixed(problems_list, total=5, challenge=2)
         
         now_iso = datetime.now(timezone.utc).isoformat()
         await conn.execute(
@@ -263,7 +280,61 @@ async def start_practice(body: PracticeStartRequest, student=Depends(get_current
             now_iso, session_id, student["id"],
         )
 
-        return {"problems": sampled}
+        battle_id = None
+        if body.enable_powerups:
+            await conn.execute(BATTLE_TABLE_SQL)
+            battle_id = str(uuid.uuid4())
+            await conn.execute(
+                "INSERT INTO practice_battles (id, session_id, problem_ids_json, state_json) "
+                "VALUES ($1, $2, $3, $4)",
+                battle_id, session_id, json.dumps([p["id"] for p in sampled]),
+                json.dumps(new_battle_state()),
+            )
+        return {"problems": sampled, "battle_id": battle_id}
+    finally:
+        await release_db(conn)
+
+
+@router.post("/battle/action", response_model=PracticeBattleActionResponse)
+async def battle_action(body: PracticeBattleActionRequest, student=Depends(get_current_student)):
+    """Serialize spell casts and answers, and replay retries without spending twice."""
+    conn = await get_db()
+    try:
+        async with conn.transaction():
+            row = await conn.fetchrow(
+                "SELECT b.* FROM practice_battles b JOIN sessions s ON s.id = b.session_id "
+                "WHERE b.id = $1 AND s.student_id = $2 FOR UPDATE OF b",
+                body.battle_id, student["id"],
+            )
+            if not row:
+                raise HTTPException(status_code=404, detail="Battle not found")
+            if row["last_request_id"] == body.request_id:
+                return json.loads(row["last_response_json"])
+            state = json.loads(row["state_json"])
+            problem_ids = json.loads(row["problem_ids_json"])
+            if state["problem_index"] >= len(problem_ids) or problem_ids[state["problem_index"]] != body.problem_id:
+                raise HTTPException(status_code=409, detail="This enemy is not active.")
+            problem = await conn.fetchrow(
+                "SELECT steps_json FROM practice_problems WHERE id = $1", body.problem_id,
+            )
+            if not problem:
+                raise HTTPException(status_code=404, detail="Problem not found")
+            steps = normalize_practice_steps(json.loads(problem["steps_json"]))
+            correct = None
+            if body.action == "answer":
+                step = steps[state["step_position"]]
+                if body.step_index != step["step_index"] or not body.submitted_value or not body.submitted_value.strip():
+                    raise HTTPException(status_code=400, detail="Submit an answer for the active step.")
+                submitted, expected = normalize_val(body.submitted_value), normalize_val(step["correct_value"])
+                correct = (abs(float(submitted) - float(expected)) <= 0.01
+                           if is_float(submitted) and is_float(expected) else submitted == expected)
+            result = resolve_action(state, body.action, steps, correct)
+            await conn.execute(
+                "UPDATE practice_battles SET state_json = $1, last_request_id = $2, "
+                "last_response_json = $3 WHERE id = $4",
+                json.dumps(state), body.request_id, json.dumps(result), body.battle_id,
+            )
+            return result
     finally:
         await release_db(conn)
 

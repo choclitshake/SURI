@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import MainPage from "@/components/mainpage";
 import TopicBookCarousel, { type CarouselBook } from "@/components/TopicBookCarousel";
 import { useLearningData, useWorldNavigation } from "@/components/navigation/LearningShell";
+import styles from "./topics.module.css";
 
 export default function TopicsPage() {
   const pageRef = useRef<HTMLDivElement>(null);
@@ -104,7 +105,7 @@ export default function TopicsPage() {
       <div className="topics-library-back-row">
         <button type="button" className="topics-library-back" onClick={() => navigate("/dashboard")} aria-label="Go back to the previous page"><span aria-hidden="true">←</span> Go back</button>
       </div>
-      <header className="topics-library-header">
+      <header className={`topics-library-header ${styles.contentWidth}`}>
         <div className="topics-library-kicker"><span /> SURI&apos;S SPELLBOOK ARCHIVE <span /></div>
         <h1>Choose Your <em>Spellbook</em></h1>
         <p>Pick a volume to bring it forward, then begin its learning quest.</p>
@@ -112,7 +113,7 @@ export default function TopicsPage() {
 
       {error && <div className="topics-library-error" role="alert"><Image src="/suri-snake-sad.png" alt="Sad Suri" width={42} height={42} /><div><strong>The archive lantern has dimmed.</strong><p>{error}</p></div></div>}
 
-      <section className="topics-carousel-experience" aria-label="Topic volume carousel" style={carouselLayout === null ? undefined : { marginTop: carouselLayout.margin, "--carousel-arrow-center": `${carouselLayout.center}px` } as CSSProperties}>
+      <section className={`topics-carousel-experience ${styles.contentWidth}`} aria-label="Topic volume carousel" style={carouselLayout === null ? undefined : { marginTop: carouselLayout.margin, "--carousel-arrow-center": `${carouselLayout.center}px` } as CSSProperties}>
         {loading ? <div className="topics-library-loading"><i /><p>Consulting the academy catalogue…</p></div> : selectedBook && <>
           <div
             className="topics-carousel-stage"

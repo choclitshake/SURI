@@ -2,8 +2,8 @@
 Pydantic request/response models for SURI API.
 """
 
+from typing import Literal, Optional
 from pydantic import BaseModel, Field
-from typing import Optional
 
 
 # ─── Auth ──────────────────────────────────────────────
@@ -62,6 +62,14 @@ class DiagnosticProbeResponse(BaseModel):
 class DiagnosticAnswerRequest(BaseModel):
     node_id: str
     selected_option_index: int
+    battle_id: Optional[str] = None
+    request_id: Optional[str] = None
+
+
+class DiagnosticSpellRequest(BaseModel):
+    battle_id: str
+    request_id: str
+    spell: Literal["flame", "ward", "bloom"]
 
 
 class DiagnosticAnswerItem(BaseModel):
@@ -104,6 +112,7 @@ class ContentResponse(BaseModel):
 class PracticeStartRequest(BaseModel):
     session_id: str
     node_id: str
+    enable_powerups: bool = False
 
 
 class PracticeStep(BaseModel):
@@ -126,6 +135,27 @@ class PracticeProblemResponse(BaseModel):
 
 class PracticeStartResponse(BaseModel):
     problems: list[PracticeProblemResponse]
+    battle_id: Optional[str] = None
+
+
+class PracticeBattleActionRequest(BaseModel):
+    battle_id: str
+    problem_id: str
+    request_id: str
+    action: Literal["flame", "ward", "bloom", "answer"]
+    step_index: Optional[int] = None
+    submitted_value: Optional[str] = None
+
+
+class PracticeBattleActionResponse(BaseModel):
+    hearts: int
+    used: list[str]
+    flame_ready: bool
+    ward_ready: bool
+    score: int
+    correct: Optional[bool] = None
+    blocked: bool = False
+    bonus: int = 0
 
 
 class StudentStepSubmission(BaseModel):
@@ -222,7 +252,7 @@ class QuizStepWithChoices(BaseModel):
     operation_description: str
     mapped_node_id: str
     choices: list[str]   # 4 items: correct + 3 distractors, shuffled
-    timer_ms: int        # 20000 for variable_identification, 30000 for algebra
+    timer_ms: int        # per-step countdown; see step_timer_ms in quiz_routes
 
 
 class QuizProblem(BaseModel):

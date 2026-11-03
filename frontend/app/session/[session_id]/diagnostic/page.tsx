@@ -8,6 +8,9 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
+import { BattleSpells, ArmedSpellBubble, SpellEffect, FLAME_FLIGHT_MS } from "../practice/battle-spells";
+import { CombatImpact, type CombatHit } from "../practice/battle-impact";
+import { useBattleAudio } from "../practice/battle-audio";
 
 import {
   getSession,
@@ -16,7 +19,13 @@ import {
   submitDiagnosticAnswer,
   submitDiagnostic,
   skipDiagnostic,
+  startDiagnosticBattle,
+  castDiagnosticSpell,
   DiagnosticProbe,
+  DiagnosticBattleState,
+  DiagnosticSpellRequest,
+  DiagnosticBattleAnswerRequest,
+  PracticeSpell,
 } from "../../../../lib/api";
 
 const GAME_CSS = `
@@ -93,8 +102,6 @@ const GAME_CSS = `
   @keyframes dmgPop { 0% { opacity: 1; transform: translate(-50%,0) scale(1.4); } 40% { opacity: 1; transform: translate(-50%,-30px) scale(1); } 100% { opacity: 0; transform: translate(-50%,-80px) scale(0.6); } }
   .dmg-number { position: absolute; pointer-events: none; z-index: 200; font-family: 'Fredoka One', cursive; font-size: 36px; text-shadow: 2px 2px 0 rgba(0,0,0,0.8); animation: dmgPop 0.9s ease-out forwards; left: 50%; top: 10%; white-space: nowrap; }
   .dmg-enemy { color: #ff4757; } .dmg-suri { color: #ff8c69; }
-  @keyframes screenShake { 0%,100% { transform: translate(0,0); } 10% { transform: translate(-6px,-3px); } 20% { transform: translate(6px,3px); } 30% { transform: translate(-4px,2px); } 50% { transform: translate(-3px,1px); } 70% { transform: translate(-2px,1px); } 90% { transform: translate(-1px,0); } }
-  .screen-shake { animation: screenShake 0.45s ease-out; }
   .battle-panel { position: relative; z-index: 10; margin: 12px 20px 20px; display: flex; flex-direction: column; gap: 12px; }
   @media (min-width: 900px) { .battle-panel { margin: 12px 60px 28px; } }
   .question-scroll { background: linear-gradient(160deg,rgba(20,5,40,0.95) 0%,rgba(15,3,30,0.98) 100%); border: 2px solid rgba(155,89,182,0.5); border-radius: 20px; padding: 16px 20px; position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.7), inset 0 1px 0 rgba(155,89,182,0.2); backdrop-filter: blur(10px); }
@@ -467,7 +474,7 @@ const GAME_CSS = `
   .vs-divider, .vs-badge { display: none; }
   .battle-panel {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 230px;
+    grid-template-columns: minmax(0, 1fr) 300px;
     gap: 14px;
     align-items: stretch;
     margin: 0;
@@ -1031,13 +1038,16 @@ const GAME_CSS = `
     }
   }
   ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); } ::-webkit-scrollbar-thumb { background: rgba(155,89,182,0.5); border-radius: 3px; }
+  .diagnostic-battle .battle-layout { width: 100%; min-width: 0; }
+  .diagnostic-battle .arena-section { overflow: hidden; }
+  .diagnostic-support { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .diagnostic-support .side-panel { min-height: 0; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
 `;
 
-// One enemy per node: 3 correct answers defeat it (75% of 4 probes);
-// 2 wrong answers make 3/4 unreachable, so Suri only has 2 hearts per node.
-const ENEMY_HEARTS = 3;
-const SURI_HEARTS = 2;
+// Battle health is separate from the 3-correct / 2-wrong assessment rules.
+const ENEMY_HEARTS = 5;
+const SURI_HEARTS = 5;
 const LABELS = ["A", "B", "C", "D"];
 
 function ArenaBackground() {
@@ -1198,6 +1208,7 @@ export default function DiagnosticPage() {
   const router    = useRouter();
   const params    = useParams();
   const sessionId = params.session_id as string;
+  const { muted, toggleMuted, unlock: unlockSound, play: playSound } = useBattleAudio();
 
   const [phase, setPhase]             = useState<"intro" | "battle" | "defeat">("intro");
   const [probe, setProbe]             = useState<DiagnosticProbe | null>(null);
@@ -1207,7 +1218,7 @@ export default function DiagnosticPage() {
   const [skipping, setSkipping]       = useState(false);
   const [showingResults, setShowingResults] = useState(false);
   const [error, setError]             = useState<string | null>(null);
-  const [feedback, setFeedback]       = useState<{ correct: boolean; nextAction: string } | null>(null);
+  const [feedback, setFeedback]       = useState<{ correct: boolean; nextAction: string; blocked?: boolean } | null>(null);
   const [tileKey, setTileKey]         = useState(0);
   const [answeredCount, setAnsweredCount]   = useState(0);
   const [score, setScore]   = useState(0);
@@ -1220,9 +1231,42 @@ export default function DiagnosticPage() {
   const [enemyBreaking, setEnemyBreaking]   = useState<number | null>(null);
   const [enemyDmg, setEnemyDmg] = useState<string | null>(null);
   const [suriDmg, setSuriDmg]   = useState<string | null>(null);
-  const [shaking, setShaking]   = useState(false);
   const [locked, setLocked]     = useState(false);
-  const pendingNext = useRef<string | null>(null);
+  const [battleState, setBattleState] = useState<DiagnosticBattleState | null>(null);
+  const [failedAction, setFailedAction] = useState<PracticeSpell | "answer" | null>(null);
+  const [combatImpact, setCombatImpact] = useState<(CombatHit & { id: number }) | null>(null);
+  const [spellEffect, setSpellEffect] = useState<{ spell: PracticeSpell; label: string; stage: "charge" | "strike"; id: number } | null>(null);
+  const battleId = useRef<string | null>(null);
+  const busy = useRef(false);
+  const pendingCast = useRef<DiagnosticSpellRequest | null>(null);
+  const pendingAnswer = useRef<DiagnosticBattleAnswerRequest | null>(null);
+  const timers = useRef(new Set<ReturnType<typeof setTimeout>>());
+  const effectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const impactTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const schedule = useCallback((callback: () => void, delay: number) => {
+    const timer = setTimeout(() => { timers.current.delete(timer); callback(); }, delay);
+    timers.current.add(timer);
+    return timer;
+  }, []);
+
+  const clearBattleTimers = useCallback(() => {
+    timers.current.forEach(clearTimeout);
+    timers.current.clear();
+  }, []);
+  useEffect(() => clearBattleTimers, [clearBattleTimers]);
+
+  const showSpellEffect = useCallback((spell: PracticeSpell, label: string, stage: "charge" | "strike" = "charge") => {
+    if (effectTimer.current) clearTimeout(effectTimer.current);
+    setSpellEffect(prev => ({ spell, label, stage, id: (prev?.id ?? 0) + 1 }));
+    effectTimer.current = schedule(() => setSpellEffect(null), stage === "strike" ? 2100 : 1800);
+  }, [schedule]);
+
+  const showCombatImpact = useCallback((target: CombatHit["target"], kind: CombatHit["kind"]) => {
+    if (impactTimer.current) clearTimeout(impactTimer.current);
+    setCombatImpact(prev => ({ target, kind, id: (prev?.id ?? 0) + 1 }));
+    impactTimer.current = schedule(() => setCombatImpact(null), kind.startsWith("flame") ? 1300 : 650);
+  }, [schedule]);
 
   useEffect(() => {
     sessionStorage.removeItem("diagnostic_answers");
@@ -1243,19 +1287,23 @@ export default function DiagnosticPage() {
   }, [sessionId, router]);
 
   const fetchProbe = useCallback(async () => {
+    busy.current = true;
     setLoading(true); setSelectedIdx(null); setFeedback(null);
-    setError(null); setLocked(false);
+    setError(null); setLocked(true);
     setSuriState("idle"); setEnemyAnimState("idle");
     try {
+      if (!battleId.current) {
+        const started = await startDiagnosticBattle(sessionId);
+        battleId.current = started.battle_id;
+        setBattleState(started.battle);
+      }
       const data = await getDiagnosticProbe(sessionId);
       if (data.next_action === "complete") { await finalize(); return; }
       setProbe(data); setPhase("battle"); setTileKey(k => k + 1);
       setAnsweredCount(data.questions_answered ?? 0);
-      setEnemyHearts(ENEMY_HEARTS - (data.correct_count ?? 0));
-      setSuriHearts(SURI_HEARTS - (data.wrong_count ?? 0));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load question.");
-    } finally { setLoading(false); }
+    } finally { setLoading(false); setLocked(false); busy.current = false; }
   }, [sessionId, finalize]);
 
   const advance = useCallback(async (nextAction: string) => {
@@ -1264,102 +1312,123 @@ export default function DiagnosticPage() {
       else if (nextAction === "complete") await finalize();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to advance.");
+      setLocked(false); busy.current = false;
     }
   }, [fetchProbe, finalize]);
 
-  const triggerEnemyHit = useCallback((nextAction: string) => {
+  const triggerEnemyHit = useCallback((nextAction: string, battle: DiagnosticBattleState) => {
     setSuriState("attack");
-    setEnemyDmg("-1"); setTimeout(() => setEnemyDmg(null), 900);
-    setShaking(true);     setTimeout(() => setShaking(false), 500);
-    setEnemyAnimState("hit");
-    setTimeout(() => {
-      setEnemyHearts(prev => {
-        const next = prev - 1;
-        setEnemyBreaking(next);
-        if (next <= 0) {
-          setTimeout(() => {
-            setEnemyAnimState("defeated");
-            confetti({ particleCount: 180, spread: 110, origin: { y: 0.4 }, colors: ["#f9d71c","#e8a21a","#ff4757","#2ed573","#5352ed","#c39bd3"] });
-            setTimeout(() => {
-              setEnemyBreaking(null); setEnemyHearts(ENEMY_HEARTS); setSuriHearts(SURI_HEARTS);
-              setEnemyAnimState("appear"); setSuriState("happy");
-              setTimeout(async () => {
-                setSuriState("idle"); setEnemyAnimState("idle"); setLocked(false);
-                await advance(nextAction);
-              }, 900);
-            }, 1400);
-          }, 300);
-          return 0;
-        } else {
-          setTimeout(() => {
-            setEnemyBreaking(null); setEnemyAnimState("idle");
-            setSuriState("happy"); setTimeout(() => setSuriState("idle"), 800);
-            setLocked(false);
-            const na = pendingNext.current; pendingNext.current = null;
-            if (na) advance(na);
-          }, 700);
-          return next;
-        }
-      });
-    }, 150);
-  }, [advance]);
+    playSound(battle.bonus ? "flameLaunch" : "attack");
+    if (battle.bonus) showSpellEffect("flame", "FLAME STRIKE · +25 bonus points", "strike");
+    const delay = battle.bonus ? FLAME_FLIGHT_MS : 220;
+    schedule(() => {
+      setEnemyDmg(battle.bonus ? "-1 · +25 pts" : "-1");
+      schedule(() => setEnemyDmg(null), 900);
+      setEnemyAnimState("hit");
+      setEnemyHearts(battle.enemy_hearts);
+      setEnemyBreaking(battle.enemy_hearts);
+      playSound(battle.bonus ? "explosion" : "hit");
+      showCombatImpact("enemy", battle.bonus ? battle.enemy_hearts === 0 ? "flame-finisher" : "flame" : battle.enemy_hearts === 0 ? "finisher" : "rune");
+    }, delay);
+    schedule(() => {
+      if (battle.enemy_hearts === 0) {
+        setEnemyAnimState("defeated");
+        playSound("victory");
+        confetti({ particleCount: 180, spread: 110, origin: { y: .4 } });
+        schedule(() => {
+          setEnemyBreaking(null); setEnemyHearts(ENEMY_HEARTS);
+          setEnemyAnimState("appear"); setSuriState("happy");
+          if (nextAction === "next_probe") setBattleState(prev => prev ? {
+            ...prev, enemy_hearts: ENEMY_HEARTS, used: [], flame_ready: false, ward_ready: false,
+          } : prev);
+          schedule(() => { void advance(nextAction); }, 900);
+        }, 1400);
+      } else {
+        setEnemyBreaking(null); setEnemyAnimState("idle"); setSuriState("happy");
+        schedule(() => { void advance(nextAction); }, 500);
+      }
+    }, delay + (battle.bonus ? 950 : 450));
+  }, [advance, playSound, schedule, showCombatImpact, showSpellEffect]);
 
-  const triggerSuriHit = useCallback(() => {
+  const triggerSuriHit = useCallback((nextAction: string, battle: DiagnosticBattleState) => {
     setEnemyAnimState("attack");
-    setSuriDmg("-1"); setTimeout(() => setSuriDmg(null), 900);
-    setShaking(true);     setTimeout(() => setShaking(false), 500);
-    setTimeout(() => {
-      setSuriState("hit");
-      setSuriHearts(prev => {
-        const next = prev - 1;
-        setSuriBreaking(next);
-        if (next <= 0) {
-          setTimeout(() => {
-            setSuriState("defeated"); setSuriBreaking(null);
-            setPhase("defeat"); setEnemyAnimState("idle");
-          }, 700);
-          return 0;
+    playSound("enemyAttack");
+    schedule(() => {
+      setSuriDmg(battle.blocked ? "BLOCKED" : "-1");
+      schedule(() => setSuriDmg(null), 900);
+      setSuriState(battle.blocked ? "idle" : "hit");
+      setSuriHearts(battle.hearts);
+      setSuriBreaking(battle.blocked ? null : battle.hearts);
+      showCombatImpact("suri", battle.blocked ? "blocked" : "hurt");
+      playSound(battle.blocked ? "blocked" : "hurt");
+      if (battle.blocked) showSpellEffect("ward", "Aegis Ward · hit blocked");
+      schedule(() => {
+        setSuriBreaking(null); setEnemyAnimState("idle");
+        if (battle.hearts === 0) {
+          setSuriState("defeated"); setPhase("defeat");
+          busy.current = false;
         } else {
-          setTimeout(() => {
-            setSuriBreaking(null); setSuriState("sad"); setEnemyAnimState("idle");
-            setTimeout(() => setSuriState("idle"), 800);
-            setLocked(false);
-            const na = pendingNext.current; pendingNext.current = null;
-            if (na) advance(na);
-          }, 700);
-          return next;
+          setSuriState("idle");
+          void advance(nextAction);
         }
-      });
-    }, 200);
-  }, [advance]);
+      }, 700);
+    }, 300);
+  }, [advance, playSound, schedule, showCombatImpact, showSpellEffect]);
+
+  const handleCastPowerup = async (spell: PracticeSpell) => {
+    if (!battleId.current || !probe || phase !== "battle" || busy.current || locked || loading || (failedAction && failedAction !== spell)) return;
+    unlockSound(); busy.current = true; setLocked(true); setError(null);
+    const request = pendingCast.current ?? { battle_id: battleId.current, request_id: crypto.randomUUID(), spell };
+    pendingCast.current = request;
+    try {
+      const state = await castDiagnosticSpell(sessionId, request);
+      pendingCast.current = null; setFailedAction(null);
+      setBattleState(state); setSuriHearts(state.hearts);
+      playSound(spell === "flame" ? "flameCharge" : spell === "ward" ? "ward" : "heal");
+      showSpellEffect(spell, spell === "bloom" ? "Healing Bloom · +1 heart" : spell === "flame" ? "Flame Strike armed" : "Aegis Ward armed");
+    } catch (err) {
+      setFailedAction(spell);
+      setError(err instanceof Error ? err.message : "Could not confirm spell. Retry the same cast.");
+    } finally { setLocked(false); busy.current = false; }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedIdx === null || !probe || submitting || locked) return;
+    if (selectedIdx === null || !probe || !battleId.current || busy.current || loading || submitting || locked || (failedAction && failedAction !== "answer")) return;
+    unlockSound(); busy.current = true;
     setSubmitting(true); setLocked(true); setError(null);
+    const request = pendingAnswer.current ?? {
+      node_id: probe.node_id, selected_option_index: selectedIdx,
+      battle_id: battleId.current, request_id: crypto.randomUUID(),
+    };
+    pendingAnswer.current = request;
     try {
-      const res = await submitDiagnosticAnswer(sessionId, { node_id: probe.node_id, selected_option_index: selectedIdx });
-      const nextAnswered = answeredCount + 1;
+      const res = await submitDiagnosticAnswer(sessionId, request);
+      if (!res.battle) throw new Error("The server did not return the diagnostic battle state.");
+      pendingAnswer.current = null; setFailedAction(null);
+      setBattleState(res.battle); setScore(res.battle.score);
+      // The backend controls assessment completion; spells never skip a probe.
       const nextAction = res.next_action;
-      setFeedback({ correct: res.correct, nextAction });
-      const cur = JSON.parse(sessionStorage.getItem("diagnostic_answers") || "{}");
-      cur[probe.node_id] = res.correct;
-      sessionStorage.setItem("diagnostic_answers", JSON.stringify(cur));
-      setAnsweredCount(nextAnswered);
+      setFeedback({ correct: res.correct, nextAction, blocked: res.battle.blocked });
+      try {
+        const cur = JSON.parse(sessionStorage.getItem("diagnostic_answers") || "{}");
+        cur[request.node_id] = res.correct;
+        sessionStorage.setItem("diagnostic_answers", JSON.stringify(cur));
+      } catch { /* The backend's diagnostic logs remain authoritative. */ }
+      setAnsweredCount(count => count + 1);
       if (res.correct) {
-        setScore(s => s + (10 + streak * 5)); setStreak(s => s + 1);
-        toast.success("Direct hit!");
-        pendingNext.current = nextAction;
-        triggerEnemyHit(nextAction);
+        setStreak(s => s + 1); toast.success("Direct hit!");
+        triggerEnemyHit(nextAction, res.battle);
       } else {
         setStreak(0);
-        toast.error("The enemy counters!");
-        pendingNext.current = nextAction;
-        triggerSuriHit();
+        if (res.battle.blocked) toast("Aegis Ward blocked the hit!", { icon: "🛡️" });
+        else toast.error("The enemy counters!");
+        triggerSuriHit(nextAction, res.battle);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to submit answer.");
-      setLocked(false);
+      setFailedAction("answer");
+      setError(err instanceof Error ? err.message : "Failed to submit answer. Retry the same answer.");
+      setLocked(false); busy.current = false;
     } finally { setSubmitting(false); }
   };
 
@@ -1379,14 +1448,13 @@ export default function DiagnosticPage() {
     }
   };
 
-
   const enemyDefeatedHits = ENEMY_HEARTS - enemyHearts;
   const pct = Math.min((enemyDefeatedHits / ENEMY_HEARTS) * 100, 100);
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: GAME_CSS }} />
-      <div className={`battle-body${shaking ? " screen-shake" : ""}${phase === "intro" ? " diagnostic-before" : ""}`}>
+      <div data-tutorial-scope={`diagnostic-${phase}`} className={`battle-body diagnostic-battle${phase === "intro" ? " diagnostic-before" : ""}`}>
         <ArenaBackground />
         
         {phase !== "intro" && (
@@ -1455,7 +1523,7 @@ export default function DiagnosticPage() {
 
                   <div className="intro-button-row">
                     <div className="intro-button-wrap">
-                      <button id="start-battle-btn" className="intro-start-btn" onClick={fetchProbe} disabled={loading} aria-busy={loading}>
+                      <button id="start-battle-btn" className="intro-start-btn" onClick={() => { if (!busy.current) { unlockSound(); void fetchProbe(); } }} disabled={loading} aria-busy={loading}>
                         {loading ? <><span className="spin-loader"><GameIcon name="gear" /></span> Loading...</> : <>START BATTLE</>}
                       </button>
                     </div>
@@ -1475,21 +1543,27 @@ export default function DiagnosticPage() {
 
         {(phase === "battle" || phase === "defeat") && (
           <div className="battle-layout">
-            <div className="arena-section" aria-label="Battle arena">
+            <div className="arena-section" aria-label="Battle arena" data-impact={combatImpact?.kind}>
+              {combatImpact && <CombatImpact key={`impact-${combatImpact.id}`} target={combatImpact.target} kind={combatImpact.kind} />}
+              {spellEffect && <SpellEffect key={`spell-${spellEffect.id}`} spell={spellEffect.spell} label={spellEffect.label} stage={spellEffect.stage} />}
               <div className="char-container suri-side">
                 <div className="name-plate">
                   <span className="char-name" style={{ color: "#8fe06a" }}>Suri</span>
                   <span className="char-title" style={{ color: "#3dbf6e" }}>Your Champion</span>
                 </div>
                 <div className="sprite-frame">
+                  {battleState?.ward_ready && <span className="suri-spell-aura aura-ward" aria-hidden="true" />}
+                  {battleState?.flame_ready && <span className="suri-spell-aura aura-flame" aria-hidden="true" />}
                   {suriDmg && <div className="dmg-number dmg-suri" aria-live="assertive">{suriDmg}</div>}
                   <img src={suriImg(suriState)} alt={suriAlt(suriState)} className={suriCls(suriState)} draggable={false} />
                 </div>
               </div>
               <div className="reaction-space" aria-live="polite">
-                {feedback ? (
+                {battleState?.flame_ready || battleState?.ward_ready ? (
+                  <ArmedSpellBubble flameReady={!!battleState.flame_ready} wardReady={!!battleState.ward_ready} />
+                ) : feedback ? (
                   <div className="speech-bubble">
-                    {feedback.correct ? "Correct!" : "Nice Try!"}
+                    {feedback.correct ? "Correct!" : feedback.blocked ? "Ward blocked the hit!" : "Nice Try!"}
                   </div>
                 ) : null}
               </div>
@@ -1547,7 +1621,7 @@ export default function DiagnosticPage() {
                           if (isWrong)    cls += " wrong-reveal";
                           return (
                             <button key={idx} type="button" role="radio" aria-checked={isSelected} id={`spell-option-${idx}`} className={cls}
-                              onClick={() => { if (!locked && !feedback) setSelectedIdx(idx); }} disabled={!!feedback || locked}>
+                              onClick={() => { if (!locked && !feedback && !failedAction) setSelectedIdx(idx); }} disabled={!!feedback || locked || !!failedAction}>
                               <div className="spell-label">{LABELS[idx]}</div>
                               <div className="spell-text">
                                 <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{opt}</ReactMarkdown>
@@ -1563,8 +1637,8 @@ export default function DiagnosticPage() {
                         <div className={`feedback-banner ${feedback.correct ? "correct" : "wrong"}`} role="status">
                           <img src={feedback.correct ? "/suri-snake-happy.png" : "/suri-snake-sad.png"} alt={feedback.correct ? "Suri happy" : "Suri sad"} className={`feedback-suri${feedback.correct ? " feedback-excited" : ""}`} />
                           <div>
-                            <p className="feedback-title"><GameIcon name={feedback.correct ? "sword" : "warning"} /> {feedback.correct ? "Direct Hit!" : "Enemy Strikes!"}</p>
-                            <p className="feedback-quote">{feedback.correct ? "Excellent spell! The villain recoils in pain!" : "That spell was not effective!"}</p>
+                            <p className="feedback-title"><GameIcon name={feedback.correct ? "sword" : "warning"} /> {feedback.correct ? "Direct Hit!" : feedback.blocked ? "Ward Blocked the Hit!" : "Enemy Strikes!"}</p>
+                            <p className="feedback-quote">{feedback.correct ? "Excellent spell! The villain recoils in pain!" : feedback.blocked ? "Your shield held. This answer still counts as incorrect." : "That spell was not effective!"}</p>
                           </div>
                         </div>
                       )}
@@ -1574,8 +1648,8 @@ export default function DiagnosticPage() {
                         {skipping ? "Skipping..." : "Skip to Lesson"}
                       </button>
                       {!feedback && (
-                        <button id="cast-spell-btn" type="submit" className={`attack-btn ${selectedIdx !== null && !locked ? "ready" : "disabled"}`} disabled={selectedIdx === null || locked || submitting} aria-disabled={selectedIdx === null || locked || submitting}>
-                          {submitting ? <><span className="spin-loader"><GameIcon name="gear" /></span> Casting...</> : selectedIdx !== null ? <><GameIcon name="bolt" /> Attack/Submit</> : "Choose an answer"}
+                        <button id="cast-spell-btn" type="submit" className={`attack-btn ${selectedIdx !== null && !locked && (!failedAction || failedAction === "answer") ? "ready" : "disabled"}`} disabled={selectedIdx === null || locked || submitting || (!!failedAction && failedAction !== "answer")} aria-disabled={selectedIdx === null || locked || submitting || (!!failedAction && failedAction !== "answer")}>
+                          {submitting ? <><span className="spin-loader"><GameIcon name="gear" /></span> Casting...</> : failedAction === "answer" ? "Retry answer" : selectedIdx !== null ? <><GameIcon name="bolt" /> Attack/Submit</> : "Choose an answer"}
                         </button>
                       )}
                       {feedback && (
@@ -1589,12 +1663,17 @@ export default function DiagnosticPage() {
                     </div>
                   </form>
                 ) : null}
-                <aside className="side-panel lore-panel" aria-label="Enemy lore">
+                <aside className="diagnostic-support" aria-label="Battle support">
+                  <BattleSpells state={battleState} disabled={locked || loading || submitting || !probe}
+                    failedAction={failedAction} onCast={spell => void handleCastPowerup(spell)}
+                    muted={muted} onToggleMuted={toggleMuted} maxHearts={SURI_HEARTS} />
+                  <section className="side-panel lore-panel" aria-label="Enemy lore">
                   <h2 className="panel-title">Villain Lore</h2>
                   <div className="lore-box">
                     <strong>Count Calculus</strong>
                     A horned keeper of forgotten formulas, he binds every wrong answer into a glowing rune on his staff. Break his spell by choosing the truest path.
                   </div>
+                  </section>
                 </aside>
               </section>
             )}

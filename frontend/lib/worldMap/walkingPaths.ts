@@ -1,6 +1,37 @@
 import * as THREE from "three";
 import { terrainHeight } from "./landscape";
 
+/** Spatially indexed triangle sampling for the coast-aligned island meshes.
+ * Build once per static terrain; paths then query only a few nearby triangles.
+ */
+export function createTerrainSampler(geometry:THREE.BufferGeometry) {
+  const p=geometry.attributes.position,index=geometry.index!,cellSize=2;
+  const cells=new Map<string,number[]>();
+  for(let face=0;face<index.count;face+=3){
+    const a=index.getX(face),b=index.getX(face+1),c=index.getX(face+2);
+    const minX=Math.floor(Math.min(p.getX(a),p.getX(b),p.getX(c))/cellSize);
+    const maxX=Math.floor(Math.max(p.getX(a),p.getX(b),p.getX(c))/cellSize);
+    const minZ=Math.floor(Math.min(p.getZ(a),p.getZ(b),p.getZ(c))/cellSize);
+    const maxZ=Math.floor(Math.max(p.getZ(a),p.getZ(b),p.getZ(c))/cellSize);
+    for(let x=minX;x<=maxX;x++)for(let z=minZ;z<=maxZ;z++){
+      const key=`${x}:${z}`,list=cells.get(key);
+      if(list)list.push(face);else cells.set(key,[face]);
+    }
+  }
+  return (x:number,z:number)=>{
+    let height=-Infinity;
+    for(const face of cells.get(`${Math.floor(x/cellSize)}:${Math.floor(z/cellSize)}`)??[]){
+      const a=index.getX(face),b=index.getX(face+1),c=index.getX(face+2);
+      const ax=p.getX(a),az=p.getZ(a),bx=p.getX(b),bz=p.getZ(b),cx=p.getX(c),cz=p.getZ(c);
+      const d=(bz-cz)*(ax-cx)+(cx-bx)*(az-cz);
+      if(Math.abs(d)<1e-10)continue;
+      const u=((bz-cz)*(x-cx)+(cx-bx)*(z-cz))/d,v=((cz-az)*(x-cx)+(ax-cx)*(z-cz))/d;
+      if(u>=-1e-6&&v>=-1e-6&&u+v<=1+1e-6)height=Math.max(height,u*p.getY(a)+v*p.getY(b)+(1-u-v)*p.getY(c));
+    }
+    return Number.isFinite(height)?height:terrainHeight(x,z);
+  };
+}
+
 /** Interpolate the actual terrain triangles, including the low-detail grid. */
 export function terrainSurface(geometry: THREE.PlaneGeometry, x: number, z: number) {
   const { widthSegments: columns, heightSegments: rows } = geometry.parameters;

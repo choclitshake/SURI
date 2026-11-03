@@ -53,19 +53,42 @@ PASS_THRESHOLD = 4          # must pass ≥ 4 problems to advance (75%)
 BASE_POINTS = 500          # max points for fastest correct answer
 MIN_POINTS = 100            # floor for any correct answer
 
-# Timer durations returned to frontend (ms)
+# One minute per step, shared by the frontend countdown and point calculation.
 TIMER_MS = {
-    "variable_identification": 20_000,
-    "algebra": 30_000,
+    "variable_identification": 60_000,
+    "algebra": 60_000,
 }
-DEFAULT_TIMER_MS = 30_000
+DEFAULT_TIMER_MS = 60_000
+
+# Challenge problems chain more reasoning per step, so they get longer timers.
+CHALLENGE_TIMER_MS = {
+    "variable_identification": 90_000,
+    "algebra": 75_000,
+}
+
+
+def step_timer_ms(step_type: str, difficulty: str = "standard") -> int:
+    """Timer for one step; used for both the countdown and point calculation."""
+    if difficulty == "challenge":
+        return CHALLENGE_TIMER_MS.get(step_type, DEFAULT_TIMER_MS)
+    return TIMER_MS.get(step_type, DEFAULT_TIMER_MS)
 
 
 # ── Normalization (copied from practice_routes for isolation) ────────────────
 def normalize_val(val: str) -> str:
+    """Normalize input strings for robust mathematical comparison."""
     val = val.strip().lower()
-    val = val.replace('\\', '\\')
-    val = val.replace('$', '').replace('*', '')
+    val = val.replace('\\\\', '\\')
+    val = val.replace('$', '')
+
+    # Normalize multiplication symbols to the same representation.
+    val = val.replace(r'\cdot', '*').replace(r'\times', '*')
+    val = val.replace('·', '*').replace('⋅', '*').replace('×', '*')
+
+    # Normalize explicit multiplication between a coefficient and a variable.
+    val = re.sub(r'(?<=\d)\s*\*\s*(?=[a-zA-Z])', '', val)
+
+    # Normalize common LaTeX formatting.
     val = val.replace(r'\left(', '(').replace(r'\right)', ')')
     val = val.replace(r'\left', '').replace(r'\right', '')
     val = re.sub(r'\\frac{([^}]+)}{([^}]+)}', r'\1/\2', val)
@@ -73,9 +96,13 @@ def normalize_val(val: str) -> str:
     val = re.sub(r'\\sqrt\s*\[\]\s*{', r'\\sqrt{', val)
     val = re.sub(r'\\sqrt\s*{([^}]+)}', r'\\sqrt{\1}', val)
     val = re.sub(r'\\sqrt\s*([a-zA-Z0-9])', r'\\sqrt{\1}', val)
+
+    # Remove spaces around operators, but preserve the operators themselves.
     val = re.sub(r'\s*([\+\-\*/=\(\)\^,])\s*', r'\1', val)
     val = re.sub(r'\s+', ' ', val)
+
     val = re.sub(r'\^{\(([^()]+)\)}', r'^{\1}', val)
+    val = re.sub(r'\^{([a-zA-Z0-9]+)}', r'^\1', val)
     return val
 
 
@@ -142,7 +169,7 @@ async def start_quiz(body: QuizStartRequest, student=Depends(get_current_student
             raise HTTPException(status_code=404, detail="Session not found")
 
         rows = await conn.fetch(
-            "SELECT id, node_id, problem_expr, steps_json, word_problem_text, step_extras_json "
+            "SELECT id, node_id, problem_expr, steps_json, word_problem_text, step_extras_json, difficulty "
             "FROM practice_problems WHERE node_id = $1",
             node_id,
         )
@@ -153,7 +180,7 @@ async def start_quiz(body: QuizStartRequest, student=Depends(get_current_student
                 detail={"error": "no_quiz_content", "node_id": node_id},
             )
 
-        sampled = random.sample(list(rows), PRACTICE_SET_SIZE)
+        sampled = sample_mixed([dict(r) for r in rows], total=PRACTICE_SET_SIZE, challenge=2)
         problem_ids = [r["id"] for r in sampled]
 
         problems_out = []
@@ -183,7 +210,7 @@ async def start_quiz(body: QuizStartRequest, student=Depends(get_current_student
                     "operation_description": step.get("operation_description", ""),
                     "mapped_node_id": step.get("mapped_node_id", node_id),
                     "choices": choices,
-                    "timer_ms": TIMER_MS.get(step_type, DEFAULT_TIMER_MS),
+                    "timer_ms": step_timer_ms(step_type, r.get("difficulty", "standard")),
                 })
 
             problems_out.append({
@@ -234,7 +261,7 @@ async def submit_step(body: QuizSubmitStepRequest, student=Depends(get_current_s
             raise HTTPException(status_code=404, detail="Quiz session not found")
 
         prob = await conn.fetchrow(
-            "SELECT steps_json FROM practice_problems WHERE id = $1",
+            "SELECT steps_json, difficulty FROM practice_problems WHERE id = $1",
             body.problem_id,
         )
         if not prob:
@@ -251,7 +278,7 @@ async def submit_step(body: QuizSubmitStepRequest, student=Depends(get_current_s
 
         # Timeouts must reach error recording so final grading counts them wrong.
         correct = submitted is not None and check_correct(submitted, correct_value)
-        total_time_ms = TIMER_MS.get(step.get("step_type", "algebra"), DEFAULT_TIMER_MS)
+        total_time_ms = step_timer_ms(step.get("step_type", "algebra"), prob.get("difficulty", "standard"))
 
         if correct:
             new_streak = current_streak + 1

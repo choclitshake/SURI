@@ -3,7 +3,10 @@
   font-family: "Nunito", "Manrope", sans-serif;
 }
 
-.page :global(.progress-library-header),
+.page :global(.progress-library-header) {
+  width: 85%;
+}
+
 .page :global(.progress-library-back-row) {
   width: 100%;
 }
@@ -14,7 +17,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  width: min(69.3rem, 100%);
+  width: 85%;
   margin: 1.5rem auto 0;
 }
 
@@ -118,7 +121,7 @@
 .tierNum { text-align: right; font: 900 .78rem/1 "Bree Serif", Georgia, serif; font-variant-numeric: tabular-nums; }
 .tierLine[data-soon="true"] { opacity: .6; }
 .tierLine[data-done="true"] .tierNum { color: #1f5a1f; }
-.cardGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr)); gap: .9rem; }
+.cardGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .9rem; width: min(48rem, 100%); margin-inline: auto; }
 .card {
   display: flex;
   flex-direction: column;
@@ -226,9 +229,11 @@
 .summaryPrompt p { margin: 0; }
 
 @media (max-width: 640px) {
+  .page :global(.progress-library-header), .content { width: 100%; }
   .answerRow { flex-direction: column; align-items: stretch; }
   .unit { align-self: flex-end; }
   .cardGrid { grid-template-columns: 1fr 1fr; }
+  .cardGrid > :last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc((100% - .9rem) / 2); }
   .actionBar { flex-direction: column-reverse; align-items: stretch; }
   .mainAction { margin-left: 0; width: 100%; }
   .sideActions { justify-content: stretch; }

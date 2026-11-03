@@ -1,0 +1,65 @@
+.battle-layout > .spellbook { grid-column: 1; grid-row: 2; align-self: end; }
+.spellbook { min-width: 0; border: 3px solid #80511f; border-radius: 14px; padding: 12px; background: linear-gradient(180deg, #382015, #211009); box-shadow: 0 5px 0 #27120a, inset 0 0 0 2px #f5c75d22; font-family: 'Nunito', sans-serif; }
+.spellbook-heading { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; color: #e5c888; font-weight: 900; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+.spell-sound-toggle { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 4px 7px; border: 1px solid #9c672b80; border-radius: 6px; background: #211009; color: #d5bd8f; font: 700 10px 'Nunito', sans-serif; cursor: pointer; letter-spacing: 0; text-transform: none; }
+.spell-sound-toggle:hover { background: #4a2b16; color: #ffe8a2; }
+.spell-sound-toggle:focus-visible { outline: 3px solid #ffe8a2; outline-offset: 3px; }
+.spellbook-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.spell-card { --spell-color: #a34c21; --spell-tint: #dfae75; position: relative; display: grid; justify-items: center; align-content: start; gap: 6px; min-width: 0; min-height: 102px; padding: 9px 5px; border: 2px solid #9c672b; border-radius: 9px; background: radial-gradient(circle at 18% 12%, #ffffff3d, transparent 50%), linear-gradient(180deg, #f4e1ae, #d8b777); color: #3a210f; text-align: center; box-shadow: 0 3px 0 #160a04, inset 0 0 0 1px #fff5ce66; cursor: pointer; transition: transform .18s, filter .18s; }
+.spell-ward { --spell-color: #345b69; --spell-tint: #b8cdd0; }
+.spell-bloom { --spell-color: #37613b; --spell-tint: #c0d1a4; }
+.spell-card:hover:enabled { transform: translateY(-1px); filter: brightness(1.06); }
+.spell-card:focus-visible, .spellbook-guide summary:focus-visible { outline: 3px solid #ffe8a2; outline-offset: 3px; }
+.spell-card:disabled { cursor: not-allowed; filter: saturate(.45); opacity: .65; }
+.spell-card.spell-armed { opacity: 1; filter: none; border-color: #c69b3d; background: linear-gradient(180deg, #fff1c6, #e7ca87); box-shadow: 0 3px 0 #160a04, inset 0 0 0 2px #fff4d8; }
+.spell-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: var(--spell-color); background: radial-gradient(circle at 35% 25%, #fff7da, var(--spell-tint)); border: 1px solid #93602f; box-shadow: 0 2px 0 #80511f30; }
+.spell-name { font-family: 'Bree Serif', Georgia, serif; font-size: 13px; line-height: 1.2; }
+.spell-charge { align-self: end; color: #69431c; font-size: 9px; text-transform: uppercase; letter-spacing: .25px; font-weight: 900; }
+.spellbook-status { margin-top: 9px; font-size: 10px; line-height: 1.5; color: #d5bd8f; }
+.spellbook-guide { margin-top: 7px; border-top: 1px solid #9c672b55; padding-top: 7px; color: #d5bd8f; font-size: 10px; line-height: 1.6; }
+.spellbook-guide summary { cursor: pointer; width: fit-content; border-radius: 2px; }
+.spellbook-guide ul { margin: 7px 0 0; padding-left: 16px; }
+.spellbook-guide li + li { margin-top: 4px; }
+.spellbook-guide strong { color: #ffe8a2; }
+.arena-section .reaction-space { z-index: 25; pointer-events: none; }
+.armed-spell-bubble { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: min(390px, calc(100% - 28px)); padding: 12px 16px; border: 3px solid #f5bd4d; border-radius: 16px; background: linear-gradient(180deg, #fff9db, #ffe6a6); color: #3b210d; box-shadow: 0 5px 0 #3b210dd9, 0 0 30px #ffd66c80, inset 0 0 0 2px #ffffffb3; text-align: left; font-family: 'Nunito', sans-serif; }
+.armed-spell-bubble::after { content: ''; position: absolute; bottom: -10px; left: calc(50% - 9px); width: 16px; height: 16px; transform: rotate(45deg); background: #ffe6a6; border-right: 3px solid #f5bd4d; border-bottom: 3px solid #f5bd4d; }
+.armed-spell-heading { color: #744916; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.armed-spell-row { display: flex; align-items: center; gap: 10px; }
+.armed-spell-row + .armed-spell-row { margin-top: 9px; padding-top: 9px; border-top: 1px solid #ba843a55; }
+.armed-spell-row > svg { flex-shrink: 0; }
+.armed-flame > svg { color: #bc4818; }
+.armed-ward > svg { color: #276887; }
+.armed-spell-row strong { display: block; color: #44250e; font-size: 16px; font-weight: 900; line-height: 1.3; }
+.armed-spell-row span { display: block; color: #644116; font-size: 12px; font-weight: 700; line-height: 1.4; }
+.spell-effect { position: absolute; inset: 0; z-index: 11; pointer-events: none; overflow: hidden; }
+.spell-effect-label { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid currentColor; border-radius: 999px; background: #28150cf2; font: 800 12px 'Nunito', sans-serif; white-space: nowrap; animation: spell-label 1.6s both; }
+.effect-flame { color: #ffb766; }
+.effect-flame-charge { background: radial-gradient(ellipse at 19% 60%, #ff691d38, transparent 55%); }
+.flame-charge-sigil { position: absolute; left: 19%; top: 54%; width: 120px; height: 120px; display: grid; place-items: center; transform: translate(-50%, -50%); color: #ffc15b; filter: drop-shadow(0 0 18px #ff5a18); animation: flame-charge 1.6s ease-out both; }
+.flame-charge-sigil > span { position: absolute; inset: 0; border: 3px dashed #ffce75; border-radius: 50%; animation: flame-sigil-turn 1.6s ease-out both; }
+.flame-charge-sigil > span:last-child { inset: -15px; border: 1px solid #ff823a; animation-direction: reverse; }
+.flame-projectile { position: absolute; left: 19%; top: 55%; width: 80px; height: 80px; display: grid; place-items: center; border-radius: 50%; color: #fff0aa; background: radial-gradient(circle, #fffbdc 5%, #ffd35a 25%, #ff711c 55%, #f3391233 72%, transparent 74%); filter: drop-shadow(0 0 18px #ff641c); animation: flame-flight var(--flame-flight-time, 680ms) cubic-bezier(.42, 0, .9, .6) both; }
+.flame-projectile > svg { rotate: 75deg; }
+.flame-projectile::before { content: ''; position: absolute; right: 55%; top: 24%; width: 140px; height: 54%; background: linear-gradient(90deg, transparent, #ff4e16b3 35%, #ffb335); clip-path: polygon(0 40%, 75% 0, 100% 50%, 75% 100%, 0 60%, 35% 50%); filter: blur(3px); }
+.flame-flight-trail { position: absolute; left: 19%; top: 55%; width: 62%; height: 28px; margin-top: -14px; transform-origin: left center; background: linear-gradient(90deg, transparent, #ff5b2733, #ffad5077); border-radius: 50%; filter: blur(8px); animation: flame-trail var(--flame-flight-time, 680ms) ease-in both; }
+.effect-ward { color: #9fe9ff; }
+.ward-dome { position: absolute; left: 4%; bottom: 2%; width: 35%; height: 78%; display: grid; place-items: center; border: 3px solid #b6efff; border-radius: 50% 50% 40% 40%; background: radial-gradient(ellipse, #7cd7ff16 45%, #64caff5c); box-shadow: inset 0 0 30px #53b9ff77, 0 0 25px #53b9ff77; animation: ward-rise 1.6s both; }
+.ward-ring { position: absolute; inset: 14%; border: 1px dashed #d3f6ff; border-radius: 50%; transform: rotate(-25deg); }
+.effect-bloom { color: #b1ffd2; background: radial-gradient(ellipse at 20% 90%, #4dff9a30, transparent 55%); }
+.bloom-field { position: absolute; left: 1%; bottom: 0; width: 40%; height: 80%; }
+.bloom-field > span { position: absolute; bottom: 10%; color: #a0ffba; filter: drop-shadow(0 0 7px #73ffb5); animation: bloom-rise 1.4s ease-out both; }
+.bloom-ring { position: absolute; bottom: 5%; left: 5%; width: 90%; height: 30%; border: 3px solid #a5ffcf; border-radius: 50%; box-shadow: 0 0 25px #52fca3; animation: ward-rise 1.6s both; }
+.suri-spell-aura { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; z-index: 1; }
+.aura-ward { border: 2px solid #8ddfff; background: radial-gradient(ellipse, transparent 50%, #64caff36); box-shadow: 0 0 18px #66caff55; }
+.aura-flame { inset: 10%; background: radial-gradient(ellipse, #ff9c3325, transparent 70%); box-shadow: 0 0 25px #ff9c3344; }
+@keyframes flame-flight { 0% { left: 19%; transform: translate(-50%, -50%) scale(.45); opacity: 0; } 12%, 94% { opacity: 1; } 100% { left: 81%; transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
+@keyframes flame-trail { 0% { transform: scaleX(0); opacity: 0; } 65% { opacity: .9; } 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes flame-charge { 0% { opacity: 0; scale: .5; } 20%, 65% { opacity: 1; scale: 1; } 100% { opacity: 0; scale: 1.35; } }
+@keyframes flame-sigil-turn { from { rotate: -60deg; } to { rotate: 90deg; } }
+@keyframes ward-rise { 0% { transform: scale(.6); opacity: 0; } 20%, 70% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.1); opacity: 0; } }
+@keyframes bloom-rise { 0% { transform: translateY(0) rotate(-20deg) scale(.6); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-140px) rotate(35deg) scale(1.2); opacity: 0; } }
+@keyframes spell-label { 0% { opacity: 0; } 15%, 80% { opacity: 1; } 100% { opacity: 0; } }
+@media (max-width: 880px) { .battle-layout > .spellbook { grid-column: 1; grid-row: 3; } }
+@media (max-width: 520px) { .spellbook { padding: 10px; } .spellbook-grid { gap: 6px; } .spell-name { font-size: 12px; } .spell-charge { letter-spacing: 0; } }
+@media (prefers-reduced-motion: reduce) { .spell-effect *, .spell-card { animation: none !important; transition: none; } .flame-projectile { left: 75%; width: 45px; height: 45px; transform: translate(-50%, -50%); } .flame-flight-trail, .flame-projectile::before { display: none; } .spell-card:hover:enabled { transform: none; } }

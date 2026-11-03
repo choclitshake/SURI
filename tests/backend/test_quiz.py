@@ -25,7 +25,7 @@ async def setup_quiz(db, total_points=0, streak=0, steps=None):
     return student, session_id, problem_id, quiz_id
 
 
-async def submit(client, student, quiz_id, problem_id, value, time_ms=30_000, save_streak=False):
+async def submit(client, student, quiz_id, problem_id, value, time_ms=60_000, save_streak=False):
     return await client.post("/api/quiz/submit-step", json={
         "quiz_session_id": quiz_id, "problem_id": problem_id, "step_index": 0,
         "submitted_value": value, "time_remaining_ms": time_ms, "save_streak": save_streak,
@@ -46,7 +46,7 @@ async def test_TC41_quiz_start_rejects_unknown_node(client, db):
 async def test_TC42_correct_answer_full_time_awards_base_points(client, db):
     student, _, problem_id, quiz_id = await setup_quiz(db)
 
-    res = await submit(client, student, quiz_id, problem_id, "6", time_ms=30_000)
+    res = await submit(client, student, quiz_id, problem_id, "6", time_ms=60_000)
 
     body = res.json()
     assert res.status_code == 200
@@ -61,7 +61,7 @@ async def test_TC42_correct_answer_full_time_awards_base_points(client, db):
 async def test_TC43_streak_multiplier_scales_points(client, db):
     student, _, problem_id, quiz_id = await setup_quiz(db, streak=4)
 
-    res = await submit(client, student, quiz_id, problem_id, "6", time_ms=30_000)
+    res = await submit(client, student, quiz_id, problem_id, "6", time_ms=60_000)
 
     body = res.json()
     assert body["current_streak"] == 5 and body["streak_multiplier"] == 1.4
@@ -159,9 +159,9 @@ async def test_TC69_quiz_start_builds_choices_and_timers(client, db):
     body = res.json()
     assert res.status_code == 200 and len(body["problems"]) == 5
     var_step, alg_step = body["problems"][0]["steps"]
-    assert sorted(var_step["choices"]) == ["w", "x", "y", "z"] and var_step["timer_ms"] == 20_000
+    assert sorted(var_step["choices"]) == ["w", "x", "y", "z"] and var_step["timer_ms"] == 60_000
     assert sorted(alg_step["choices"]) == ["5", "6", "Cannot determine", "Cannot determine"]
-    assert alg_step["timer_ms"] == 30_000
+    assert alg_step["timer_ms"] == 60_000
     row = await db.fetchrow("SELECT problems_json, total_points FROM quiz_sessions WHERE id = $1",
                             body["quiz_session_id"])
     assert len(json.loads(row["problems_json"])) == 5 and row["total_points"] == 0
@@ -240,10 +240,10 @@ async def test_TC71b_finish_quiz_failing_round_remediates(client, db):
 
 
 def test_TC72_calculate_points_floor_and_ceiling():
-    assert calculate_points(30_000, 30_000) == BASE_POINTS == 500
-    assert calculate_points(15_000, 30_000) == 250
-    assert calculate_points(0, 30_000) == MIN_POINTS == 100
-    assert calculate_points(-5_000, 30_000) == MIN_POINTS
+    assert calculate_points(60_000, 60_000) == BASE_POINTS == 500
+    assert calculate_points(30_000, 60_000) == 250
+    assert calculate_points(0, 60_000) == MIN_POINTS == 100
+    assert calculate_points(-5_000, 60_000) == MIN_POINTS
     assert calculate_points(10_000, 0) == MIN_POINTS
     assert check_correct("2.004", "2") is True
     assert check_correct(r"\frac{1}{2}", "1/2") is True

@@ -645,7 +645,7 @@ export default function ResultsPage() {
                 <span />
               </div>
 
-              <p className="result-summary">{resultSummary}</p>
+              <p className="result-summary" data-tutorial-scope="results">{resultSummary}</p>
 
               {errorMsg && (
                 <div className="result-error" role="alert">

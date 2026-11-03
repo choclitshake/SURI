@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { CAMERA_ORTHO_SIZE, CAMERA_POSITION, CAMERA_TARGET } from "./framing";
 
 export const ISLAND_ROUTES = {
-  "/progress": "champions", "/topics": "topics", "/calculator": "calculator", "/playground": "records",
+  "/progress": "champions", "/topics": "topics", "/calculator": "calculator", "/playground": "records", "/history-logs": "keep",
 } as const;
 export type IslandRoute = keyof typeof ISLAND_ROUTES;
 // Give the camera enough time to establish its destination without making a

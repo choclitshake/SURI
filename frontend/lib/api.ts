@@ -160,6 +160,24 @@ export interface DiagnosticAnswer {
   correct_count?: number;
   questions_answered?: number;
   questions_total?: number;
+  battle?: DiagnosticBattleState;
+}
+
+export interface DiagnosticBattleState extends PracticeBattleState {
+  enemy_hearts: number;
+}
+
+export interface DiagnosticSpellRequest {
+  battle_id: string;
+  request_id: string;
+  spell: PracticeSpell;
+}
+
+export interface DiagnosticBattleAnswerRequest {
+  node_id: string;
+  selected_option_index: number;
+  battle_id?: string;
+  request_id?: string;
 }
 
 export interface CompetencyStatus {
@@ -207,6 +225,37 @@ export interface PracticeProblem {
 
 export interface PracticeStartResponse {
   problems: PracticeProblem[];
+  battle_id?: string | null;
+}
+
+export type PracticeSpell = "flame" | "ward" | "bloom";
+
+export interface PracticeBattleAction {
+  battle_id: string;
+  problem_id: string;
+  request_id: string;
+  action: PracticeSpell | "answer";
+  step_index?: number;
+  submitted_value?: string;
+}
+
+export interface PracticeBattleState {
+  hearts: number;
+  used: string[];
+  flame_ready: boolean;
+  ward_ready: boolean;
+  score: number;
+  correct: boolean | null;
+  blocked: boolean;
+  bonus: number;
+}
+
+export function actInPracticeBattle(body: PracticeBattleAction): Promise<PracticeBattleState> {
+  return request<PracticeBattleState>("/api/practice/battle/action", {
+    method: "POST",
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(15000),
+  });
 }
 
 export interface StepEvaluationResult {
@@ -447,11 +496,24 @@ export function getDiagnosticProbe(
 
 export function submitDiagnosticAnswer(
   sessionId: string,
-  body: { node_id: string; selected_option_index: number }
+  body: DiagnosticBattleAnswerRequest
 ): Promise<DiagnosticAnswer> {
   return request<DiagnosticAnswer>(`/api/diagnostic/${sessionId}/answer`, {
     method: "POST",
     body: JSON.stringify(body),
+    ...(body.battle_id ? { signal: AbortSignal.timeout(15000) } : {}),
+  });
+}
+
+export function startDiagnosticBattle(sessionId: string): Promise<{ battle_id: string; battle: DiagnosticBattleState }> {
+  return request(`/api/diagnostic/${sessionId}/battle`, {
+    method: "POST", body: JSON.stringify({}), signal: AbortSignal.timeout(15000),
+  });
+}
+
+export function castDiagnosticSpell(sessionId: string, body: DiagnosticSpellRequest): Promise<DiagnosticBattleState> {
+  return request(`/api/diagnostic/${sessionId}/spell`, {
+    method: "POST", body: JSON.stringify(body), signal: AbortSignal.timeout(15000),
   });
 }
 
@@ -510,13 +572,17 @@ export function simplifyContent(
 export async function startPractice(body: {
   session_id: string;
   node_id: string;
+  enable_powerups?: boolean;
 }): Promise<PracticeStartResponse> {
   const url = `${API_BASE}/api/practice/start`;
   const res = await fetch(url, {
     method: "POST",
     credentials: "include",
     signal: AbortSignal.timeout(15000),
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(getStoredToken() ? { Authorization: `Bearer ${getStoredToken()}` } : {}),
+    },
     body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));

@@ -14,6 +14,7 @@ import {
   ApiError,
 } from "../../../../lib/api";
 import PointsNotice, { type PointsNoticeData } from "@/components/quiz/PointsNotice";
+import { useTutorial } from "@/components/tutorial/TutorialProvider";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
@@ -409,6 +410,23 @@ const QUIZ_CSS = `
       inset 0 0 0 2px rgba(89,48,18,0.14);
 
     padding: clamp(14px, 2vw, 22px);
+  }
+
+  .quiz-step-instruction {
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(15px, 1.6vw, 18px);
+    font-weight: 700;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  .quiz-instruction-label {
+    margin: 0 0 6px;
+    color: #81511f;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
   }
 
   .quiz-expression {
@@ -1408,6 +1426,8 @@ function OutcomeIcon({ outcome }: { outcome: RuneOutcome }) {
 }
 
 export default function QuizPage() {
+  const { active: tutorialActive, isPending: isTutorialPending } = useTutorial();
+  const tutorialPaused = tutorialActive || isTutorialPending("quiz-step");
   const router = useRouter();
   const params = useParams();
   const sessionId = params.session_id as string;
@@ -1483,7 +1503,7 @@ export default function QuizPage() {
   }, []);
 
   useEffect(() => {
-    if (state !== "STEP" || pointsNotice) {
+    if (state !== "STEP" || pointsNotice || tutorialPaused) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -1518,7 +1538,7 @@ export default function QuizPage() {
         timerRef.current = null;
       }
     };
-  }, [state, pointsNotice]);
+  }, [state, pointsNotice, tutorialPaused]);
 
   useEffect(() => {
     if (
@@ -1526,11 +1546,12 @@ export default function QuizPage() {
       timeRemainingMs <= 0 &&
       !isSubmitting &&
       !pointsNotice &&
+      !tutorialPaused &&
       !timedOut
     ) {
       handleTimeout();
     }
-  }, [state, timeRemainingMs, isSubmitting, timedOut, pointsNotice]);
+  }, [state, timeRemainingMs, isSubmitting, timedOut, pointsNotice, tutorialPaused]);
 
   const currentProblem = problems[currentProblemIndex];
   const currentStep = currentProblem?.steps[currentStepIndex];
@@ -2055,7 +2076,7 @@ export default function QuizPage() {
 
           {/* MAIN */}
 
-          <main className="quiz-main">
+          <main className="quiz-main" data-tutorial-scope="quiz-step">
 
             {/* Quest Context */}
 
@@ -2097,6 +2118,13 @@ export default function QuizPage() {
                     ? "Rune Active"
                     : "Rune Expired"}
                 </span>
+              </div>
+
+              {/* Current step directions must be visible before answering. */}
+
+              <div className="quiz-scroll quiz-step-instruction markdown-content mt-3" id="quiz-step-instruction">
+                <h2 className="quiz-instruction-label">Instructions</h2>
+                {renderMath(currentStep.instruction)}
               </div>
 
               {/* Expression */}
@@ -2365,7 +2393,7 @@ export default function QuizPage() {
                   Quest Complete
                 </span>
 
-                <h1 className="quiz-summary-title mt-4">
+                <h1 className="quiz-summary-title mt-4" data-tutorial-scope="quiz-summary">
                   Quiz Complete!
                 </h1>
 

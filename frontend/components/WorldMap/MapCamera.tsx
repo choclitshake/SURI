@@ -2,15 +2,15 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { CAMERA_ORTHO_SIZE, CAMERA_POSITION, CAMERA_TARGET, worldFrame } from "@/lib/worldMap/framing";
+import { CAMERA_ORTHO_SIZE, CAMERA_POSITION, CAMERA_TARGET, LANDMARK_BOUNDS, LANDMARK_LABEL_LIFT, LANDMARK_SCALE, worldFrame } from "@/lib/worldMap/framing";
 import { playableProjectionBounds } from "@/lib/worldMap/worldBounds";
 import { SITES, sitePosition } from "@/lib/worldMap/landscape";
-import { cameraEase, islandCameraPose, RETURN_DURATION, TOPICS_APPROACH_DURATION, ZOOM_DURATION, type CameraCommand } from "@/lib/worldMap/navigation";
-import { CAMERA_RESPONSE, responsiveCamera } from "@/lib/worldMap/responsiveCamera";
+import { cameraEase, islandCameraPose, ISLAND_ROUTES, RETURN_DURATION, TOPICS_APPROACH_DURATION, ZOOM_DURATION, type CameraCommand } from "@/lib/worldMap/navigation";
+import { applyOverviewPose, CAMERA_RESPONSE, responsiveCamera } from "@/lib/worldMap/responsiveCamera";
 export { CAMERA_POSITION } from "@/lib/worldMap/framing";
 
 function isFocusedIsland(site?: string) {
-  return site === "topics" || site === "records" || site === "champions" || site === "calculator";
+  return Object.values(ISLAND_ROUTES).some(destination => destination === site);
 }
 
 export function MapCamera({ command, active = true, preserveCameraOnActivate = false, controlsEnabled = true, headerInset = 0 }: { command: CameraCommand | null; active?: boolean; preserveCameraOnActivate?: boolean; controlsEnabled?: boolean; headerInset?: number }) {
@@ -23,17 +23,20 @@ export function MapCamera({ command, active = true, preserveCameraOnActivate = f
   const offset = useRef(new THREE.Vector2());
   const targetOffset = useRef(new THREE.Vector2());
   const lastCommand = useRef<number | null>(null);
-  const response = useMemo(() => responsiveCamera(size.width, size.height, playableProjectionBounds(), coarse, headerInset), [size.width, size.height, coarse, headerInset]);
+  const response = useMemo(() => responsiveCamera(size.width, size.height, playableProjectionBounds(), false, headerInset), [size.width, size.height, headerInset]);
+  const touchControls=response.mobile||coarse;
   useEffect(() => {
     const pointer = window.matchMedia("(pointer: coarse)");
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => { setCoarse(pointer.matches); reduced.current = motion.matches; targetOffset.current.set(0, 0); invalidate(); };
+    const update = () => { setCoarse(pointer.matches); reduced.current = motion.matches; invalidate(); };
     update();
     pointer.addEventListener("change", update); motion.addEventListener("change", update);
     return () => { pointer.removeEventListener("change", update); motion.removeEventListener("change", update); };
   }, [invalidate]);
   const animation=useRef<{elapsed:number;duration:number;from:THREE.Vector3;to:THREE.Vector3;fromZoom:number;toZoom:number;fromQuaternion:THREE.Quaternion;toQuaternion:THREE.Quaternion;done:()=>void}|null>(null);
   useLayoutEffect(()=>{
+    // Hidden retained canvases must not overwrite the last valid overview.
+    if(!active||size.width<2||size.height<2)return;
     const {camera}=getThree();
     if(!initialized.current){
       camera.position.set(...CAMERA_POSITION);camera.lookAt(...CAMERA_TARGET);camera.zoom=1;
@@ -50,10 +53,10 @@ export function MapCamera({ command, active = true, preserveCameraOnActivate = f
       camera.updateProjectionMatrix();
     }
     invalidate();
-  },[getThree,size,response,invalidate]);
+  },[getThree,size.width,size.height,response,invalidate,active]);
   useLayoutEffect(() => {
     const { camera } = getThree();
-    if (active && !wasActive.current && !preserveCameraOnActivate) {
+    if (active && size.width>1 && size.height>1 && !wasActive.current && !preserveCameraOnActivate && !animation.current) {
       // A retained canvas otherwise comes back still zoomed into the island
       // selected just before navigation.
       overview.current = true;
@@ -65,7 +68,7 @@ export function MapCamera({ command, active = true, preserveCameraOnActivate = f
       invalidate();
     }
     wasActive.current = active;
-  }, [active, getThree, invalidate, preserveCameraOnActivate, response]);
+  }, [active, getThree, invalidate, preserveCameraOnActivate, response,size.width,size.height]);
   useEffect(() => {
     const canvas = getThree().gl.domElement;
     const surface = canvas.closest<HTMLElement>("[data-world-viewport]");
@@ -80,7 +83,7 @@ export function MapCamera({ command, active = true, preserveCameraOnActivate = f
       if (id !== undefined && canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id);
     };
     const down = (event: PointerEvent) => {
-      if (!response.mobile || !overview.current || animation.current || event.button !== 0) return;
+      if (!touchControls || !overview.current || animation.current || event.button !== 0) return;
       if (!drag && event.target instanceof Element && event.target.closest("button")) return;
       pointers.add(event.pointerId);
       if (pointers.size > 1) { suppressClick = true; release(); return; }
@@ -89,7 +92,7 @@ export function MapCamera({ command, active = true, preserveCameraOnActivate = f
     };
     const move = (event: PointerEvent) => {
       if (!overview.current || animation.current) return;
-      if (response.mobile) {
+      if (touchControls) {
         if (!drag || drag.id !== event.pointerId || pointers.size !== 1) return;
         const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
         if (!drag.moved && Math.hypot(dx, dy) < CAMERA_RESPONSE.dragThreshold) return;
@@ -113,7 +116,7 @@ export function MapCamera({ command, active = true, preserveCameraOnActivate = f
       invalidate();
     };
     const end = (event: PointerEvent) => { pointers.delete(event.pointerId); if (drag?.id === event.pointerId) release(); };
-    const leave = () => { if (!response.mobile) { targetOffset.current.set(0, 0); invalidate(); } };
+    const leave = () => { if (!touchControls) { targetOffset.current.set(0, 0); invalidate(); } };
     const click = (event: MouseEvent) => { if (suppressClick) { event.preventDefault(); event.stopImmediatePropagation(); suppressClick = false; } };
     const blur = () => { pointers.clear(); release(); leave(); };
     surface.addEventListener("pointerdown", down);
@@ -129,9 +132,39 @@ export function MapCamera({ command, active = true, preserveCameraOnActivate = f
       canvas.removeEventListener("lostpointercapture", end);
       window.removeEventListener("pointerup", end); window.removeEventListener("pointercancel", end); window.removeEventListener("blur", blur);
     };
-  }, [getThree, active, controlsEnabled, response, invalidate]);
+  }, [getThree, active, controlsEnabled, response,touchControls, invalidate]);
+  useEffect(() => {
+    if (!active || !touchControls) return;
+    const focusLandmark = (event: Event) => {
+      if (!overview.current || animation.current) return;
+      const name: unknown = (event as CustomEvent).detail;
+      if (typeof name !== "string" || !/^map-(topics|champions|calculator|records)$/.test(name)) return;
+      const label = document.querySelector<HTMLElement>(`[data-tutorial="${name}"]`);
+      if (!label) return;
+      const kind = name.slice(4) as "topics" | "champions" | "calculator" | "records";
+      const frame = worldFrame(size.width, size.height, playableProjectionBounds());
+      const point = new THREE.Vector3(...sitePosition(kind))
+        .add(new THREE.Vector3(0, (LANDMARK_BOUNDS[kind][1] + LANDMARK_LABEL_LIFT) * LANDMARK_SCALE, 0))
+        .applyAxisAngle(new THREE.Vector3(0, 1, 0), frame.rotation)
+        .multiplyScalar(frame.scale).add(new THREE.Vector3(...frame.position)).project(getThree().camera);
+      const labelX = (point.x * .5 + .5) * size.width;
+      const labelY = (-point.y * .5 + .5) * size.height - label.offsetHeight / 2 - 9;
+      const guide = document.querySelector<HTMLElement>("[data-tutorial-dialog]")?.getBoundingClientRect();
+      const sideSheet = guide && guide.left > size.width * .4 && guide.top < size.height * .3;
+      const desiredX = sideSheet ? guide.left / 2 : size.width / 2;
+      const usableBottom = guide && !sideSheet ? guide.top : size.height;
+      const desiredY = Math.max(headerInset + 48, (headerInset + usableBottom) / 2);
+      targetOffset.current.set(
+        THREE.MathUtils.clamp(offset.current.x + (labelX - desiredX) * response.unitsPerPixel, -response.limits.x, response.limits.x),
+        THREE.MathUtils.clamp(offset.current.y + (desiredY - labelY) * response.unitsPerPixel, -response.limits.y, response.limits.y),
+      );
+      invalidate();
+    };
+    window.addEventListener("suri:tutorial-map-focus", focusLandmark);
+    return () => window.removeEventListener("suri:tutorial-map-focus", focusLandmark);
+  }, [active, response,touchControls, size, headerInset, invalidate, getThree]);
   useLayoutEffect(()=>{
-    if(!command)return;
+    if(!command||!active||size.width<2||size.height<2)return;
     if (lastCommand.current === command.id && !animation.current) return;
     const remaining = lastCommand.current === command.id && animation.current
       ? Math.max(0, animation.current.duration - animation.current.elapsed) : undefined;
@@ -164,18 +197,19 @@ export function MapCamera({ command, active = true, preserveCameraOnActivate = f
     animation.current={elapsed:0,duration:reduced||command.instant?0:remaining ?? command.duration ?? (command.kind==="overview"?RETURN_DURATION:focusedIsland ?TOPICS_APPROACH_DURATION:ZOOM_DURATION),
       from:camera.position.clone(),to,fromZoom:camera.zoom,toZoom,fromQuaternion:camera.quaternion.clone(),toQuaternion,done:command.onComplete};
     invalidate();
-  },[command,getThree,size,invalidate,response]);
+  },[command,getThree,size.width,size.height,invalidate,response,active]);
   useFrame((_,delta)=>{
+    if(!active||size.width<2||size.height<2)return;
     const motion=animation.current;
     if (!motion) {
       if (!active || !overview.current || !controlsEnabled) return;
       offset.current.lerp(targetOffset.current, reduced.current ? 1 : 1 - Math.exp(-CAMERA_RESPONSE.damping * delta));
       const {camera}=getThree();
-      camera.position.copy(response.position).addScaledVector(response.right, offset.current.x).addScaledVector(response.up, offset.current.y);
-      camera.updateMatrixWorld();
+      applyOverviewPose(camera,response,offset.current);
       if (offset.current.distanceToSquared(targetOffset.current) > 0.000001) invalidate();
       return;
     }
+    if(!active)return;
     motion.elapsed+=Math.min(delta,0.05);
     const t=motion.duration?Math.min(1,motion.elapsed/motion.duration):1;
     const {camera}=getThree();

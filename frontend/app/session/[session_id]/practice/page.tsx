@@ -12,11 +12,18 @@ import "katex/dist/katex.min.css";
 import { BattleSpells, ArmedSpellBubble, SpellEffect, SPELLS, FLAME_FLIGHT_MS } from "./battle-spells";
 import { CombatImpact, type CombatHit } from "./battle-impact";
 import { useBattleAudio } from "./battle-audio";
+import { BattleSpells, ArmedSpellBubble, SpellEffect, SPELLS, FLAME_FLIGHT_MS } from "./battle-spells";
+import { CombatImpact, type CombatHit } from "./battle-impact";
+import { useBattleAudio } from "./battle-audio";
 
 import {
   getSession,
   startPractice,
   submitPracticeStep,
+  actInPracticeBattle,
+  PracticeBattleAction,
+  PracticeBattleState,
+  PracticeSpell,
   actInPracticeBattle,
   PracticeBattleAction,
   PracticeBattleState,
@@ -350,6 +357,7 @@ const GAME_CSS = `
     display: grid;
     grid-template-columns: minmax(360px, 440px) minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto;
     gap: 20px;
     padding: 16px clamp(12px, 2vw, 24px) 24px;
     flex: 1;
@@ -359,6 +367,8 @@ const GAME_CSS = `
 
   /* Left Column: Step Chronicle */
   .step-chronicle {
+    grid-column: 1;
+    grid-row: 1;
     grid-column: 1;
     grid-row: 1;
     border: 4px solid #80511f;
@@ -458,6 +468,8 @@ const GAME_CSS = `
 
   /* Right Column: Stacks HUD Bar + Arena + Input Panel with clean gaps */
   .right-main-area {
+    grid-column: 2;
+    grid-row: 1 / span 2;
     grid-column: 2;
     grid-row: 1 / span 2;
     display: flex;
@@ -603,6 +615,7 @@ const GAME_CSS = `
   @keyframes enemyIdle { 0%,100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-6px) rotate(-1.5deg); } 75% { transform: translateY(-4px) rotate(1.5deg); } }
   .enemy-idle { animation: enemyIdle 2.5s ease-in-out infinite; }
   @keyframes enemyHit { 0% { transform: translateX(0) scale(1); } 10% { transform: translateX(30px) scale(1.08); filter: brightness(3) saturate(0); } 25% { transform: translateX(-20px) scale(0.94); filter: brightness(2) hue-rotate(30deg); } 55% { transform: translateX(-10px) scale(0.98); } 100% { transform: translateX(0) scale(1); filter: brightness(1); } }
+  .enemy-hit { animation: enemyHit 0.42s ease-out forwards; }
   .enemy-hit { animation: enemyHit 0.42s ease-out forwards; }
   @keyframes enemyAttack { 0% { transform: translateX(0) scale(1); } 20% { transform: translateX(-50px) scale(1.15); filter: brightness(1.8) hue-rotate(-20deg); } 45% { transform: translateX(-90px) scale(1.2); filter: brightness(2) drop-shadow(0 0 20px #e74c3c); } 100% { transform: translateX(0) scale(1); filter: brightness(1); } }
   .enemy-attacking { animation: enemyAttack 0.8s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
@@ -1238,9 +1251,29 @@ const GAME_CSS = `
     .battle-layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; gap: 12px; }
     .right-main-area { grid-column: 1; grid-row: 2; min-width: 0; }
     .step-chronicle { max-height: 260px; min-width: 0; }
+    .battle-layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; gap: 12px; }
+    .right-main-area { grid-column: 1; grid-row: 2; min-width: 0; }
+    .step-chronicle { max-height: 260px; min-width: 0; }
     .chronicle-list { max-height: 160px; }
     .arena-section { min-height: 200px; padding-inline: 12px; }
     .bottom-bar { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .hud-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px; gap: 8px; }
+    .chapter-banner { grid-column: 1 / -1; grid-row: 1; min-height: 64px; width: 100%; padding: 8px; }
+    .hud-brand, .hud-right { min-width: 0; }
+    .combatant-card { width: 100%; min-height: 80px; padding: 8px; gap: 6px; }
+    .combatant-name { font-size: 14px; }
+    .combatant-subtitle { font-size: 8px; letter-spacing: .4px; }
+    .level-badge { width: 30px; height: 30px; font-size: 10px; }
+    .score-chip { padding: 3px 6px; font-size: 12px; }
+    .arena-section { grid-template-columns: minmax(0, 1fr) minmax(0, .35fr) minmax(0, 1fr); gap: 4px; }
+    .char-container, .reaction-space { min-width: 0; }
+    .suri-sprite, .enemy-sprite { max-width: 100%; }
+    .step-badge-row { flex-wrap: wrap; gap: 8px; }
+    .step-text-input { min-width: 0; width: min(260px, 100%); }
+    .step-math-input-wrapper { min-width: 0; width: 100%; }
+    .step-math-input-wrapper math-field { min-width: 0 !important; }
   }
   @media (max-width: 520px) {
     .hud-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px; gap: 8px; }
@@ -1441,6 +1474,7 @@ export default function PracticePage() {
   const params = useParams();
   const sessionId = params.session_id as string;
   const { muted, toggleMuted, unlock: unlockSound, play: playSound } = useBattleAudio();
+  const { muted, toggleMuted, unlock: unlockSound, play: playSound } = useBattleAudio();
 
   const MAX_HEARTS = 3;
 
@@ -1483,7 +1517,40 @@ export default function PracticePage() {
   const [combatImpact, setCombatImpact] = useState<(CombatHit & { id: number }) | null>(null);
   const impactTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const strikeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [combatImpact, setCombatImpact] = useState<(CombatHit & { id: number }) | null>(null);
+  const impactTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const strikeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [locked, setLocked] = useState<boolean>(false);
+  const battleBusy = useRef(false);
+  const pendingAction = useRef<PracticeBattleAction | null>(null);
+  const effectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [battleId, setBattleId] = useState<string | null>(null);
+  const [battleState, setBattleState] = useState<PracticeBattleState | null>(null);
+  const [failedAction, setFailedAction] = useState<PracticeSpell | "answer" | null>(null);
+  const [spellEffect, setSpellEffect] = useState<{ spell: PracticeSpell; label: string; stage: "charge" | "strike"; id: number } | null>(null);
+
+  useEffect(() => () => {
+    if (effectTimer.current) clearTimeout(effectTimer.current);
+    if (impactTimer.current) clearTimeout(impactTimer.current);
+    if (strikeTimer.current) clearTimeout(strikeTimer.current);
+  }, []);
+
+  const unlockBattle = () => {
+    battleBusy.current = false;
+    setLocked(false);
+  };
+
+  const showSpellEffect = (spell: PracticeSpell, label: string, stage: "charge" | "strike" = "charge") => {
+    if (effectTimer.current) clearTimeout(effectTimer.current);
+    setSpellEffect(prev => ({ spell, label, stage, id: (prev?.id ?? 0) + 1 }));
+    effectTimer.current = setTimeout(() => setSpellEffect(null), stage === "strike" ? 2100 : 1800);
+  };
+
+  const showCombatImpact = (target: CombatHit["target"], kind: CombatHit["kind"]) => {
+    if (impactTimer.current) clearTimeout(impactTimer.current);
+    setCombatImpact(prev => ({ target, kind, id: (prev?.id ?? 0) + 1 }));
+    impactTimer.current = setTimeout(() => setCombatImpact(null), kind.startsWith("flame") ? 1300 : 650);
+  };
   const battleBusy = useRef(false);
   const pendingAction = useRef<PracticeBattleAction | null>(null);
   const effectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1533,6 +1600,7 @@ export default function PracticePage() {
       const practiceData = await startPractice({
         session_id: sessionId,
         node_id: currentNode,
+        enable_powerups: true,
         enable_powerups: true,
       });
 
@@ -1610,6 +1678,46 @@ export default function PracticePage() {
     unlockBattle();
   };
 
+  const performBattleAction = async (action: PracticeSpell | "answer") => {
+    if (!battleId) return null;
+    // Keep the exact payload and ID on a timeout: retrying replays the server result.
+    if (pendingAction.current && pendingAction.current.action !== action) {
+      toast.error("Retry your previous cast first.");
+      return null;
+    }
+    const request = pendingAction.current ?? {
+      battle_id: battleId, problem_id: currentProblem.id,
+      request_id: crypto.randomUUID(), action,
+      ...(action === "answer" ? { step_index: currentStep.step_index, submitted_value: stepInput.trim() } : {}),
+    };
+    pendingAction.current = request;
+    try {
+      const result = await actInPracticeBattle(request);
+      pendingAction.current = null;
+      setFailedAction(null);
+      setBattleState(result);
+      return { result, submittedValue: request.submitted_value };
+    } catch (error) {
+      setFailedAction(action);
+      toast.error(error instanceof Error ? error.message : "Could not confirm your cast. Please retry.");
+      return null;
+    }
+  };
+
+  const handleCastPowerup = async (spell: PracticeSpell) => {
+    if (!battleId || locked || battleBusy.current || problemLoading || phase !== "battle") return;
+    unlockSound();
+    battleBusy.current = true;
+    setLocked(true);
+    const response = await performBattleAction(spell);
+    if (response) {
+      setSuriHearts(response.result.hearts);
+      playSound(spell === "flame" ? "flameCharge" : spell === "ward" ? "ward" : "heal");
+      showSpellEffect(spell, spell === "bloom" ? "Healing Bloom · +1 heart" : spell === "flame" ? "Flame charged · unleash with a correct rune" : `${SPELLS.find(s => s.id === spell)!.name} armed`);
+    }
+    unlockBattle();
+  };
+
   // Auto-focus input field on step change, problem start, or after locking completes
   useEffect(() => {
     if (phase === "battle" && !locked) {
@@ -1627,6 +1735,7 @@ export default function PracticePage() {
   }, [phase, currentProblemIdx, currentStepIdx, locked]);
 
   const handleStartBattle = () => {
+    unlockSound();
     unlockSound();
     setEnemyShields(problems[0]?.steps.length ?? MAX_HEARTS);
     setPhase("battle");
@@ -1664,6 +1773,7 @@ export default function PracticePage() {
     if (nextProbIdx >= problems.length) {
       setPhase("complete");
       playSound("victory");
+      playSound("victory");
       confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
     } else {
       // Brief smooth transition display for the loading popup
@@ -1688,13 +1798,25 @@ export default function PracticePage() {
         correct: null, blocked: false, bonus: 0,
       } : null);
       unlockBattle();
+      setStepFeedback(null);
+      setSpellEffect(null);
+      setCombatImpact(null);
+      setBattleState(prev => prev ? {
+        ...prev, hearts: MAX_HEARTS, used: [], flame_ready: false, ward_ready: false,
+        correct: null, blocked: false, bonus: 0,
+      } : null);
+      unlockBattle();
       setTimeout(() => setEnemyAnimState("idle"), 800);
     }
+  }, [currentProblemIdx, currentProblem, problems, sessionId, nodeId, playSound]);
   }, [currentProblemIdx, currentProblem, problems, sessionId, nodeId, playSound]);
 
   const handleCastStep = async () => {
     if (!currentStep || locked || battleBusy.current || problemLoading || !stepInput.trim() || (failedAction && failedAction !== "answer")) return;
+    if (!currentStep || locked || battleBusy.current || problemLoading || !stepInput.trim() || (failedAction && failedAction !== "answer")) return;
 
+    unlockSound();
+    battleBusy.current = true;
     unlockSound();
     battleBusy.current = true;
     setLocked(true);
@@ -1709,18 +1831,29 @@ export default function PracticePage() {
     const result = response?.result;
     const submittedValue = response?.submittedValue ?? stepInput.trim();
     const isCorrect = result?.correct ?? checkStepCorrect(submittedValue, currentStep.correct_value);
+    const response = battleId ? await performBattleAction("answer") : null;
+    if (battleId && !response) {
+      unlockBattle();
+      return;
+    }
+    const result = response?.result;
+    const submittedValue = response?.submittedValue ?? stepInput.trim();
+    const isCorrect = result?.correct ?? checkStepCorrect(submittedValue, currentStep.correct_value);
     const attemptsForProblem = (firstAttemptsRef.current[currentProblemIdx] ||= {});
     if (!(currentStep.step_index in attemptsForProblem)) {
+      attemptsForProblem[currentStep.step_index] = submittedValue;
       attemptsForProblem[currentStep.step_index] = submittedValue;
     }
     const newCompletedStep = {
       step: currentStep,
+      submittedValue,
       submittedValue,
       correct: isCorrect,
     };
 
     const newSubmissions = [
       ...(allStepSubmissions[currentProblemIdx] || []),
+      { step_index: currentStep.step_index, submitted_value: submittedValue },
       { step_index: currentStep.step_index, submitted_value: submittedValue },
     ];
     setAllStepSubmissions(prev => ({ ...prev, [currentProblemIdx]: newSubmissions }));
@@ -1740,7 +1873,18 @@ export default function PracticePage() {
         playSound(result?.bonus ? "explosion" : "hit");
         showCombatImpact("enemy", result?.bonus ? enemyShields <= 1 ? "flame-finisher" : "flame" : enemyShields <= 1 ? "finisher" : "rune");
       }, impactDelay);
+      playSound(result?.bonus ? "flameLaunch" : "attack");
+      if (result?.bonus) showSpellEffect("flame", "FLAME STRIKE · +25 bonus points", "strike");
+      const impactDelay = result?.bonus ? FLAME_FLIGHT_MS : 220;
+      strikeTimer.current = setTimeout(() => {
+        setEnemyDmg(result?.bonus ? "-1 · +25 pts" : "-1");
+        setTimeout(() => setEnemyDmg(null), 900);
+        setEnemyAnimState("hit");
+        playSound(result?.bonus ? "explosion" : "hit");
+        showCombatImpact("enemy", result?.bonus ? enemyShields <= 1 ? "flame-finisher" : "flame" : enemyShields <= 1 ? "finisher" : "rune");
+      }, impactDelay);
 
+      setScore(s => result?.score ?? s + (10 + streak * 5));
       setScore(s => result?.score ?? s + (10 + streak * 5));
       setStreak(s => s + 1);
       toast.success("Rune Strike!");
@@ -1769,13 +1913,16 @@ export default function PracticePage() {
             setCurrentStepIdx(idx => idx + 1);
             setStepInput("");
             unlockBattle();
+            unlockBattle();
           }, 600);
         }
+      }, impactDelay + (result?.bonus ? 950 : 450));
       }, impactDelay + (result?.bonus ? 950 : 450));
 
     } else {
       // Wrong step execution
       setEnemyAnimState("attack");
+      playSound("enemyAttack");
       playSound("enemyAttack");
 
       setStreak(0);
@@ -1784,7 +1931,16 @@ export default function PracticePage() {
       setStepFeedback({ correct: false, correctValue: currentStep.correct_value });
 
       const nextHearts = result?.hearts ?? Math.max(0, suriHearts - 1);
+      const nextHearts = result?.hearts ?? Math.max(0, suriHearts - 1);
 
+      strikeTimer.current = setTimeout(() => {
+        setSuriDmg(result?.blocked ? "BLOCKED" : "-1");
+        setTimeout(() => setSuriDmg(null), 900);
+        showCombatImpact("suri", result?.blocked ? "blocked" : "hurt");
+        playSound(result?.blocked ? "blocked" : "hurt");
+        if (result?.blocked) showSpellEffect("ward", "Aegis Ward · hit blocked");
+        setSuriState(result?.blocked ? "idle" : "hit");
+        setSuriBreaking(result?.blocked ? null : nextHearts);
       strikeTimer.current = setTimeout(() => {
         setSuriDmg(result?.blocked ? "BLOCKED" : "-1");
         setTimeout(() => setSuriDmg(null), 900);
@@ -1832,9 +1988,12 @@ export default function PracticePage() {
             setEnemyAnimState("idle");
             setSuriState("idle");
             unlockBattle();
+            unlockBattle();
           }, 1200);
 
         } else {
+          if (result?.blocked) toast("Aegis Ward blocked the hit. Try the rune again!", { icon: "🛡️" });
+          else toast.error("Rune Countered!");
           if (result?.blocked) toast("Aegis Ward blocked the hit. Try the rune again!", { icon: "🛡️" });
           else toast.error("Rune Countered!");
           setTimeout(() => {
@@ -1847,6 +2006,7 @@ export default function PracticePage() {
           setTimeout(() => {
             setSuriBreaking(null);
             setEnemyAnimState("idle");
+            unlockBattle();
             unlockBattle();
           }, 1200);
         }
@@ -1886,6 +2046,7 @@ export default function PracticePage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: GAME_CSS }} />
+      <div data-tutorial-scope={`practice-${phase}`} className={`battle-body${phase === "intro" ? " diagnostic-before" : ""}`}>
       <div data-tutorial-scope={`practice-${phase}`} className={`battle-body${phase === "intro" ? " diagnostic-before" : ""}`}>
         <ArenaBackground />
 
@@ -2116,8 +2277,13 @@ export default function PracticePage() {
               <div className="arena-section" aria-label="Battle arena" data-impact={combatImpact?.kind}>
                 {combatImpact && <CombatImpact key={`impact-${combatImpact.id}`} target={combatImpact.target} kind={combatImpact.kind} />}
                 {spellEffect && <SpellEffect key={`spell-${spellEffect.id}`} spell={spellEffect.spell} label={spellEffect.label} stage={spellEffect.stage} />}
+              <div className="arena-section" aria-label="Battle arena" data-impact={combatImpact?.kind}>
+                {combatImpact && <CombatImpact key={`impact-${combatImpact.id}`} target={combatImpact.target} kind={combatImpact.kind} />}
+                {spellEffect && <SpellEffect key={`spell-${spellEffect.id}`} spell={spellEffect.spell} label={spellEffect.label} stage={spellEffect.stage} />}
                 <div className="char-container suri-side">
                   <div className="sprite-frame">
+                    {battleState?.ward_ready && <span className="suri-spell-aura aura-ward" aria-hidden="true" />}
+                    {battleState?.flame_ready && <span className="suri-spell-aura aura-flame" aria-hidden="true" />}
                     {battleState?.ward_ready && <span className="suri-spell-aura aura-ward" aria-hidden="true" />}
                     {battleState?.flame_ready && <span className="suri-spell-aura aura-flame" aria-hidden="true" />}
                     {suriDmg && <div className="dmg-number dmg-suri">{suriDmg}</div>}
@@ -2126,6 +2292,9 @@ export default function PracticePage() {
                 </div>
 
                 <div className="reaction-space" aria-live="polite">
+                  {battleState?.flame_ready || battleState?.ward_ready ? (
+                    <ArmedSpellBubble flameReady={!!battleState.flame_ready} wardReady={!!battleState.ward_ready} />
+                  ) : stepFeedback ? (
                   {battleState?.flame_ready || battleState?.ward_ready ? (
                     <ArmedSpellBubble flameReady={!!battleState.flame_ready} wardReady={!!battleState.ward_ready} />
                   ) : stepFeedback ? (
@@ -2200,6 +2369,7 @@ export default function PracticePage() {
                                   }
                                 }}
                                 disabled={locked || !!failedAction}
+                                disabled={locked || !!failedAction}
                                 autoFocus
                                 placeholder="..."
                                 className="step-text-input"
@@ -2216,6 +2386,7 @@ export default function PracticePage() {
                                   key={`math-${currentProblemIdx}-${currentStepIdx}`}
                                   value={stepInput}
                                   onChange={setStepInput}
+                                  disabled={locked || !!failedAction}
                                   disabled={locked || !!failedAction}
                                   autoFocus
                                   onEnter={() => {
@@ -2276,7 +2447,10 @@ export default function PracticePage() {
                       onClick={handleCastStep}
                       disabled={locked || !stepInput.trim() || (!!failedAction && failedAction !== "answer")}
                       className={`attack-btn ${stepInput.trim() && !locked && (!failedAction || failedAction === "answer") ? "ready" : "disabled"}`}
+                      disabled={locked || !stepInput.trim() || (!!failedAction && failedAction !== "answer")}
+                      className={`attack-btn ${stepInput.trim() && !locked && (!failedAction || failedAction === "answer") ? "ready" : "disabled"}`}
                     >
+                      {locked ? "Casting Rune..." : failedAction === "answer" ? "RETRY INSCRIPTION ⚡" : "CAST INSCRIPTION ⚡"}
                       {locked ? "Casting Rune..." : failedAction === "answer" ? "RETRY INSCRIPTION ⚡" : "CAST INSCRIPTION ⚡"}
                     </button>
                   </div>
@@ -2294,6 +2468,9 @@ export default function PracticePage() {
                 </div>
               </section>
             </div>
+            <BattleSpells state={battleState} disabled={locked || problemLoading || !currentStep}
+              failedAction={failedAction} onCast={spell => void handleCastPowerup(spell)}
+              muted={muted} onToggleMuted={toggleMuted} />
             <BattleSpells state={battleState} disabled={locked || problemLoading || !currentStep}
               failedAction={failedAction} onCast={spell => void handleCastPowerup(spell)}
               muted={muted} onToggleMuted={toggleMuted} />

@@ -1,8 +1,9 @@
 import * as THREE from "three";
 import { drawOuterLandmark } from "./outerLandmarks";
+import type { ArchitecturalShape } from "./architecturalGeometry";
 
-export type Surface = "stone" | "wood" | "plaster" | "roof" | "gold" | "window" | "magic" | "cloth" | "leaves";
-export type Shape = "box" | "cylinder" | "cone" | "sphere" | "roof" | "arch" | "ring" | "crystal" | "sail" | "hull";
+export type Surface = "stone" | "road" | "wood" | "plaster" | "roof" | "gold" | "window" | "magic" | "cloth" | "leaves" | "iron" | "glass" | "carving";
+export type Shape = "box" | "cylinder" | "cone" | "sphere" | "roof" | "arch" | "ring" | "crystal" | "sail" | "hull" | "broadleaf" | "conifer" | "rock" | ArchitecturalShape;
 export type Piece = { matrix: THREE.Matrix4; color: THREE.Color };
 export type Batch = { shape: Shape; surface: Surface; pieces: Piece[] };
 export type LandmarkKind = "keep" | "academy" | "records" | "champions" | "calculator" | "guild" | "topics" | "ranger" | "arena";
@@ -42,7 +43,7 @@ export class ArchitectureBuilder {
     this.part("sphere","gold","#e6bc6c",x+0.26*size,0.82*size,z+0.09,0.12,0.12,0.12);
     for(let i=0;i<3;i++)this.part("box","stone","#b4af9f",x,0.1-i*0.035,z+0.25+i*0.22,1.7*size,0.16,0.55);
   }
-  flag(x: number, y: number, z: number, color = "#8061b6") {
+  flag(x: number, y: number, z: number, color = "#8751c9") {
     this.part("cylinder","gold","#dfbc75",x,y,z,0.06,2,0.06);
     this.part("sail","cloth",color,x+0.43,y+0.45,z,0.85,0.7,1);
     this.part("sphere","gold","#e9c479",x,y+1.05,z,0.17,0.17,0.17);
@@ -50,7 +51,7 @@ export class ArchitectureBuilder {
   lantern(x: number, y: number, z: number) {
     this.beam([x,y+0.3,z-0.3],[x,y+0.3,z],0.07);
     this.part("box","gold","#534a42",x,y,z,0.28,0.48,0.25);
-    this.part("box","window","#ffce70",x,y,z+0.02,0.19,0.32,0.24);
+    this.part("box","window","#c19afa",x,y,z+0.02,0.19,0.32,0.24);
     this.part("cone","gold","#504740",x,y+0.3,z,0.4,0.2,0.35);
   }
   barrel(x: number, z: number) {
@@ -110,15 +111,7 @@ export class ArchitectureBuilder {
     });
   }
   landmark(kind: LandmarkKind) {
-    if(kind === "keep") {
-      this.part("box","stone","#9ca79f",0,0.3,0,9.5,0.6,7);
-      this.at(0,0.5,0,1,0,()=>this.house(5,3.4,4,"#656694",true));
-      for(const x of [-3.5,3.5])for(const z of [-2.2,2.2])this.tower(x,z,z<0?6.2:4.8,0.85);
-      for(const x of [-3.5,3.5])this.part("box","stone","#c4c3ad",x,1.7,0,0.55,2.8,4.4);
-      this.tower(0,-1.8,7.8,0.95,"#7479a6");this.flag(0,11,-1.8);
-      return;
-    }
-    if(kind === "topics" || kind === "records" || kind === "champions" || kind === "calculator") {
+    if(kind === "keep" || kind === "topics" || kind === "records" || kind === "champions" || kind === "calculator") {
       drawOuterLandmark(this,kind); return;
     }
     if(kind === "arena") {

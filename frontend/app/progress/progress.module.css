@@ -9,8 +9,9 @@
   padding: 1.25rem clamp(.7rem, 2.5vw, 2rem) 2.3rem;
   font-family: "Nunito", "Manrope", sans-serif;
 }
-.page :global(.progress-library-header), .page :global(.progress-library-back-row) { width: 100%; }
-.dashboard { display: grid; gap: 1.75rem; margin-top: 2rem; color: var(--ink); font: 800 .875rem/1.6 "Nunito", sans-serif; }
+.page :global(.progress-library-header) { width: 85%; }
+.page :global(.progress-library-back-row) { width: 100%; }
+.dashboard { display: grid; gap: 1.75rem; width: 85%; margin: 2rem auto 0; color: var(--ink); font: 800 .875rem/1.6 "Nunito", sans-serif; }
 .dashboard * { min-width: 0; }
 .dashboard h2 { margin: .35rem 0 0; font: 900 clamp(1.5rem, 2.4vw, 2rem)/1.12 "Bree Serif", Georgia, serif; letter-spacing: -.025em; }
 .dashboard h3 { font: 900 1.18rem/1.2 "Bree Serif", Georgia, serif; }
@@ -126,6 +127,7 @@
   .frequency ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 740px) {
+  .page :global(.progress-library-header), .dashboard { width: 100%; }
   .overview, .conceptList { grid-template-columns: 1fr; }
   .dashboard { gap: 1.5rem; }
   .sectionHeading { align-items: start; flex-direction: column; gap: .65rem; }

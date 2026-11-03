@@ -115,7 +115,7 @@ export default function AccountSettingsModal({ me, opener, onClose }: Props) {
     <div className={`suri-overview-overlay ${closing ? "is-closing" : ""}`} onMouseDown={event => { if (event.target === event.currentTarget) requestClose(); }}>
       <div ref={dialogRef} className="suri-overview-modal" role="dialog" aria-modal={!showLogoutConfirm} aria-hidden={showLogoutConfirm || undefined} inert={showLogoutConfirm} aria-labelledby="suri-settings-title" aria-describedby="suri-settings-subtitle">
         <header className="suri-overview-header">
-          <div className="suri-overview-heading"><span className="suri-overview-castle" aria-hidden="true"><Castle size={25} /></span><div><span className="suri-overview-eyebrow">SURI Keep</span><h2 id="suri-settings-title">Account settings</h2><p id="suri-settings-subtitle">Your account details and preferences.</p></div></div>
+          <div className="suri-overview-heading"><span className="suri-overview-castle" aria-hidden="true"><Castle size={25} /></span><div><span className="suri-overview-eyebrow">SURI Account</span><h2 id="suri-settings-title">Account settings</h2><p id="suri-settings-subtitle">Your account details and preferences.</p></div></div>
           <button ref={closeButtonRef} type="button" className="suri-overview-close" onClick={requestClose} aria-label="Close account settings"><X size={21} /></button>
         </header>
         <div className="suri-settings-layout">
@@ -131,7 +131,7 @@ export default function AccountSettingsModal({ me, opener, onClose }: Props) {
             </div> : account ? <div className="suri-settings-card">
               <div className="suri-settings-section-heading"><CircleUserRound size={23} /><div><h3>Account details</h3><p>Your personal information in SURI.</p></div></div>
               <dl className="suri-settings-details"><div><dt>Username</dt><dd>{account.name}</dd></div><div><dt>Email address</dt><dd>{account.email || "No email available"}</dd></div><div><dt>Grade level</dt><dd>{account.grade_level ? `Grade ${account.grade_level}` : "Not set"}</dd></div><div><dt>Member since</dt><dd>{memberSince}</dd></div></dl>
-            </div> : <div className="suri-settings-loading" role={loadError ? "alert" : "status"}>{loadError ? "Could not load your account. Close SURI Keep and try again." : "Loading your account…"}</div>}
+            </div> : <div className="suri-settings-loading" role={loadError ? "alert" : "status"}>{loadError ? "Could not load your account. Close account settings and try again." : "Loading your account…"}</div>}
           </section>
         </div>
       </div>

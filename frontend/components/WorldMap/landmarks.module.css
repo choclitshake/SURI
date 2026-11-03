@@ -32,7 +32,7 @@
 .markerSubtitle, .markerDetail { contain: inline-size; height: 0; max-height: 0; margin: 0; overflow: hidden; opacity: 0; transform: translateY(4px); pointer-events: none; transition: max-height .2s ease, margin-top .2s ease, opacity .2s ease, transform .2s ease; }
 .marker:is(:hover, :focus-visible, .markerExpanded) :is(.markerSubtitle, .markerDetail) { contain: none; height: auto; max-height: 8rem; margin-top: .3rem; opacity: 1; transform: translateY(0); }
 .marker:hover, .marker:focus-visible, .markerExpanded { --marker-background: linear-gradient(180deg, #fff5cf 0%, #ecd18c 100%); --marker-surface: #ecd18c; font-size: 20px; max-width: min(17rem, calc(100vw - 2rem)); box-shadow: 0 6px 0 #160b07, 0 13px 20px rgba(0, 0, 0, .27), inset 0 0 0 2px rgba(111, 61, 28, .18); filter: brightness(1.03); transform: translateY(-2px); }
-.marker:focus-visible { outline: 3px solid #fff3a3; outline-offset: 3px; }
+.marker:focus-visible { outline: 3px solid #ba8bff; outline-offset: 3px; }
 @media (max-width: 600px) {
   .marker { padding: .5rem .75rem; }
   .marker:is(:hover, :focus-visible, .markerExpanded) { font-size: 16px; }
@@ -53,12 +53,15 @@
 .world { background: #126f8d; }
 .world::before, .world::after { display: none; }
 .viewport { z-index: 2; }
+.hitLayer { position:absolute;inset:0;pointer-events:none;z-index:3; }
+.landmarkHit { position:absolute;top:0;left:0;pointer-events:auto;cursor:pointer;touch-action:none; }
+.hitLayer[data-visible="false"],.hitLayer[hidden],:global(body:has([role="dialog"]:not([data-tutorial-dialog]))) .hitLayer { display:none; }
 /* Render outside the scene's stacking context so an expanded label can cover
    the floating navigation without raising the canvas above the header. */
 .labelLayer { position: fixed; inset: 0; z-index: 3; pointer-events: none; opacity: 1; transition: opacity .36s ease; }
 .labelLayer[data-visible="false"] { opacity: 0; transition-duration: .24s; }
 .labelLayer:has(.anchor:hover, .anchor:focus-within, .anchor[data-active="true"]) { z-index: 50; }
-.labelLayer[hidden], :global(body:has([role="dialog"])) .labelLayer { display: none; }
+.labelLayer[hidden], :global(body:has([role="dialog"]:not([data-tutorial-dialog]))) .labelLayer { display: none; }
 .labelLayer .anchor { position: absolute; pointer-events: none; }
 .labelLayer .anchor:hover, .labelLayer .anchor:focus-within, .labelLayer .anchor[data-active="true"] { z-index: 10; }
 .labelLayer .marker { pointer-events: auto; }

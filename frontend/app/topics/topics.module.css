@@ -1,0 +1,8 @@
+.contentWidth {
+  width: 85%;
+  margin-inline: auto;
+}
+
+@media (max-width: 640px) {
+  .contentWidth { width: 100%; }
+}
