@@ -1492,6 +1492,8 @@ export default function PracticePage() {
   const [failedAction, setFailedAction] = useState<PracticeSpell | "answer" | null>(null);
   const [spellEffect, setSpellEffect] = useState<{ spell: PracticeSpell; label: string; stage: "charge" | "strike"; id: number } | null>(null);
 
+  const startedRef = useRef(false);
+
   useEffect(() => () => {
     if (effectTimer.current) clearTimeout(effectTimer.current);
     if (impactTimer.current) clearTimeout(impactTimer.current);
@@ -1537,6 +1539,14 @@ export default function PracticePage() {
       });
 
       setBattleId(practiceData.battle_id ?? null);
+      try {
+        if (practiceData.battle_id) {
+          sessionStorage.setItem(`suri_battle_${sessionId}`, practiceData.battle_id);
+        } else {
+          sessionStorage.removeItem(`suri_battle_${sessionId}`);
+        }
+      } catch { /* storage unavailable; score just won't be logged */ }
+
       setBattleState(practiceData.battle_id ? {
         hearts: MAX_HEARTS, used: [], flame_ready: false, ward_ready: false,
         score: 0, correct: null, blocked: false, bonus: 0,
@@ -1554,7 +1564,8 @@ export default function PracticePage() {
   }, [sessionId]);
 
   useEffect(() => {
-    if (sessionId) {
+    if (sessionId && !startedRef.current) {
+      startedRef.current = true;
       void Promise.resolve().then(loadPracticeData);
     }
   }, [sessionId, loadPracticeData]);

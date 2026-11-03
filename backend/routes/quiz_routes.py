@@ -40,6 +40,7 @@ from backend.models.schemas import (
     QuizFinishResponse,
 )
 
+from backend.history_utils import log_history
 from backend.problem_sampling import sample_mixed
 
 import google.generativeai as genai
@@ -559,6 +560,21 @@ async def finish_quiz(body: QuizFinishRequest, student=Depends(get_current_stude
         progression = await _run_progression(
             conn, session_id, node_id, student_id, topic_entry_node,
             passed, passed_count, mastery_score, now_iso,
+        )
+
+        await log_history(
+            conn,
+            student_id=student_id,
+            kind="quiz",
+            node_id=node_id,
+            session_id=session_id,
+            score=total_points,
+            total_correct=total_correct,
+            total_steps=total_steps,
+            passed_count=passed_count,
+            passed=passed,
+            decision=progression["decision"],
+            logged_at=now_iso,
         )
 
         return {

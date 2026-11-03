@@ -191,6 +191,7 @@ class PracticeSubmitStepResponse(BaseModel):
 class ProgressionDecideRequest(BaseModel):
     session_id: str
     node_id: str
+    battle_id: Optional[str] = None
 
 
 class MisconceptionNode(BaseModel):
@@ -342,3 +343,46 @@ class QuizFinishResponse(BaseModel):
     step_errors: list[QuizStepError]
     feedback_text: str
     progression: QuizProgressionResult
+
+
+class TopicCheckRequest(BaseModel):
+    session_id: str
+    node_id: str
+    page_key: Literal["concept", "example", "explanation"]
+    checked: bool
+
+
+class TopicChecksResponse(BaseModel):
+    node_id: str
+    checked_pages: list[str]
+    
+    
+class HistoryLogItem(BaseModel):
+    id: str
+    kind: Literal["quiz", "practice", "topic_check"]
+    node_id: str
+    node_label: str
+    session_id: Optional[str] = None
+    logged_at: str
+    score: Optional[int] = None
+    total_correct: Optional[int] = None
+    total_steps: Optional[int] = None
+    passed_count: Optional[int] = None
+    passed: Optional[bool] = None
+    decision: Optional[Literal["advance", "remediate"]] = None
+    page_key: Optional[Literal["concept", "example", "explanation"]] = None
+    checked: Optional[bool] = None
+
+
+class HistoryLogsResponse(BaseModel):
+    items: list[HistoryLogItem]
+    next_offset: Optional[int] = None
+    total: int
+
+
+class HistorySummaryResponse(BaseModel):
+    quizzes_taken: int
+    practice_sessions: int
+    pages_checked: int
+    best_quiz_score: Optional[int] = None
+    quiz_accuracy: Optional[float] = None  # 0-100, from quiz steps

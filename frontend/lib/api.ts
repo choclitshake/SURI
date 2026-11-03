@@ -616,6 +616,7 @@ export function submitPracticeStep(body: {
 export function decideProgression(body: {
   session_id: string;
   node_id: string;
+  battle_id?: string | null;
 }): Promise<ProgressionDecision> {
   return request<ProgressionDecision>("/api/progression/decide", {
     method: "POST",
@@ -751,6 +752,80 @@ export function finishQuiz(body: {
     method: "POST",
     body: JSON.stringify(body),
   });
+}
+
+
+// ─── History / Topic checks ──────────────────────────
+
+export type TopicPageKey = "concept" | "example" | "explanation";
+
+export interface TopicChecksResponse {
+  node_id: string;
+  checked_pages: TopicPageKey[];
+}
+
+export function getTopicChecks(nodeId: string): Promise<TopicChecksResponse> {
+  return request<TopicChecksResponse>(`/api/history/topic-checks/${encodeURIComponent(nodeId)}`);
+}
+
+export function setTopicCheck(body: {
+  session_id: string;
+  node_id: string;
+  page_key: TopicPageKey;
+  checked: boolean;
+}): Promise<TopicChecksResponse> {
+  return request<TopicChecksResponse>("/api/history/topic-check", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+
+// ─── History logs ────────────────────────────────────
+
+export type HistoryKind = "quiz" | "practice" | "topic_check";
+
+export interface HistoryLogItem {
+  id: string;
+  kind: HistoryKind;
+  node_id: string;
+  node_label: string;
+  session_id: string | null;
+  logged_at: string;
+  score: number | null;
+  total_correct: number | null;
+  total_steps: number | null;
+  passed_count: number | null;
+  passed: boolean | null;
+  decision: "advance" | "remediate" | null;
+  page_key: TopicPageKey | null;
+  checked: boolean | null;
+}
+
+export interface HistoryPage {
+  items: HistoryLogItem[];
+  next_offset: number | null;
+  total: number;
+}
+
+export interface HistorySummary {
+  quizzes_taken: number;
+  practice_sessions: number;
+  pages_checked: number;
+  best_quiz_score: number | null;
+  quiz_accuracy: number | null;
+}
+
+export function getHistory(params: { kind?: HistoryKind; limit?: number; offset?: number } = {}): Promise<HistoryPage> {
+  const query = new URLSearchParams();
+  if (params.kind) query.set("kind", params.kind);
+  query.set("limit", String(params.limit ?? 20));
+  query.set("offset", String(params.offset ?? 0));
+  return request<HistoryPage>(`/api/history?${query.toString()}`);
+}
+
+export function getHistorySummary(): Promise<HistorySummary> {
+  return request<HistorySummary>("/api/history/summary");
 }
 
 

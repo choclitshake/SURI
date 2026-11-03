@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getSession, getContent, ContentResponse } from "../../../../lib/api";
+import { getSession, getContent, ContentResponse, getTopicChecks, setTopicCheck, TopicPageKey } from "../../../../lib/api";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
@@ -902,6 +902,15 @@ export default function LessonPage() {
         return;
       }
 
+      try {
+        const saved = await getTopicChecks(session.current_node);
+        setReadConcept(saved.checked_pages.includes("concept"));
+        setReadExample(saved.checked_pages.includes("example"));
+        setReadExplanation(saved.checked_pages.includes("explanation"));
+      } catch (e) {
+        console.error("Could not load saved page checks", e);
+      }
+
       setContent(data);
     } catch (err: unknown) {
       console.error(err);
@@ -936,16 +945,29 @@ export default function LessonPage() {
   };
 
   // Checkbox understanding indicators triggering confetti [2]
-  const handleMarkRead = (section: PageTabId) => {
-    if (section === "concept") {
-      setReadConcept(true);
-      confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
-    } else if (section === "example") {
-      setReadExample(true);
-      confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
-    } else if (section === "explanation") {
-      setReadExplanation(true);
-      confetti({ particleCount: 80, spread: 80, origin: { y: 0.8 } });
+  // added toggles
+  const setReadFlag = (section: PageTabId, value: boolean) => {
+    if (section === "concept") setReadConcept(value);
+    else if (section === "example") setReadExample(value);
+    else setReadExplanation(value);
+  };
+
+  const handleToggleRead = async (section: PageTabId) => {
+    const next = !readMap[section];
+    setReadFlag(section, next);
+    if (next) {
+      confetti({ particleCount: section === "explanation" ? 80 : 50, spread: section === "explanation" ? 80 : 60, origin: { y: 0.8 } });
+    }
+    try {
+      await setTopicCheck({
+        session_id: sessionId,
+        node_id: currentNode,
+        page_key: section as TopicPageKey,
+        checked: next,
+      });
+    } catch (e) {
+      console.error(e);
+      setReadFlag(section, !next);
     }
   };
 
@@ -1153,13 +1175,12 @@ export default function LessonPage() {
 
                 <div className="page-footer-row">
                   <p className="page-footer-copy">{pagePrompt[activeTab].copy}</p>
-                  <button
+                    <button
                     type="button"
-                    disabled={readMap[activeTab]}
-                    onClick={() => handleMarkRead(activeTab)}
+                    onClick={() => handleToggleRead(activeTab)}
                     className="check-off-btn"
                   >
-                    {readMap[activeTab] ? "✓ Logged Understood!" : pagePrompt[activeTab].cta}
+                    {readMap[activeTab] ? "✓ Logged Understood! (click to undo)" : pagePrompt[activeTab].cta}
                   </button>
                 </div>
               </div>
