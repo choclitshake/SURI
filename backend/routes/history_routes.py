@@ -57,33 +57,15 @@ async def set_topic_check(body: TopicCheckRequest, student=Depends(get_current_s
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
 
         now_iso = datetime.now(timezone.utc).isoformat()
-        async with conn.transaction():
-            existing = await conn.fetchrow(
-                "SELECT checked FROM topic_checks "
-                "WHERE student_id = $1 AND node_id = $2 AND page_key = $3 FOR UPDATE",
-                student["id"], body.node_id, body.page_key,
-            )
-            previous = existing["checked"] if existing else False
-            if previous != body.checked:
-                await conn.execute(
-                    """
-                    INSERT INTO topic_checks (student_id, node_id, page_key, checked, updated_at)
-                    VALUES ($1, $2, $3, $4, $5)
-                    ON CONFLICT (student_id, node_id, page_key)
-                    DO UPDATE SET checked = EXCLUDED.checked, updated_at = EXCLUDED.updated_at
-                    """,
-                    student["id"], body.node_id, body.page_key, body.checked, now_iso,
-                )
-                await log_history(
-                    conn,
-                    student_id=student["id"],
-                    kind="topic_check",
-                    node_id=body.node_id,
-                    session_id=body.session_id,
-                    page_key=body.page_key,
-                    checked=body.checked,
-                    logged_at=now_iso,
-                )
+        await conn.execute(
+            """
+            INSERT INTO topic_checks (student_id, node_id, page_key, checked, updated_at)
+            VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (student_id, node_id, page_key)
+            DO UPDATE SET checked = EXCLUDED.checked, updated_at = EXCLUDED.updated_at
+            """,
+            student["id"], body.node_id, body.page_key, body.checked, now_iso,
+        )
 
         return {"node_id": body.node_id, "checked_pages": await _checked_pages(conn, student["id"], body.node_id)}
     finally:
@@ -105,6 +87,50 @@ async def list_history(
     student=Depends(get_current_student),
 ):
     """Newest-first activity feed for the current student."""
+    if kind == "topic_check":
+        tc_conditions, tc_params = ["student_id = $1", "checked = TRUE"], [student["id"]]
+        if node_id:
+            tc_params.append(node_id)
+            tc_conditions.append(f"node_id = ${len(tc_params)}")
+        tc_where = " AND ".join(tc_conditions)
+
+        conn = await get_db()
+        try:
+            total = await conn.fetchval(f"SELECT COUNT(*) FROM topic_checks WHERE {tc_where}", *tc_params)
+            rows = await conn.fetch(
+                f"SELECT node_id, page_key, checked, updated_at FROM topic_checks WHERE {tc_where} "
+                f"ORDER BY updated_at DESC, node_id, page_key "
+                f"LIMIT ${len(tc_params) + 1} OFFSET ${len(tc_params) + 2}",
+                *tc_params, limit + 1, offset,
+            )
+        finally:
+            await release_db(conn)
+
+        items = [
+            {
+                "id": f"{r['node_id']}:{r['page_key']}",
+                "kind": "topic_check",
+                "node_id": r["node_id"],
+                "node_label": GRAPH.get(r["node_id"], {}).get("label", r["node_id"]),
+                "session_id": None,
+                "logged_at": r["updated_at"],
+                "score": None,
+                "total_correct": None,
+                "total_steps": None,
+                "passed_count": None,
+                "passed": None,
+                "decision": None,
+                "page_key": r["page_key"],
+                "checked": r["checked"],
+            }
+            for r in rows[:limit]
+        ]
+        return {
+            "items": items,
+            "next_offset": offset + limit if len(rows) > limit else None,
+            "total": total,
+        }
+        
     conditions, params = ["student_id = $1"], [student["id"]]
     if kind:
         params.append(kind)
